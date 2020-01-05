@@ -85,6 +85,7 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Sender","<@" + auth.getId() + ">", false));
         embedBuilder.addField(new MessageEmbed.Field("Message", content, false));
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
 
         jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
     }
