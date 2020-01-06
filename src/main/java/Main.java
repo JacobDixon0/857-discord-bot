@@ -99,7 +99,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Email Body: ", content, false));
         if (!attached.equals("x")) embedBuilder.addField(new MessageEmbed.Field("Attached: ", attached, false));
         if (time.equals("x")) {
-            embedBuilder.setFooter(new SimpleDateFormat("- dd/MM/yyyy HH:mm").format(new Date()), "https://www.jacobdixon.us/res/img/gmail-icon.png");
+            embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://www.jacobdixon.us/res/img/gmail-icon.png");
         } else {
             embedBuilder.setFooter(time, "https://www.jacobdixon.us/res/img/gmail-icon.png");
         }

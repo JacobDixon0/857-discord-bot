@@ -40,7 +40,9 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
-        Main.embedMessageLog(event.getAuthor(), event.getMessage().getContentDisplay());
+        if(!event.getAuthor().getId().equals(Main.jda.getSelfUser().getId())) {
+            Main.embedMessageLog(event.getAuthor(), event.getMessage().getContentDisplay());
+        }
     }
 
     @Override
