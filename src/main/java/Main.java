@@ -86,6 +86,17 @@ public class Main {
         jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
     }
 
+    public static void embedAnnouncementLog(String sender, String subject){
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+
+        embedBuilder.setTitle("Posted Email Announcement");
+        embedBuilder.setColor(Color.GREEN);
+        embedBuilder.addField(new MessageEmbed.Field("Sender", sender, false));
+        embedBuilder.addField(new MessageEmbed.Field("Subject", subject, false));
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
+        jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
+    }
+
     public static void embedMessageLog(User auth, String content){
         EmbedBuilder embedBuilder = new EmbedBuilder();
 

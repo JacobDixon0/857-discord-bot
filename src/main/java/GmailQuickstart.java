@@ -112,6 +112,7 @@ public class GmailQuickstart extends Thread {
                         Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID)
                                 .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857")
                                 .queue();
+                        Main.embedAnnouncementLog(from, sub);
                     }
                 }
 
