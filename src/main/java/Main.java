@@ -42,6 +42,7 @@ public class Main {
 
         try {
             jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).addEventListener(eventHandler, commandClientBuilder.build()).buildBlocking();
+            new GmailQuickstart().run();
         } catch (InterruptedException | LoginException e0) {
             e0.printStackTrace();
         }
@@ -97,7 +98,7 @@ public class Main {
         embedBuilder.setColor(Color.RED);
         embedBuilder.setAuthor(auth, "https://mail.google.com", "https://ssl.gstatic.com/ui/v1/icons/mail/profile_mask2.png");
         embedBuilder.addField(new MessageEmbed.Field("Email Body: ", content, false));
-        if (!attached.equals("x")) embedBuilder.addField(new MessageEmbed.Field("Attached: ", attached, false));
+        if (attached != null && !attached.equals("x")) embedBuilder.addField(new MessageEmbed.Field("Attached: ", attached, false));
         if (time.equals("x")) {
             embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://www.jacobdixon.us/res/img/gmail-icon.png");
         } else {
