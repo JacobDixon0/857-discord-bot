@@ -74,7 +74,7 @@ public class GmailQuickstart extends Thread{
                 ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
                 List<Message> messages = listMessagesResponse.getMessages();
 
-                if(messages.size() != lastSize){
+                if(messages.size() != lastSize && lastSize != 0){
                     Message lastMsg = messages.get(0);
 
                     Message msg = service.users().messages().get(user, lastMsg.getId()).execute();
