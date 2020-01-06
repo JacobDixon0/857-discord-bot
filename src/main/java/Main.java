@@ -7,12 +7,18 @@ import net.dv8tion.jda.core.entities.*;
 
 import javax.security.auth.login.LoginException;
 import java.awt.Color;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
+
+    private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
+    private static boolean isUnixLike = true;
+    private static String hostname = "hostname";
 
     private static final String TOKEN = "NjYzMTM2ODQzMzgxODY2NTE4.XhEIYg.wOtotE-TllYsFWlMs6JIF3Wk3CQ";
 
@@ -21,8 +27,9 @@ public class Main {
     public static final String ANNOUNCEMENT_CHANNEL_ID = "663172193886142486";
     public static final String ANNOUNCEMENTS_ROLE_ID = "663138202038566924";
     public static final String LOG_CHANNEL_ID = "663166429876584458";
+    public static final String ROLE_ASSIGNMENT_MESSAGE_ID = "663167436127993884";
 
-    public static String roleMessageId = "";
+    public static String roleMessageId = ROLE_ASSIGNMENT_MESSAGE_ID;
 
     public static EventHandler eventHandler = new EventHandler();
     public static CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
@@ -31,10 +38,18 @@ public class Main {
 
     public static final ArrayList<EmailSenderProfile> knownSenders = new ArrayList<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         knownSenders.add(new EmailSenderProfile("Jacob Dixon", "jd@jacobdixon.us", "https://lh3.googleusercontent.com/a-/AAuE7mDWDAfX7W_d7M-vC4O1VDWZIDHPZ_ji7b7dze-B=s40"));
         knownSenders.add(new EmailSenderProfile("Christopher Doig", "csdoig@mtu.edu", "https://ssl.gstatic.com/ui/v1/icons/mail/profile_mask2.png"));
+
+        if(OS_NAME.contains("win")){
+            isUnixLike = false;
+            hostname = execReadToString("hostname");
+        } else if (OS_NAME.contains("nix") || OS_NAME.contains("nux") || OS_NAME.contains("mac os x")){
+            isUnixLike = false;
+            hostname = execReadToString("hostname");
+        }
 
         commandClientBuilder.setOwnerId(ADMIN_ID);
         commandClientBuilder.addCommands(
@@ -50,8 +65,15 @@ public class Main {
         try {
             jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).addEventListener(eventHandler, commandClientBuilder.build()).buildBlocking();
             new GmailQuickstart().run();
+            embedStartupLog();
         } catch (InterruptedException | LoginException e0) {
             e0.printStackTrace();
+        }
+    }
+
+    public static String execReadToString(String execCommand) throws IOException{
+        try (Scanner s = new Scanner(Runtime.getRuntime().exec(execCommand).getInputStream()).useDelimiter("\\A")) {
+            return s.hasNext() ? s.next() : "";
         }
     }
 
@@ -94,6 +116,16 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Sender", sender, false));
         embedBuilder.addField(new MessageEmbed.Field("Subject", subject, false));
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + ANNOUNCEMENT_CHANNEL_ID + ">", false));
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
+        jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
+    }
+
+    public static void embedStartupLog(){
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+
+        embedBuilder.setTitle("Bot Initiated");
+        embedBuilder.setColor(Color.GREEN);
+        embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host " + hostname, false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
         jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
     }
