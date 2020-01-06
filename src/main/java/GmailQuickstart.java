@@ -18,12 +18,10 @@ import java.lang.Thread;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class GmailQuickstart extends Thread {
-    private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
+    private static final String APPLICATION_NAME = "857 Discord Bot Tools";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
@@ -183,11 +181,14 @@ public class GmailQuickstart extends Thread {
 
                 Base64 base64Url = new Base64(true);
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
-                FileOutputStream fileOutFile =
-                        new FileOutputStream("/var/www/html/bot-things/attachments-cache/" + filename);
-                result.add("https://www.jacobdixon.us/bot-things/attachments-cache/" + filename);
-                fileOutFile.write(fileByteArray);
-                fileOutFile.close();
+                if(Main.isUnixLike){
+                    FileOutputStream fileOutFile = new FileOutputStream("/var/www/html/bot-things/attachments-cache/" + filename);
+                    result.add("https://www.jacobdixon.us/bot-things/attachments-cache/" + filename);
+                    fileOutFile.write(fileByteArray);
+                    fileOutFile.close();
+                } else {
+                    result.add("ERROR: Failed to load " + filename);
+                }
             }
         }
 

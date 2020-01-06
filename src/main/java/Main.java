@@ -16,9 +16,9 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static final String OS_NAME = System.getProperty("os.name").toLowerCase();
-    private static boolean isUnixLike = true;
-    private static String hostname = "hostname";
+    public static final String OS_NAME = System.getProperty("os.name").toLowerCase();
+    public static boolean isUnixLike = true;
+    public static String hostname = "hostname";
 
     private static final String TOKEN = "NjYzMTM2ODQzMzgxODY2NTE4.XhEIYg.wOtotE-TllYsFWlMs6JIF3Wk3CQ";
 
@@ -64,7 +64,8 @@ public class Main {
 
         try {
             jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).addEventListener(eventHandler, commandClientBuilder.build()).buildBlocking();
-            new GmailQuickstart().run();
+            GmailQuickstart emailHandler = new GmailQuickstart();
+            emailHandler.start();
             embedStartupLog();
         } catch (InterruptedException | LoginException e0) {
             e0.printStackTrace();
@@ -125,7 +126,7 @@ public class Main {
 
         embedBuilder.setTitle("Bot Initiated");
         embedBuilder.setColor(Color.GREEN);
-        embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host " + hostname, false));
+        embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host `" + hostname + "`", false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
         jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
     }
