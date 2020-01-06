@@ -7,16 +7,14 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.gmail.model.*;
 import org.apache.commons.codec.binary.Base64;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
-import com.google.api.services.gmail.model.ListMessagesResponse;
-import com.google.api.services.gmail.model.Message;
-import com.google.api.services.gmail.model.MessagePart;
-import com.google.api.services.gmail.model.MessagePartBody;
 
 import java.io.*;
+import java.lang.Thread;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,17 +81,21 @@ public class GmailQuickstart extends Thread{
 
                     String msgContent = getContent(msg);
 
-                    Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage(Main.getEmbed(
-                            msg.getPayload().getHeaders().get(19).getValue(),
-                            msg.getPayload().getHeaders().get(23).getValue(),
-                            msg.getPayload().getHeaders().get(20).getValue(),
-                            msgContent,
-                            getAttachments(service, user, msg.getId())
-                    )).queue();
+                    String from = headerValueGetterThing("from", msg.getPayload().getHeaders());
+                    String to = headerValueGetterThing("to", msg.getPayload().getHeaders());
+                    String date = headerValueGetterThing("date", msg.getPayload().getHeaders());
+                    String sub = headerValueGetterThing("subject", msg.getPayload().getHeaders());
 
-                    Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID)
-                            .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857")
-                            .queue();
+                    if(to.equals("first857-l@mtu.edu") ||
+                            from.equals("Sloth King <sloth@royalslothking.com>") ||
+                            from.equals("Jacob Dixon <jd@jacobdixon.us>")){
+                        Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage(Main.getEmbed(
+                                from, sub, date, msgContent, getAttachments(service, user, msg.getId()))).queue();
+
+                        Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID)
+                                .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857")
+                                .queue();
+                    }
 
                     lastSize = messages.size();
                 }
@@ -106,6 +108,20 @@ public class GmailQuickstart extends Thread{
             e.printStackTrace();
             System.out.println("welp");
         }
+    }
+
+    private static String headerValueGetterThing(String name, List<MessagePartHeader> headers){
+
+        String result = "";
+
+        for(MessagePartHeader mph : headers){
+            if(mph.getName().toLowerCase().equals(name.toLowerCase())){
+                result = mph.getValue();
+                break;
+            }
+        }
+
+        return result;
     }
 
     /*public static void run(String... args) throws IOException, GeneralSecurityException {
