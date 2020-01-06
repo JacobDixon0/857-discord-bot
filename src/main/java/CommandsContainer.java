@@ -21,6 +21,7 @@ public class CommandsContainer {
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
                 event.reply(event.getArgs());
+                event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
@@ -38,6 +39,7 @@ public class CommandsContainer {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
                 Main.roleMessageId = event.getArgs();
                 Main.eventHandler.resetRoleAssigner();
+                event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
@@ -61,6 +63,7 @@ public class CommandsContainer {
                 } catch (Exception e){
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 }
+                event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
@@ -87,6 +90,7 @@ public class CommandsContainer {
                 } else {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments "  + args.length);
                 }
+                event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
@@ -115,6 +119,7 @@ public class CommandsContainer {
                 } else {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 }
+                event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
