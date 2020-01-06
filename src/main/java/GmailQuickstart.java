@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
-public class GmailQuickstart extends Thread{
+public class GmailQuickstart extends Thread {
     private static final String APPLICATION_NAME = "Gmail API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -37,6 +38,7 @@ public class GmailQuickstart extends Thread{
 
     /**
      * Creates an authorized Credential object.
+     *
      * @param HTTP_TRANSPORT The network HTTP Transport.
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
@@ -70,11 +72,11 @@ public class GmailQuickstart extends Thread{
             // Print the labels in the user's account.
             String user = "me";
 
-            while (true){
+            while (true) {
                 ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
                 List<Message> messages = listMessagesResponse.getMessages();
 
-                if(messages.size() != lastSize && lastSize != 0){
+                if (messages.size() != lastSize && lastSize != 0) {
                     Message lastMsg = messages.get(0);
 
                     Message msg = service.users().messages().get(user, lastMsg.getId()).execute();
@@ -86,11 +88,26 @@ public class GmailQuickstart extends Thread{
                     String date = headerValueGetterThing("date", msg.getPayload().getHeaders());
                     String sub = headerValueGetterThing("subject", msg.getPayload().getHeaders());
 
-                    if(to.equals("first857-l@mtu.edu") ||
-                            from.equals("Sloth King <sloth@royalslothking.com>") ||
-                            from.equals("Jacob Dixon <jd@jacobdixon.us>")){
+                    boolean allowed = false;
+                    EmailSenderProfile emailSenderProfile = new EmailSenderProfile("name", "address", null);
+
+                    if (to.equals("first857-l@mtu.edu")) {
+                        allowed = true;
+                    }
+
+                    if(!allowed){
+                        for(EmailSenderProfile sender : Main.knownSenders){
+                            if((sender.getSenderName() + " <" + sender.getSenderAddress().toLowerCase() + ">").equals(from)){
+                                allowed = true;
+                                emailSenderProfile = sender;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (allowed) {
                         Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage(Main.getEmbed(
-                                from, sub, date, msgContent, getAttachments(service, user, msg.getId()))).queue();
+                                from, sub, date, msgContent, getAttachments(service, user, msg.getId()), emailSenderProfile)).queue();
 
                         Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID)
                                 .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857")
@@ -103,18 +120,18 @@ public class GmailQuickstart extends Thread{
 
             }
 
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println("welp");
         }
     }
 
-    private static String headerValueGetterThing(String name, List<MessagePartHeader> headers){
+    private static String headerValueGetterThing(String name, List<MessagePartHeader> headers) {
 
         String result = "";
 
-        for(MessagePartHeader mph : headers){
-            if(mph.getName().toLowerCase().equals(name.toLowerCase())){
+        for (MessagePartHeader mph : headers) {
+            if (mph.getName().toLowerCase().equals(name.toLowerCase())) {
                 result = mph.getValue();
                 break;
             }
@@ -159,7 +176,7 @@ public class GmailQuickstart extends Thread{
             if (part.getFilename() != null && part.getFilename().length() > 0) {
                 String filename = part.getFilename();
                 String attId = part.getBody().getAttachmentId();
-                if(attId == null) return null;
+                if (attId == null) return null;
                 MessagePartBody attachPart = service.users().messages().attachments().
                         get(userId, messageId, attId).execute();
 
@@ -179,10 +196,10 @@ public class GmailQuickstart extends Thread{
     public static String getContent(Message message) {
         StringBuilder stringBuilder = new StringBuilder();
 
-            getPlainTextFromMessageParts(message.getPayload().getParts(), stringBuilder);
-            byte[] bodyBytes = Base64.decodeBase64(stringBuilder.toString());
-            String text = new String(bodyBytes, StandardCharsets.UTF_8);
-            return text;
+        getPlainTextFromMessageParts(message.getPayload().getParts(), stringBuilder);
+        byte[] bodyBytes = Base64.decodeBase64(stringBuilder.toString());
+        String text = new String(bodyBytes, StandardCharsets.UTF_8);
+        return text;
 
     }
 

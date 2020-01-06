@@ -29,7 +29,12 @@ public class Main {
 
     public static JDA jda;
 
+    public static final ArrayList<EmailSenderProfile> knownSenders = new ArrayList<>();
+
     public static void main(String[] args) {
+
+        knownSenders.add(new EmailSenderProfile("Jacob Dixon", "jd@jacobdixon.us", "https://lh3.googleusercontent.com/a-/AAuE7mDWDAfX7W_d7M-vC4O1VDWZIDHPZ_ji7b7dze-B=s40"));
+        knownSenders.add(new EmailSenderProfile("Christopher Doig", "csdoig@mtu.edu", "https://ssl.gstatic.com/ui/v1/icons/mail/profile_mask2.png"));
 
         commandClientBuilder.setOwnerId(ADMIN_ID);
         commandClientBuilder.addCommands(
@@ -93,12 +98,12 @@ public class Main {
         jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
     }
 
-    public static MessageEmbed getEmbed(String auth, String title, String time, String content, List<String> attached){
+    public static MessageEmbed getEmbed(String auth, String title, String time, String content, List<String> attached, EmailSenderProfile profile){
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.RED);
-        embedBuilder.setAuthor(auth, "https://mail.google.com", "https://ssl.gstatic.com/ui/v1/icons/mail/profile_mask2.png");
+        embedBuilder.setAuthor(auth, "https://mail.google.com", profile.getProfileImageUrl());
 
         if(content.length() > 1020){
             List<String> contentSections = getChunks(content, 1020);
