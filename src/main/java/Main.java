@@ -47,7 +47,7 @@ public class Main {
             isUnixLike = false;
             hostname = execReadToString("hostname");
         } else if (OS_NAME.contains("nix") || OS_NAME.contains("nux") || OS_NAME.contains("mac os x")){
-            isUnixLike = false;
+            isUnixLike = true;
             hostname = execReadToString("hostname");
         }
 
