@@ -4,6 +4,9 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CommandsContainer {
 
     public static class SayCommand extends Command {
@@ -77,7 +80,9 @@ public class CommandsContainer {
                 String[] args = event.getArgs().split("%s%");
 
                 if(args.length == 5) {
-                    event.getGuild().getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage(Main.getEmbed(args[0], args[1], args[2], args[3], args[4])).queue();
+                    List<String> list = new ArrayList<>();
+                    list.add(args[4]);
+                    event.getGuild().getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage(Main.getEmbed(args[0], args[1], args[2], args[3], list)).queue();
                     event.getGuild().getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857").queue();
                 } else {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments "  + args.length);

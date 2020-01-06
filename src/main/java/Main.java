@@ -6,9 +6,11 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
 
 import javax.security.auth.login.LoginException;
-import java.awt.*;
+import java.awt.Color;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Main {
 
@@ -91,14 +93,31 @@ public class Main {
         jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
     }
 
-    public static MessageEmbed getEmbed(String auth, String title, String time, String content, String attached){
+    public static MessageEmbed getEmbed(String auth, String title, String time, String content, List<String> attached){
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.RED);
         embedBuilder.setAuthor(auth, "https://mail.google.com", "https://ssl.gstatic.com/ui/v1/icons/mail/profile_mask2.png");
-        embedBuilder.addField(new MessageEmbed.Field("Email Body: ", content, false));
-        if (attached != null && !attached.equals("x")) embedBuilder.addField(new MessageEmbed.Field("Attached: ", attached, false));
+
+        if(content.length() > 1020){
+            List<String> contentSections = getChunks(content, 1020);
+            embedBuilder.addField("Email Body: ", contentSections.get(0), false);
+            for (String contentSection : contentSections) {
+                embedBuilder.addField("...", contentSection, false);
+            }
+        } else {
+            embedBuilder.addField(new MessageEmbed.Field("Email Body: ", content, false));
+
+        }
+
+        if (!attached.isEmpty() && attached.get(0) != null && !attached.get(0).equals("x")){
+            StringBuilder attachments = new StringBuilder();
+            for(String s : attached){
+                attachments.append(s).append("\n");
+            }
+            embedBuilder.addField(new MessageEmbed.Field("Attached: ", attachments.toString(), false));
+        }
         if (time.equals("x")) {
             embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://www.jacobdixon.us/res/img/gmail-icon.png");
         } else {
@@ -107,4 +126,16 @@ public class Main {
 
         return embedBuilder.build();
     }
+
+    private static List<String> getChunks(String text, int size){
+
+        List<String> string = new ArrayList<>((text.length() + size - 1) / size);
+
+        for(int i = 0; i < text.length(); i+= size){
+            string.add(text.substring(i, Math.min(text.length(), i + size)));
+        }
+
+        return string;
+    }
+
 }

@@ -7,17 +7,20 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
+import com.google.api.services.gmail.model.MessagePartBody;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class GmailQuickstart extends Thread{
@@ -25,7 +28,6 @@ public class GmailQuickstart extends Thread{
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-    private static String lastId = "0";
     private static int lastSize = 0;
 
     /**
@@ -81,18 +83,17 @@ public class GmailQuickstart extends Thread{
 
                     String msgContent = getContent(msg);
 
-                    if(msgContent.length() > 1024){
-                        msgContent = msgContent.substring(0, 1024);
-                    }
-
                     Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage(Main.getEmbed(
                             msg.getPayload().getHeaders().get(19).getValue(),
                             msg.getPayload().getHeaders().get(23).getValue(),
                             msg.getPayload().getHeaders().get(20).getValue(),
                             msgContent,
-                            null
+                            getAttachments(service, user, msg.getId())
                     )).queue();
-                    Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857").queue();
+
+                    Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID)
+                            .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857")
+                            .queue();
 
                     lastSize = messages.size();
                 }
@@ -100,7 +101,6 @@ public class GmailQuickstart extends Thread{
                 Thread.sleep(1000);
 
             }
-
 
         } catch (Exception e){
             e.printStackTrace();
@@ -132,6 +132,34 @@ public class GmailQuickstart extends Thread{
             }
         }*//*
     }*/
+
+    public static List<String> getAttachments(Gmail service, String userId, String messageId)
+            throws IOException {
+
+        List<String> result = new ArrayList<>();
+
+        Message message = service.users().messages().get(userId, messageId).execute();
+        List<MessagePart> parts = message.getPayload().getParts();
+        for (MessagePart part : parts) {
+            if (part.getFilename() != null && part.getFilename().length() > 0) {
+                String filename = part.getFilename();
+                String attId = part.getBody().getAttachmentId();
+                if(attId == null) return null;
+                MessagePartBody attachPart = service.users().messages().attachments().
+                        get(userId, messageId, attId).execute();
+
+                Base64 base64Url = new Base64(true);
+                byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
+                FileOutputStream fileOutFile =
+                        new FileOutputStream("/var/www/html/bot-things/attachments-cache/" + filename);
+                result.add("https://www.jacobdixon.us/bot-things/attachments-cache/" + filename);
+                fileOutFile.write(fileByteArray);
+                fileOutFile.close();
+            }
+        }
+
+        return result;
+    }
 
     public static String getContent(Message message) {
         StringBuilder stringBuilder = new StringBuilder();
