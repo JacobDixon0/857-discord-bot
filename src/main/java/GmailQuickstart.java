@@ -96,10 +96,9 @@ public class GmailQuickstart extends Thread{
                                 .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857")
                                 .queue();
                     }
-
-                    lastSize = messages.size();
                 }
 
+                lastSize = messages.size();
                 Thread.sleep(1000);
 
             }
