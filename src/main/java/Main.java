@@ -150,8 +150,8 @@ public class Main {
         embedBuilder.setColor(Color.RED);
         embedBuilder.setAuthor(auth, "https://mail.google.com", profile.getProfileImageUrl());
 
-        if(content.length() > 1020){
-            List<String> contentSections = getChunks(content, 1020);
+        if(content.length() > 1024){
+            List<String> contentSections = getChunks(content, 1024);
             embedBuilder.addField("Email Body: ", contentSections.get(0), false);
             for (String contentSection : contentSections) {
                 embedBuilder.addField("...", contentSection, false);
