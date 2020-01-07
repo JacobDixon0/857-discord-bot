@@ -4,7 +4,9 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CommandsContainer {
@@ -57,7 +59,11 @@ public class CommandsContainer {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MESSAGE_MANAGE)) {
                 try{
                     event.getChannel().getHistory().retrievePast(Integer.parseInt(event.getArgs()) + 1).complete().forEach(e -> {
-                        e.delete().queue();
+                        try {
+                            e.delete().queue();
+                        } catch (Exception e0){
+                            System.err.println("ERROR: error clearing message: \"" + e.getContentDisplay() + "\"");
+                        }
                     });
                     Main.embedPurgeLog("Cleared " + event.getArgs() + " message(s)", event.getChannel());
                 } catch (Exception e){
@@ -82,11 +88,10 @@ public class CommandsContainer {
 
                 String[] args = event.getArgs().split("%s%");
 
-                if(args.length == 5) {
-                    List<String> list = new ArrayList<>();
-                    list.add(args[4]);
-                    event.getGuild().getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage(Main.getEmbed(args[0], args[1], args[2], args[3], list, new EmailSenderProfile("name", "address", null))).queue();
-                    event.getGuild().getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857").queue();
+                if(args.length == 4) {
+                    List<String> attachmentsList = new ArrayList<>();
+                    attachmentsList.add(args[3]);
+                    Main.emailAnnounce(new EmailSenderProfile(args[0], "internal", null), args[1], new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()), args[2], attachmentsList);
                 } else {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments "  + args.length);
                 }
@@ -123,5 +128,4 @@ public class CommandsContainer {
             }
         }
     }
-
 }

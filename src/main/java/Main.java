@@ -31,6 +31,7 @@ public class Main {
     public static final String MEMBER_ROLE_ID = "663133335660265498";
 
     public static String roleMessageId = ROLE_ASSIGNMENT_MESSAGE_ID;
+    public static String gamePlaying = "Bot Duties";
 
     public static EventHandler eventHandler = new EventHandler();
     public static CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
@@ -60,7 +61,7 @@ public class Main {
                 new CommandsContainer.PurgeCommand(),
                 new CommandsContainer.GenericAnnouncementCommand());
         commandClientBuilder.setPrefix("!");
-        commandClientBuilder.setGame(Game.playing("Bot Duties"));
+        commandClientBuilder.setGame(Game.playing(gamePlaying));
         commandClientBuilder.useHelpBuilder(false);
 
         try {
@@ -144,12 +145,19 @@ public class Main {
         jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
     }
 
-    public static MessageEmbed getEmbed(String auth, String title, String time, String content, List<String> attached, EmailSenderProfile profile){
+    public static void emailAnnounce(EmailSenderProfile senderProfile, String title, String time, String content, List<String> attachments){
+        jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
+        jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID)
+                .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857").queue();
+        Main.embedAnnouncementLog(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", title);
+    }
+
+    public static MessageEmbed getEmailEmbed(EmailSenderProfile senderProfile, String title, String time, String content, List<String> attachments){
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.RED);
-        embedBuilder.setAuthor(auth, "https://mail.google.com", profile.getProfileImageUrl());
+        embedBuilder.setAuthor(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", "https://mail.google.com", senderProfile.getProfileImageUrl());
 
         if(content.length() > 1024){
             List<String> contentSections = getChunks(content, 1024);
@@ -159,15 +167,14 @@ public class Main {
             }
         } else {
             embedBuilder.addField(new MessageEmbed.Field("Email Body: ", content, false));
-
         }
 
-        if (!attached.isEmpty() && attached.get(0) != null && !attached.get(0).equals("x")){
-            StringBuilder attachments = new StringBuilder();
-            for(String s : attached){
-                attachments.append(s).append("\n");
+        if (!attachments.isEmpty() && attachments.get(0) != null && !attachments.get(0).equals("x")){
+            StringBuilder sb = new StringBuilder();
+            for(String s : attachments){
+                sb.append(s).append("\n");
             }
-            embedBuilder.addField(new MessageEmbed.Field("Attached: ", attachments.toString(), false));
+            embedBuilder.addField(new MessageEmbed.Field("Attached: ", sb.toString(), false));
         }
         if (time.equals("x")) {
             embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://www.jacobdixon.us/res/img/gmail-icon.png");

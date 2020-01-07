@@ -16,9 +16,12 @@ import com.google.api.services.gmail.GmailScopes;
 import java.io.*;
 import java.lang.Thread;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GmailAPIHandler extends Thread {
     private static final String APPLICATION_NAME = "857 Discord Bot Tools";
@@ -86,8 +89,27 @@ public class GmailAPIHandler extends Thread {
                     String date = headerValueGetterThing("date", msg.getPayload().getHeaders());
                     String sub = headerValueGetterThing("subject", msg.getPayload().getHeaders());
 
+                    SimpleDateFormat messageDateFormat = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss Z");
+                    SimpleDateFormat gmailDateFormat = new SimpleDateFormat("MMM d, yyyy, h:m a");
+
+                    String formattedDate = date;
+
+                    try {
+                        formattedDate = gmailDateFormat.format(messageDateFormat.parse(date));
+                    } catch (Exception e){
+                        System.err.println("encountered error parsing email date");
+                    }
+
                     boolean allowed = false;
+
                     EmailSenderProfile emailSenderProfile = new EmailSenderProfile("name", "address", null);
+
+                    Matcher nameMatcher = Pattern.compile("^(.+)<(.+)>$").matcher(from);
+
+                    if(nameMatcher.find() && nameMatcher.group(1) != null && nameMatcher.group(2) != null){
+                        emailSenderProfile.setSenderName(nameMatcher.group(1).trim());
+                        emailSenderProfile.setSenderAddress(nameMatcher.group(2).trim());
+                    }
 
                     if (to.equals("first857-l@mtu.edu")) {
                         allowed = true;
@@ -104,13 +126,7 @@ public class GmailAPIHandler extends Thread {
                     }
 
                     if (allowed) {
-                        Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID).sendMessage(Main.getEmbed(
-                                from, sub, date, msgContent, getAttachments(service, user, msg.getId()), emailSenderProfile)).queue();
-
-                        Main.jda.getGuildById(Main.SERVER_ID).getTextChannelById(Main.ANNOUNCEMENT_CHANNEL_ID)
-                                .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857")
-                                .queue();
-                        Main.embedAnnouncementLog(from, sub);
+                        Main.emailAnnounce(emailSenderProfile, sub, formattedDate, msgContent, getAttachments(service, user, msg.getId()));
                     }
                 }
 
@@ -183,7 +199,7 @@ public class GmailAPIHandler extends Thread {
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
                 if(Main.isUnixLike){
                     FileOutputStream fileOutFile = new FileOutputStream("/var/www/html/bot-things/attachments-cache/" + filename);
-                    result.add("https://www.jacobdixon.us/bot-things/attachments-cache/" + filename);
+                    result.add(formatUrl("https://www.jacobdixon.us/bot-things/attachments-cache/" + filename));
                     fileOutFile.write(fileByteArray);
                     fileOutFile.close();
                 } else {
@@ -191,8 +207,11 @@ public class GmailAPIHandler extends Thread {
                 }
             }
         }
-
         return result;
+    }
+
+    public static String formatUrl(String s){
+        return s.replaceAll(" ", "%20");
     }
 
     public static String getContent(Message message) {
