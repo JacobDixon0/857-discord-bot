@@ -28,6 +28,7 @@ public class Main {
     public static final String ANNOUNCEMENTS_ROLE_ID = "663138202038566924";
     public static final String LOG_CHANNEL_ID = "663166429876584458";
     public static final String ROLE_ASSIGNMENT_MESSAGE_ID = "663167436127993884";
+    public static final String MEMBER_ROLE_ID = "663133335660265498";
 
     public static String roleMessageId = ROLE_ASSIGNMENT_MESSAGE_ID;
 

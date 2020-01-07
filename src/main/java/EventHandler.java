@@ -52,6 +52,9 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        if(event.getGuild().getId().equals(Main.SERVER_ID)) {
+            event.getGuild().getController().addRolesToMember(event.getMember(), event.getGuild().getRoleById(Main.MEMBER_ROLE_ID)).queue();
+        }
         Main.embedMemberLog("Member Joined", event.getMember());
     }
 
