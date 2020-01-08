@@ -65,7 +65,7 @@ public class Main {
 
         try {
             jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).addEventListener(eventHandler, commandClientBuilder.build()).buildBlocking();
-            GmailQuickstart emailHandler = new GmailQuickstart();
+            GmailAPIHandler emailHandler = new GmailAPIHandler();
             emailHandler.start();
             embedStartupLog();
         } catch (InterruptedException | LoginException e0) {
