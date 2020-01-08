@@ -78,7 +78,7 @@ public class CommandsContainer {
 
         AnnouncementCommand() {
             this.name = "announce";
-            this.help = "[Administrative] Announces message to #announcements channel.";
+            this.help = "[Administrative] Announces a message to #announcements channel.";
             this.hidden = true;
         }
 

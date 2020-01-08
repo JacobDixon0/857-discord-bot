@@ -146,9 +146,13 @@ public class Main {
     }
 
     public static void emailAnnounce(EmailSenderProfile senderProfile, String title, String time, String content, List<String> attachments){
-        jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
+        String dots = "";
+        if (title.length() > 50){
+            dots = "...";
+        }
         jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID)
-                .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857").queue();
+                .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857 - \"" + title.substring(0, 40).trim() + dots + "\"").queue();
+        jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
         Main.embedAnnouncementLog(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", title);
     }
 

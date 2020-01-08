@@ -221,7 +221,6 @@ public class GmailAPIHandler extends Thread {
         byte[] bodyBytes = Base64.decodeBase64(stringBuilder.toString());
         String text = new String(bodyBytes, StandardCharsets.UTF_8);
         return text;
-
     }
 
     private static void getPlainTextFromMessageParts(List<MessagePart> messageParts, StringBuilder stringBuilder) {
