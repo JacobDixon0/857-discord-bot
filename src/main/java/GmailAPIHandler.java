@@ -70,7 +70,6 @@ public class GmailAPIHandler extends Thread {
                     .setApplicationName(APPLICATION_NAME)
                     .build();
 
-            // Print the labels in the user's account.
             String user = "me";
 
             while (true) {
@@ -131,7 +130,7 @@ public class GmailAPIHandler extends Thread {
                 }
 
                 lastSize = messages.size();
-                Thread.sleep(1000);
+                Thread.sleep(2000);
 
             }
 
@@ -154,31 +153,6 @@ public class GmailAPIHandler extends Thread {
 
         return result;
     }
-
-    /*public static void run(String... args) throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-
-        // Print the labels in the user's account.
-        String user = "me";
-
-        ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
-        List<Message> messages = listMessagesResponse.getMessages();
-
-        *//*ListLabelsResponse listResponse = service.users().labels().list(user).execute();
-        List<Label> labels = listResponse.getLabels();
-        if (labels.isEmpty()) {
-            System.out.println("No labels found.");
-        } else {
-            System.out.println("Labels:");
-            for (Label label : labels) {
-                System.out.printf("- %s\n", label.getName());
-            }
-        }*//*
-    }*/
 
     public static List<String> getAttachments(Gmail service, String userId, String messageId)
             throws IOException {

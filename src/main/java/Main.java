@@ -28,6 +28,7 @@ public class Main {
     public static final String ANNOUNCEMENTS_ROLE_ID = "663138202038566924";
     public static final String LOG_CHANNEL_ID = "663166429876584458";
     public static final String ROLE_ASSIGNMENT_MESSAGE_ID = "663167436127993884";
+    public static final String ADMIN_ROLE_ID = "663133216470728714";
     public static final String MEMBER_ROLE_ID = "663133335660265498";
 
     public static String roleMessageId = ROLE_ASSIGNMENT_MESSAGE_ID;
@@ -146,12 +147,11 @@ public class Main {
     }
 
     public static void emailAnnounce(EmailSenderProfile senderProfile, String title, String time, String content, List<String> attachments){
-        String dots = "";
         if (title.length() > 50){
-            dots = "...";
+            title = title.substring(0, 40).trim() + "...";
         }
         jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID)
-                .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857 - \"" + title.substring(0, 40).trim() + dots + "\"").queue();
+                .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857 - \"" + title + "\"").queue();
         jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
         Main.embedAnnouncementLog(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", title);
     }
@@ -166,8 +166,8 @@ public class Main {
         if(content.length() > 1024){
             List<String> contentSections = getChunks(content, 1024);
             embedBuilder.addField("Email Body: ", contentSections.get(0), false);
-            for (String contentSection : contentSections) {
-                embedBuilder.addField("...", contentSection, false);
+            for (int i = 1; i < contentSections.size(); i++) {
+                embedBuilder.addField("...", contentSections.get(i), false);
             }
         } else {
             embedBuilder.addField(new MessageEmbed.Field("Email Body: ", content, false));
@@ -191,10 +191,10 @@ public class Main {
 
     private static List<String> getChunks(String text, int size){
 
-        List<String> string = new ArrayList<>((text.length() + size - 1) / size);
+        List<String> string = new ArrayList<>();
 
-        for(int i = 0; i < text.length(); i+= size){
-            string.add(text.substring(i, Math.min(text.length(), i + size)));
+        for(int i = 0; i < (text.length() / size) + 1; i++){
+            string.add(text.substring(i * 1024, Math.min(text.length(), (i * 1024) + size)));
         }
 
         return string;
