@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -174,12 +175,13 @@ public class GmailAPIHandler extends Thread {
 
                 Base64 base64Url = new Base64(true);
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
-                if(Main.isUnixLike){
-                    FileOutputStream fileOutFile = new FileOutputStream(Main.CACHE_LOCATION + filename);
-                    result.add(formatUrl("https://www.jacobdixon.us/cache/" + filename));
+                if(Main.isUnixLike && new File(Main.CACHE_LOCATION).exists()){
+                    String timestamp = new SimpleDateFormat("yyyy.MM.dd.").format(new Date());
+                    FileOutputStream fileOutFile = new FileOutputStream(Main.CACHE_LOCATION + timestamp + filename);
+                    result.add(formatUrl("https://www.jacobdixon.us/cache/" + timestamp + filename));
                     fileOutFile.write(fileByteArray);
                     fileOutFile.close();
-                    Main.log("Created email attachment cache file: \"" + Main.CACHE_LOCATION + filename + "\".");
+                    Main.log("Created email attachment cache file: \"" + Main.CACHE_LOCATION + timestamp + filename + "\".");
                 } else {
                     result.add("ERROR: Failed to load " + filename);
                 }

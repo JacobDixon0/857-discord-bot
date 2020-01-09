@@ -62,7 +62,8 @@ public class Main {
                 new CommandsContainer.SetRoleMessageCommand(),
                 new CommandsContainer.AnnouncementCommand(),
                 new CommandsContainer.PurgeCommand(),
-                new CommandsContainer.GenericAnnouncementCommand());
+                new CommandsContainer.EventAnnounceCommand(),
+                new CommandsContainer.ModeCommand());
         commandClientBuilder.setPrefix("!");
         commandClientBuilder.setGame(Game.playing(gamePlaying));
         commandClientBuilder.useHelpBuilder(false);
@@ -224,5 +225,7 @@ public class Main {
             System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " ERROR: " + message);
         }
     }
+
+
 
 }

@@ -42,12 +42,12 @@ public class EventHandler extends ListenerAdapter {
     public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
         if(!event.getAuthor().getId().equals(Main.jda.getSelfUser().getId())) {
             Main.embedMessageLog(event.getAuthor(), event.getMessage().getContentDisplay());
+            Main.log("Received private message from \"" + event.getAuthor().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\".");
         }
     }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-
     }
 
     @Override
@@ -56,11 +56,13 @@ public class EventHandler extends ListenerAdapter {
             event.getGuild().getController().addRolesToMember(event.getMember(), event.getGuild().getRoleById(Main.MEMBER_ROLE_ID)).queue();
         }
         Main.embedMemberLog("Member Joined", event.getMember());
+        Main.log("Member joined: \"" + event.getMember() + "\".");
     }
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
         Main.embedMemberLog("Member Left", event.getMember());
+        Main.log("Member left: \"" + event.getMember() + "\".");
     }
 
     @Override
@@ -73,6 +75,7 @@ public class EventHandler extends ListenerAdapter {
                     });
                 });
                 Main.embedRoleLog("Assigned Role", event.getMember(), event.getGuild().getRoleById(role.roleId));
+                Main.log("Assigned role: \"" + event.getGuild().getRoleById(role.roleId).getName() + "\" to: \"" + event.getMember().getEffectiveName() + "\".");
             }
         }
     }
@@ -87,6 +90,7 @@ public class EventHandler extends ListenerAdapter {
                     });
                 });
                 Main.embedRoleLog("Unassigned Role", event.getMember(), event.getGuild().getRoleById(role.roleId));
+                Main.log("Unassigned role: \"" + event.getGuild().getRoleById(role.roleId).getName() + "\" from: \"" + event.getMember().getEffectiveName() + "\".");
             }
         }
     }

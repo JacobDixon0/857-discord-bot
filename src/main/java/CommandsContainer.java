@@ -1,7 +1,9 @@
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 
 import java.text.SimpleDateFormat;
@@ -100,9 +102,9 @@ public class CommandsContainer {
         }
     }
 
-    public static class GenericAnnouncementCommand extends Command {
+    public static class EventAnnounceCommand extends Command {
 
-        GenericAnnouncementCommand() {
+        EventAnnounceCommand() {
             this.name = "eannounce";
             this.help = "[Administrative] posts generic embedded message.";
             this.hidden = true;
@@ -128,4 +130,27 @@ public class CommandsContainer {
             }
         }
     }
+
+    public static class ModeCommand extends Command{
+
+        ModeCommand(){
+            this.name = "mode";
+            this.help = "[Administrative] Sets bot mode.";
+            this.hidden = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            if(event.getArgs() != null && event.getArgs().split(" ")[0] != null) {
+                if (event.getArgs().split(" ")[0].equals("m")) {
+                    Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
+                    Main.jda.getPresence().setGame(Game.playing("Undergoing Maintenance"));
+                } else if (event.getArgs().split(" ")[0].equals("online")){
+                    Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
+                    Main.jda.getPresence().setGame(Game.playing(Main.gamePlaying));
+                }
+            }
+        }
+    }
+
 }
