@@ -58,11 +58,11 @@ public class CommandsContainer {
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MESSAGE_MANAGE)) {
                 try{
-                    event.getChannel().getHistory().retrievePast(Integer.parseInt(event.getArgs()) + 1).complete().forEach(e -> {
+                    event.getChannel().getHistory().retrievePast(Integer.parseInt(event.getArgs()) + 1).complete(true).forEach(e -> {
                         try {
                             e.delete().queue();
                         } catch (Exception e0){
-                            System.err.println("ERROR: error clearing message: \"" + e.getContentDisplay() + "\"");
+                            Main.log("Exception caught attempting to clear message: \"" + e.getContentDisplay() + "\".");
                         }
                     });
                     Main.embedPurgeLog("Cleared " + event.getArgs() + " message(s)", event.getChannel());
@@ -88,10 +88,10 @@ public class CommandsContainer {
 
                 String[] args = event.getArgs().split("%s%");
 
-                if(args.length == 4) {
+                if(args.length == 5) {
                     List<String> attachmentsList = new ArrayList<>();
-                    attachmentsList.add(args[3]);
-                    Main.emailAnnounce(new EmailSenderProfile(args[0], "internal", null), args[1], new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()), args[2], attachmentsList);
+                    attachmentsList.add(args[4]);
+                    Main.emailAnnounce(new EmailSenderProfile(args[0], args[1], null), args[2], new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()), args[3], attachmentsList);
                 } else {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments "  + args.length);
                 }
@@ -103,7 +103,7 @@ public class CommandsContainer {
     public static class GenericAnnouncementCommand extends Command {
 
         GenericAnnouncementCommand() {
-            this.name = "gannounce";
+            this.name = "eannounce";
             this.help = "[Administrative] posts generic embedded message.";
             this.hidden = true;
         }

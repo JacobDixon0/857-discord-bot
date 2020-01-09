@@ -93,10 +93,12 @@ public class GmailAPIHandler extends Thread {
 
                     String formattedDate = date;
 
+                    Main.log("Received email from: \"" + from + "\".");
+
                     try {
                         formattedDate = gmailDateFormat.format(messageDateFormat.parse(date));
                     } catch (Exception e){
-                        System.err.println("encountered error parsing email date");
+                        Main.log(Main.LogPriority.ERROR, "Exception caught while attempting to parse email date.");
                     }
 
                     boolean allowed = false;
@@ -126,6 +128,7 @@ public class GmailAPIHandler extends Thread {
 
                     if (allowed) {
                         Main.emailAnnounce(emailSenderProfile, sub, formattedDate, msgContent, getAttachments(service, user, msg.getId()));
+                        Main.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
                     }
                 }
 
@@ -135,8 +138,8 @@ public class GmailAPIHandler extends Thread {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("welp");
+            Main.log(e);
+            Main.log(Main.LogPriority.ERROR, "Encountered error while handling Gmail API.");
         }
     }
 
@@ -172,10 +175,11 @@ public class GmailAPIHandler extends Thread {
                 Base64 base64Url = new Base64(true);
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
                 if(Main.isUnixLike){
-                    FileOutputStream fileOutFile = new FileOutputStream("/var/www/html/bot-things/attachments-cache/" + filename);
-                    result.add(formatUrl("https://www.jacobdixon.us/bot-things/attachments-cache/" + filename));
+                    FileOutputStream fileOutFile = new FileOutputStream(Main.CACHE_LOCATION + filename);
+                    result.add(formatUrl("https://www.jacobdixon.us/cache/" + filename));
                     fileOutFile.write(fileByteArray);
                     fileOutFile.close();
+                    Main.log("Created email attachment cache file: \"" + Main.CACHE_LOCATION + filename + "\".");
                 } else {
                     result.add("ERROR: Failed to load " + filename);
                 }

@@ -20,7 +20,7 @@ public class Main {
     public static boolean isUnixLike = true;
     public static String hostname = "hostname";
 
-    private static final String TOKEN = "NjYzMTM2ODQzMzgxODY2NTE4.XhEIYg.wOtotE-TllYsFWlMs6JIF3Wk3CQ";
+    private static final String BOT_ACCOUNT_TOKEN = "NjYzMTM2ODQzMzgxODY2NTE4.XhEIYg.wOtotE-TllYsFWlMs6JIF3Wk3CQ";
 
     public static final String ADMIN_ID = "663131245634519040";
     public static final String SERVER_ID = "663131941427609613";
@@ -30,6 +30,8 @@ public class Main {
     public static final String ROLE_ASSIGNMENT_MESSAGE_ID = "663167436127993884";
     public static final String ADMIN_ROLE_ID = "663133216470728714";
     public static final String MEMBER_ROLE_ID = "663133335660265498";
+
+    public static final String CACHE_LOCATION = "/var/www/html/cache/";
 
     public static String roleMessageId = ROLE_ASSIGNMENT_MESSAGE_ID;
     public static String gamePlaying = "Bot Duties";
@@ -66,7 +68,7 @@ public class Main {
         commandClientBuilder.useHelpBuilder(false);
 
         try {
-            jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).addEventListener(eventHandler, commandClientBuilder.build()).buildBlocking();
+            jda = new JDABuilder(AccountType.BOT).setToken(BOT_ACCOUNT_TOKEN).addEventListener(eventHandler, commandClientBuilder.build()).buildBlocking();
             GmailAPIHandler emailHandler = new GmailAPIHandler();
             emailHandler.start();
             embedStartupLog();
@@ -198,6 +200,29 @@ public class Main {
         }
 
         return string;
+    }
+
+    enum LogPriority{
+        INFO, WARNING, ERROR;
+    }
+
+    public static void log(Exception e){
+        System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " EXCEPTION CAUGHT: ");
+        e.printStackTrace();
+    }
+
+    public static void log(String message){
+        log(LogPriority.INFO, message);
+    }
+
+    public static void log(LogPriority priority, String message){
+        if(priority == LogPriority.INFO){
+            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " INFO: " + message);
+        } else if (priority == LogPriority.WARNING){
+            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " WARNING: " + message);
+        } else if (priority == LogPriority.ERROR){
+            System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " ERROR: " + message);
+        }
     }
 
 }
