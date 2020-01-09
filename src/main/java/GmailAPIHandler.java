@@ -29,7 +29,7 @@ public class GmailAPIHandler extends Thread {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-    private static int lastSize = 0;
+    private static String lastId = "0";
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -77,7 +77,8 @@ public class GmailAPIHandler extends Thread {
                 ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
                 List<Message> messages = listMessagesResponse.getMessages();
 
-                if (messages.size() != lastSize && lastSize != 0) {
+                if (!messages.get(0).getId().equals(lastId) && !lastId.equals("0")) {
+
                     Message lastMsg = messages.get(0);
 
                     Message msg = service.users().messages().get(user, lastMsg.getId()).execute();
@@ -113,8 +114,11 @@ public class GmailAPIHandler extends Thread {
                         emailSenderProfile.setSenderAddress(nameMatcher.group(2).trim());
                     }
 
-                    if (to.equals("first857-l@mtu.edu")) {
-                        allowed = true;
+                    for(String dest : Main.knownDestinations){
+                        if(dest.equals(to)){
+                            allowed = true;
+                            break;
+                        }
                     }
 
                     if(!allowed){
@@ -133,7 +137,7 @@ public class GmailAPIHandler extends Thread {
                     }
                 }
 
-                lastSize = messages.size();
+                lastId = messages.get(0).getId();
                 Thread.sleep(2000);
 
             }
@@ -175,13 +179,13 @@ public class GmailAPIHandler extends Thread {
 
                 Base64 base64Url = new Base64(true);
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
-                if(Main.isUnixLike && new File(Main.CACHE_LOCATION).exists()){
+                if(Main.isUnixLike && new File(Main.cacheLocation).exists()){
                     String timestamp = new SimpleDateFormat("yyyy.MM.dd.").format(new Date());
-                    FileOutputStream fileOutFile = new FileOutputStream(Main.CACHE_LOCATION + timestamp + filename);
-                    result.add(formatUrl("https://www.jacobdixon.us/cache/" + timestamp + filename));
+                    FileOutputStream fileOutFile = new FileOutputStream(Main.cacheLocation + timestamp + filename);
+                    result.add(formatUrl("https://" + Main.domain + Main.extCacheLocation + timestamp + filename));
                     fileOutFile.write(fileByteArray);
                     fileOutFile.close();
-                    Main.log("Created email attachment cache file: \"" + Main.CACHE_LOCATION + timestamp + filename + "\".");
+                    Main.log("Created email attachment cache file: \"" + Main.cacheLocation + timestamp + filename + "\".");
                 } else {
                     result.add("ERROR: Failed to load " + filename);
                 }

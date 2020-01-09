@@ -1,0 +1,35 @@
+{
+  "role-assigners": [{
+    "id": "663138202038566924",
+    "emote": "\u2757"
+  },
+    {
+      "id": "663133525595127839",
+      "emote": "\uD83D\uDCBB"
+    },
+    {
+      "id": "663133581475971082",
+      "emote": "\uD83D\uDCF7"
+    },
+    {
+      "id": "663133374097129483",
+      "emote": "\uD83E\uDD16"
+    },
+    {
+      "id": "663133612954222632",
+      "emote": "\uD83C\uDFAE"
+    }
+  ],
+  "approved-senders": [{
+    "name": "Jacob Dixon",
+    "address": "jd@jacobdixon.us",
+    "img-url": "https://lh3.googleusercontent.com/a-/AAuE7mDWDAfX7W_d7M-vC4O1VDWZIDHPZ_ji7b7dze-B=s40"
+  }, {
+    "name": "Christopher Doig",
+    "address": "csdoig@mtu.edu",
+    "img-url": "https://ssl.gstatic.com/ui/v1/icons/mail/profile_mask2.png"
+  }],
+  "approved-destinations": [{
+    "to": "first857-l@mtu.edu"
+  }]
+}

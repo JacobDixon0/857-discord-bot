@@ -1,11 +1,14 @@
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.OnlineStatus;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.MessageEmbed;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import org.json.simple.parser.ParseException;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,26 +26,9 @@ public class CommandsContainer {
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
+            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER) &&
+                    event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.adminRoleId)).contains(event.getMember())) {
                 event.reply(event.getArgs());
-                event.getMessage().addReaction("\u2705").complete();
-            }
-        }
-    }
-
-    public static class SetRoleMessageCommand extends Command {
-
-        SetRoleMessageCommand() {
-            this.name = "srm";
-            this.help = "[Administrative] Sets role assignment message.";
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
-                Main.roleMessageId = event.getArgs();
-                Main.eventHandler.resetRoleAssigner();
                 event.getMessage().addReaction("\u2705").complete();
             }
         }
@@ -71,7 +57,6 @@ public class CommandsContainer {
                 } catch (Exception e){
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 }
-                event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
@@ -119,7 +104,7 @@ public class CommandsContainer {
                 if(args.length == 2) {
                     EmbedBuilder embedBuilder = new EmbedBuilder();
 
-                    embedBuilder.setAuthor(args[0], "https://www.goobisoft.com", "https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678116-calendar-512.png");
+                    embedBuilder.setAuthor(args[0], "https://calendar.google.com/", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Google_Calendar_icon.svg/512px-Google_Calendar_icon.svg.png");
                     embedBuilder.addField(new MessageEmbed.Field("Event", args[1], false));
 
                     event.reply(embedBuilder.build());
@@ -141,14 +126,97 @@ public class CommandsContainer {
 
         @Override
         protected void execute(CommandEvent event) {
-            if(event.getArgs() != null && event.getArgs().split(" ")[0] != null) {
-                if (event.getArgs().split(" ")[0].equals("m")) {
-                    Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
-                    Main.jda.getPresence().setGame(Game.playing("Undergoing Maintenance"));
-                } else if (event.getArgs().split(" ")[0].equals("online")){
-                    Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
-                    Main.jda.getPresence().setGame(Game.playing(Main.gamePlaying));
+            if(event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+                if (event.getArgs() != null && event.getArgs().split(" ")[0] != null) {
+                    if (event.getArgs().split(" ")[0].equals("m")) {
+                        Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
+                        Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
+                        event.getMessage().addReaction("\u2705").complete();
+                    } else if (event.getArgs().split(" ")[0].equals("online")) {
+                        Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
+                        Main.jda.getPresence().setActivity(Activity.playing(Main.status));
+                        event.getMessage().addReaction("\u2705").complete();
+                    }
                 }
+            }
+        }
+    }
+
+    public static class PingCommand extends Command{
+
+        PingCommand(){
+            this.name = "ping";
+            this.help = "Tests bot status";
+            this.hidden = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            event.getMessage().addReaction("\uD83C\uDFD3").complete();
+        }
+    }
+
+    public static class StopCommand extends Command{
+
+        StopCommand(){
+            this.name = "stop";
+            this.help = "Shuts down bot.";
+            this.hidden = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            if(event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+                event.getMessage().addReaction("\u2705").complete();
+                Main.exit(0);
+            }
+        }
+    }
+
+    public static class DebugCommand extends Command{
+
+        DebugCommand(){
+            this.name = "debug";
+            this.help = "Gets bot information.";
+            this.hidden = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            if(event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+                boolean successfulQuery = false;
+                if(event.getArgs().equals("senders")){
+                    StringBuilder s = new StringBuilder();
+                    for(EmailSenderProfile emailSenderProfile : Main.knownSenders){
+                        s.append(emailSenderProfile.getSenderName()).append(" <").append(emailSenderProfile.getSenderAddress()).append(">\n");
+                    }
+                    event.reply(s.toString());
+                    successfulQuery = true;
+                } else if (event.getArgs().equals("destinations")){
+                    StringBuilder s = new StringBuilder();
+                    for(String dest : Main.knownDestinations){
+                        s.append("<").append(dest).append(">").append("\n");
+                    }
+                    event.reply(s.toString());
+                    successfulQuery = true;
+                } else if (event.getArgs().equals("saveconfigs")){
+                    try {
+                        JSONConfigManager.saveConfigs(Main.configLocation);
+                        successfulQuery = true;
+                    } catch (ParseException | FileNotFoundException e) {
+                        Main.log(e);
+                        Main.log(Main.LogPriority.ERROR, "Failed to save configs.");
+                    }
+                } else if (event.getArgs().equals("loadconfigs")){
+                    try {
+                        Main.loadConfigs();
+                        successfulQuery = true;
+                    } catch (IOException e) {
+                        Main.log(e);
+                        Main.log(Main.LogPriority.ERROR, "Failed to load configs.");
+                    }
+                }
+                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
         }
     }

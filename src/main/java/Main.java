@@ -1,80 +1,172 @@
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
-import net.dv8tion.jda.core.AccountType;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.JDA;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.api.AccountType;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.*;
+import org.json.simple.parser.ParseException;
 
 import javax.security.auth.login.LoginException;
 import java.awt.Color;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 
     public static final String OS_NAME = System.getProperty("os.name").toLowerCase();
+    public static final String RUN_DIR = System.getProperty("user.dir");
+
     public static boolean isUnixLike = true;
     public static String hostname = "hostname";
+    static String botTokenID;
 
-    private static final String BOT_ACCOUNT_TOKEN = "NjYzMTM2ODQzMzgxODY2NTE4.XhEIYg.wOtotE-TllYsFWlMs6JIF3Wk3CQ";
+    public static String adminId;
+    public static String serverId;
+    public static String announcementsChannelId;
+    public static String logChannelId;
+    public static String roleAssignmentMessageId;
+    public static String announcementsRoleId;
+    public static String adminRoleId;
+    public static String botAdminRoleId;
+    public static String memberRoleId;
+    public static String domain;
 
-    public static final String ADMIN_ID = "663131245634519040";
-    public static final String SERVER_ID = "663131941427609613";
-    public static final String ANNOUNCEMENT_CHANNEL_ID = "663172193886142486";
-    public static final String ANNOUNCEMENTS_ROLE_ID = "663138202038566924";
-    public static final String LOG_CHANNEL_ID = "663166429876584458";
-    public static final String ROLE_ASSIGNMENT_MESSAGE_ID = "663167436127993884";
-    public static final String ADMIN_ROLE_ID = "663133216470728714";
-    public static final String MEMBER_ROLE_ID = "663133335660265498";
+    public static String cacheLocation = RUN_DIR + "/cache/";
+    public static String extCacheLocation = "/cache/";
+    public static String configLocation = RUN_DIR + "/config.json";
+    public static String roleAssignersConfigLocation = RUN_DIR + "/ext-config.json";
 
-    public static final String CACHE_LOCATION = "/var/www/html/cache/";
-
-    public static String roleMessageId = ROLE_ASSIGNMENT_MESSAGE_ID;
-    public static String gamePlaying = "Bot Duties";
+    public static String status = "Bot Stuff";
 
     public static EventHandler eventHandler = new EventHandler();
     public static CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
 
     public static JDA jda;
 
-    public static final ArrayList<EmailSenderProfile> knownSenders = new ArrayList<>();
+    public static ArrayList<EmailSenderProfile> knownSenders = new ArrayList<>();
+    public static ArrayList<String> knownDestinations = new ArrayList<>();
+    public static ArrayList<RoleAssigner> roleAssigners = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
 
-        knownSenders.add(new EmailSenderProfile("Jacob Dixon", "jd@jacobdixon.us", "https://lh3.googleusercontent.com/a-/AAuE7mDWDAfX7W_d7M-vC4O1VDWZIDHPZ_ji7b7dze-B=s40"));
-        knownSenders.add(new EmailSenderProfile("Christopher Doig", "csdoig@mtu.edu", "https://ssl.gstatic.com/ui/v1/icons/mail/profile_mask2.png"));
+        loadConfigs();
 
-        if(OS_NAME.contains("win")){
-            isUnixLike = false;
-            hostname = execReadToString("hostname");
-        } else if (OS_NAME.contains("nix") || OS_NAME.contains("nux") || OS_NAME.contains("mac os x")){
-            isUnixLike = true;
-            hostname = execReadToString("hostname");
-        }
-
-        commandClientBuilder.setOwnerId(ADMIN_ID);
+        commandClientBuilder.setOwnerId(adminId);
         commandClientBuilder.addCommands(
                 new CommandsContainer.SayCommand(),
-                new CommandsContainer.SetRoleMessageCommand(),
                 new CommandsContainer.AnnouncementCommand(),
                 new CommandsContainer.PurgeCommand(),
                 new CommandsContainer.EventAnnounceCommand(),
-                new CommandsContainer.ModeCommand());
+                new CommandsContainer.ModeCommand(),
+                new CommandsContainer.PingCommand(),
+                new CommandsContainer.StopCommand(),
+                new CommandsContainer.DebugCommand());
         commandClientBuilder.setPrefix("!");
-        commandClientBuilder.setGame(Game.playing(gamePlaying));
+        commandClientBuilder.setActivity(Activity.playing(status));
         commandClientBuilder.useHelpBuilder(false);
 
         try {
-            jda = new JDABuilder(AccountType.BOT).setToken(BOT_ACCOUNT_TOKEN).addEventListener(eventHandler, commandClientBuilder.build()).buildBlocking();
+            jda = new JDABuilder(AccountType.BOT).setToken(botTokenID).addEventListeners(eventHandler, commandClientBuilder.build()).build().awaitReady();
             GmailAPIHandler emailHandler = new GmailAPIHandler();
             emailHandler.start();
             embedStartupLog();
-        } catch (InterruptedException | LoginException e0) {
-            e0.printStackTrace();
+            log("Started in " + RUN_DIR + " on " + hostname + " running " + OS_NAME + ".");
+        } catch (LoginException | InterruptedException e0) {
+            log(e0);
+            exit(-1, true);
+        }
+    }
+
+    public static void loadConfigs() throws IOException {
+        try {
+            JSONConfigManager.loadRoleAssigners(roleAssignersConfigLocation);
+            JSONConfigManager.loadEmailConfigs(roleAssignersConfigLocation);
+        } catch (ParseException e) {
+            log(e);
+            log(LogPriority.ERROR, "Exception was caught parsing role assigners JSON file.");
+        }
+
+        try {
+            if(!new File(configLocation).exists()){
+                log(LogPriority.FATAL_ERROR, "No config file exists.");
+                exit(-1, true);
+            }
+            Scanner configReader = new Scanner(new File(configLocation));
+
+            // yes, i know. stop cyberbullying me
+            while (configReader.hasNextLine()) {
+                String line = configReader.nextLine();
+                Matcher tokenMatcher = Pattern.compile("^\\s+?\"token\": \"(.+)\",?$").matcher(line);
+                Matcher cacheLocationMatcher = Pattern.compile("^\\s+?\"cache-location\": \"(.+)\",?$").matcher(line);
+                Matcher adminIdMatcher = Pattern.compile("^\\s+?\"admin-id\": \"(.+)\",?$").matcher(line);
+                Matcher serverIdMatcher = Pattern.compile("^\\s+?\"server-id\": \"(.+)\",?$").matcher(line);
+                Matcher announcementsChannelIdMatcher = Pattern.compile("^\\s+?\"announcements-channel-id\": \"(.+)\",?$").matcher(line);
+                Matcher logChannelIdMatcher = Pattern.compile("^\\s+?\"log-channel-id\": \"(.+)\",?$").matcher(line);
+                Matcher roleAssignmentMessageIdMatcher = Pattern.compile("^\\s+?\"role-assignment-message-id\": \"(.+)\",?$").matcher(line);
+                Matcher announcementsRoleIdMatcher = Pattern.compile("^\\s+?\"announcements-role-id\": \"(.+)\",?$").matcher(line);
+                Matcher adminRoleIdMatcher = Pattern.compile("^\\s+?\"admin-role-id\": \"(.+)\",?$").matcher(line);
+                Matcher botAdminRoleIdMatcher = Pattern.compile("^\\s+?\"bot-admin-role-id\": \"(.+)\",?$").matcher(line);
+                Matcher memberRoleIdMatcher = Pattern.compile("^\\s+?\"member-role-id\": \"(.+)\",?$").matcher(line);
+                Matcher statusMatcher = Pattern.compile("^\\s+?\"status\": \"(.+)\",?$").matcher(line);
+                Matcher domainMatcher = Pattern.compile("^\\s+?\"domain\": \"(.+)\",?$").matcher(line);
+                Matcher extCacheLocationMatcher = Pattern.compile("^\\s+?\"ext-cache-location\": \"(.+)\",?$").matcher(line);
+
+                if (tokenMatcher.find()) {
+                    botTokenID = tokenMatcher.group(1);
+                } else if (cacheLocationMatcher.find()){
+                    cacheLocation = cacheLocationMatcher.group(1);
+                } else if (adminIdMatcher.find()){
+                    adminId = adminIdMatcher.group(1);
+                } else if (serverIdMatcher.find()){
+                    serverId = serverIdMatcher.group(1);
+                } else if (announcementsChannelIdMatcher.find()){
+                    announcementsChannelId = announcementsChannelIdMatcher.group(1);
+                } else if (logChannelIdMatcher.find()){
+                    logChannelId = logChannelIdMatcher.group(1);
+                } else if (roleAssignmentMessageIdMatcher.find()){
+                    roleAssignmentMessageId = roleAssignmentMessageIdMatcher.group(1);
+                } else if (announcementsRoleIdMatcher.find()){
+                    announcementsRoleId = announcementsRoleIdMatcher.group(1);
+                } else if (adminRoleIdMatcher.find()){
+                    adminRoleId = adminRoleIdMatcher.group(1);
+                } else if (botAdminRoleIdMatcher.find()){
+                    botAdminRoleId = botAdminRoleIdMatcher.group(1);
+                } else if (memberRoleIdMatcher.find()){
+                    memberRoleId = memberRoleIdMatcher.group(1);
+                } else if (statusMatcher.find()){
+                    status = statusMatcher.group(1);
+                } else if (domainMatcher.find()){
+                    domain = domainMatcher.group(1);
+                } else if (extCacheLocationMatcher.find()){
+                    extCacheLocation = extCacheLocationMatcher.group(1);
+                }
+            }
+            configReader.close();
+            if(botTokenID == null) {
+                log(LogPriority.ERROR, "Invalid token file.");
+                exit(-1, true);
+            }
+            log("Successfully loaded Discord bot token file.");
+        } catch (Exception e){
+            log(e);
+            log(LogPriority.ERROR, "Encountered error attempting to read token file.");
+            exit(-1, true);
+        }
+
+        if(OS_NAME.contains("win")){
+            isUnixLike = false;
+            hostname = execReadToString("hostname").replace("\n", "").replace("\r", "");
+        } else if (OS_NAME.contains("nix") || OS_NAME.contains("nux") || OS_NAME.contains("mac os x")){
+            isUnixLike = true;
+            hostname = execReadToString("hostname").replace("\n", "").replace("\r", "");
         }
     }
 
@@ -92,7 +184,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Role", "<@&" + role.getId() + ">", true));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
-        jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
+        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedPurgeLog(String title, MessageChannel channel){
@@ -102,7 +194,7 @@ public class Main {
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
-        jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
+        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedMemberLog(String title, Member member){
@@ -112,7 +204,7 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
-        jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
+        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedAnnouncementLog(String sender, String subject){
@@ -122,9 +214,9 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Sender", sender, false));
         embedBuilder.addField(new MessageEmbed.Field("Subject", subject, false));
-        embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + ANNOUNCEMENT_CHANNEL_ID + ">", false));
+        embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + announcementsChannelId + ">", false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
-        jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
+        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedStartupLog(){
@@ -134,7 +226,7 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host `" + hostname + "`", false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
-        jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
+        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedMessageLog(User auth, String content){
@@ -146,16 +238,16 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Message", content, false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://cdn.discordapp.com/embed/avatars/0.png");
 
-        jda.getGuildById(SERVER_ID).getTextChannelById(LOG_CHANNEL_ID).sendMessage(embedBuilder.build()).queue();
+        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void emailAnnounce(EmailSenderProfile senderProfile, String title, String time, String content, List<String> attachments){
         if (title.length() > 50){
             title = title.substring(0, 40).trim() + "...";
         }
-        jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID)
-                .sendMessage("<@&" + Main.ANNOUNCEMENTS_ROLE_ID + "> Email announcement posted for 857 - \"" + title + "\"").queue();
-        jda.getGuildById(SERVER_ID).getTextChannelById(ANNOUNCEMENT_CHANNEL_ID).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
+        jda.getGuildById(serverId).getTextChannelById(announcementsChannelId)
+                .sendMessage("<@&" + Main.announcementsRoleId + "> Email announcement posted for 857 - \"" + title + "\"").queue();
+        jda.getGuildById(serverId).getTextChannelById(announcementsChannelId).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
         Main.embedAnnouncementLog(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", title);
     }
 
@@ -184,16 +276,15 @@ public class Main {
             embedBuilder.addField(new MessageEmbed.Field("Attached: ", sb.toString(), false));
         }
         if (time.equals("x")) {
-            embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://www.jacobdixon.us/res/img/gmail-icon.png");
+            embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png");
         } else {
-            embedBuilder.setFooter(time, "https://www.jacobdixon.us/res/img/gmail-icon.png");
+            embedBuilder.setFooter(time, "https://upload.wikimedia.org/wikipedia/commons/4/4e/Gmail_Icon.png");
         }
 
         return embedBuilder.build();
     }
 
     private static List<String> getChunks(String text, int size){
-
         List<String> string = new ArrayList<>();
 
         for(int i = 0; i < (text.length() / size) + 1; i++){
@@ -204,7 +295,7 @@ public class Main {
     }
 
     enum LogPriority{
-        INFO, WARNING, ERROR;
+        INFO, WARNING, ERROR, FATAL_ERROR;
     }
 
     public static void log(Exception e){
@@ -223,9 +314,35 @@ public class Main {
             System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " WARNING: " + message);
         } else if (priority == LogPriority.ERROR){
             System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " ERROR: " + message);
+        } else if (priority == LogPriority.FATAL_ERROR){
+            System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " FATAL ERROR: " + message);
         }
     }
 
+    public static void exit(){
+        exit(0, false);
+    }
 
+    public static void exit(int status){
+        exit(status, false);
+    }
+
+    public static void exit(int status, boolean force){
+        if(!force){
+            jda.shutdown();
+            try {
+                JSONConfigManager.saveConfigs(configLocation);
+            } catch (FileNotFoundException | ParseException e) {
+                log(e);
+                log(LogPriority.ERROR, "Failed to save configurations before exiting.");
+            }
+        }
+        if(status == 0){
+            log("Exiting...");
+        } else {
+            log(LogPriority.ERROR, "Exiting due to runtime error...");
+        }
+        System.exit(status);
+    }
 
 }

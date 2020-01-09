@@ -1,42 +1,12 @@
-import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
-import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
-import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
-import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
+import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class EventHandler extends ListenerAdapter {
-
-    class RoleAssigner{
-        String messageId;
-        String roleId;
-        String emote;
-
-        public RoleAssigner(String messageId, String roleId, String emote) {
-            this.messageId = messageId;
-            this.roleId = roleId;
-            this.emote = emote;
-        }
-    }
-
-    private RoleAssigner[] roles = new RoleAssigner[]{
-      new RoleAssigner(Main.roleMessageId, "663138202038566924", "\u2757"),
-            new RoleAssigner(Main.roleMessageId, "663133525595127839", "\uD83D\uDCBB"),
-            new RoleAssigner(Main.roleMessageId, "663133581475971082", "\uD83D\uDCF7"),
-            new RoleAssigner(Main.roleMessageId, "663133374097129483", "\uD83E\uDD16"),
-            new RoleAssigner(Main.roleMessageId, "663133612954222632", "\uD83C\uDFAE")
-    };
-
-    public void resetRoleAssigner(){
-        roles = new RoleAssigner[]{
-                new RoleAssigner(Main.roleMessageId, "663138202038566924", "\u2757"),
-                new RoleAssigner(Main.roleMessageId, "663133525595127839", "\uD83D\uDCBB"),
-                new RoleAssigner(Main.roleMessageId, "663133581475971082", "\uD83D\uDCF7"),
-                new RoleAssigner(Main.roleMessageId, "663133374097129483", "\uD83E\uDD16"),
-                new RoleAssigner(Main.roleMessageId, "663133612954222632", "\uD83C\uDFAE")
-        };
-    }
 
     @Override
     public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
@@ -52,8 +22,10 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        if(event.getGuild().getId().equals(Main.SERVER_ID)) {
-            event.getGuild().getController().addRolesToMember(event.getMember(), event.getGuild().getRoleById(Main.MEMBER_ROLE_ID)).queue();
+        if(event.getGuild().getId().equals(Main.serverId)) {
+            if(event.getGuild().getId().equals(Main.serverId)) {
+                event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(Main.memberRoleId)).queue();
+            }
         }
         Main.embedMemberLog("Member Joined", event.getMember());
         Main.log("Member joined: \"" + event.getMember() + "\".");
@@ -67,30 +39,34 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
-        for(RoleAssigner role : roles){
-            if(event.getMessageId().equals(role.messageId) && event.getReactionEmote().getName().equals(role.emote)){
-                event.getGuild().getController().addRolesToMember(event.getGuild().getMemberById(event.getUser().getId()), event.getGuild().getRoleById(role.roleId)).queue(success -> {
-                    event.getMember().getUser().openPrivateChannel().queue(privateChannel -> {
-                        privateChannel.sendMessage("Assigned Role: " + event.getGuild().getRoleById(role.roleId).getName()).queue();
+        for(RoleAssigner role : Main.roleAssigners){
+            if(event.getMessageId().equals(Main.roleAssignmentMessageId) && event.getReactionEmote().getEmoji().equals(role.getEmote())){
+                if(event.getGuild().getId().equals(Main.serverId)) {
+                    event.getGuild().addRoleToMember(event.getGuild().getMemberById(event.getUser().getId()), event.getGuild().getRoleById(role.getRoleId())).queue(success -> {
+                        event.getMember().getUser().openPrivateChannel().queue(privateChannel -> {
+                            privateChannel.sendMessage("Assigned Role: " + event.getGuild().getRoleById(role.getRoleId()).getName()).queue();
+                        });
                     });
-                });
-                Main.embedRoleLog("Assigned Role", event.getMember(), event.getGuild().getRoleById(role.roleId));
-                Main.log("Assigned role: \"" + event.getGuild().getRoleById(role.roleId).getName() + "\" to: \"" + event.getMember().getEffectiveName() + "\".");
+                    Main.embedRoleLog("Assigned Role", event.getMember(), event.getGuild().getRoleById(role.getRoleId()));
+                    Main.log("Assigned role: \"" + event.getGuild().getRoleById(role.getRoleId()).getName() + "\" to: \"" + event.getMember().getEffectiveName() + "\".");
+                }
             }
         }
     }
 
     @Override
     public void onGuildMessageReactionRemove(GuildMessageReactionRemoveEvent event) {
-        for(RoleAssigner role : roles){
-            if(event.getMessageId().equals(role.messageId) && event.getReactionEmote().getName().equals(role.emote)){
-                event.getGuild().getController().removeRolesFromMember(event.getGuild().getMemberById(event.getUser().getId()), event.getGuild().getRoleById(role.roleId)).queue(success -> {
-                    event.getMember().getUser().openPrivateChannel().queue(privateChannel -> {
-                        privateChannel.sendMessage("Removed Role: " + event.getGuild().getRoleById(role.roleId).getName()).queue();
+        for(RoleAssigner role : Main.roleAssigners){
+            if(event.getMessageId().equals(Main.roleAssignmentMessageId) && event.getReactionEmote().getEmoji().equals(role.getEmote())){
+                if(event.getGuild().getId().equals(Main.serverId)) {
+                    event.getGuild().removeRoleFromMember(event.getGuild().getMemberById(event.getUser().getId()), event.getGuild().getRoleById(role.getRoleId())).queue(success -> {
+                        event.getMember().getUser().openPrivateChannel().queue(privateChannel -> {
+                            privateChannel.sendMessage("Removed Role: " + event.getGuild().getRoleById(role.getRoleId()).getName()).queue();
+                        });
                     });
-                });
-                Main.embedRoleLog("Unassigned Role", event.getMember(), event.getGuild().getRoleById(role.roleId));
-                Main.log("Unassigned role: \"" + event.getGuild().getRoleById(role.roleId).getName() + "\" from: \"" + event.getMember().getEffectiveName() + "\".");
+                    Main.embedRoleLog("Unassigned Role", event.getMember(), event.getGuild().getRoleById(role.getRoleId()));
+                    Main.log("Unassigned role: \"" + event.getGuild().getRoleById(role.getRoleId()).getName() + "\" from: \"" + event.getMember().getEffectiveName() + "\".");
+                }
             }
         }
     }
