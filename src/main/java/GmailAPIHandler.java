@@ -30,6 +30,9 @@ public class GmailAPIHandler extends Thread {
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
     private static String lastId = "0";
+    private static boolean running = false;
+    private static boolean processing = false;
+    private static int exCount = 0;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -73,14 +76,17 @@ public class GmailAPIHandler extends Thread {
 
             String user = "me";
 
-            while (true) {
+            running = true;
+
+            while (running) {
+                processing = true;
+
                 ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
                 List<Message> messages = listMessagesResponse.getMessages();
 
                 if (!messages.get(0).getId().equals(lastId) && !lastId.equals("0")) {
 
                     Message lastMsg = messages.get(0);
-
                     Message msg = service.users().messages().get(user, lastMsg.getId()).execute();
 
                     String msgContent = getContent(msg);
@@ -115,7 +121,7 @@ public class GmailAPIHandler extends Thread {
                     }
 
                     for(String dest : Main.knownDestinations){
-                        if(dest.equals(to)){
+                        if(to.contains(dest)){
                             allowed = true;
                             break;
                         }
@@ -132,24 +138,46 @@ public class GmailAPIHandler extends Thread {
                     }
 
                     if (allowed) {
-                        Main.emailAnnounce(emailSenderProfile, sub, formattedDate, msgContent, getAttachments(service, user, msg.getId()));
+                        String content = formatMessage(msgContent);
+                        List<String> attachments = getAttachments(service, user, msg.getId());
+
+                        Main.emailAnnounce(emailSenderProfile, sub, formattedDate, content, attachments);
                         Main.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
                     }
                 }
 
                 lastId = messages.get(0).getId();
-                Thread.sleep(2000);
-
+                if(running) {
+                    Thread.sleep(4000);
+                }
+                processing = false;
             }
 
         } catch (Exception e) {
             Main.log(e);
             Main.log(Main.LogPriority.ERROR, "Encountered error while handling Gmail API.");
+            if(exCount++ < 5){
+                Main.log(Main.LogPriority.ERROR, "Retrying Gmail API Handler");
+                restart();
+            }
         }
     }
 
-    private static String headerValueGetterThing(String name, List<MessagePartHeader> headers) {
+    public void restart(){
+        running = false;
+        while (processing){}
 
+        try {
+            this.join();
+            Main.emailHandler.start();
+        } catch (InterruptedException e) {
+            Main.log(e);
+            Main.log(Main.LogPriority.ERROR, "Could not join Gmail API thread.");
+        }
+
+    }
+
+    private static String headerValueGetterThing(String name, List<MessagePartHeader> headers) {
         String result = "";
 
         for (MessagePartHeader mph : headers) {
@@ -198,13 +226,19 @@ public class GmailAPIHandler extends Thread {
         return s.replaceAll(" ", "%20");
     }
 
+    public static String formatMessage(String s){
+        for(String filter : Main.emailFilters){
+            s = Pattern.compile(filter, Pattern.DOTALL).matcher(s).replaceAll("");
+        }
+        return s;
+    }
+
     public static String getContent(Message message) {
         StringBuilder stringBuilder = new StringBuilder();
 
         getPlainTextFromMessageParts(message.getPayload().getParts(), stringBuilder);
         byte[] bodyBytes = Base64.decodeBase64(stringBuilder.toString());
-        String text = new String(bodyBytes, StandardCharsets.UTF_8);
-        return text;
+        return new String(bodyBytes, StandardCharsets.UTF_8);
     }
 
     private static void getPlainTextFromMessageParts(List<MessagePart> messageParts, StringBuilder stringBuilder) {

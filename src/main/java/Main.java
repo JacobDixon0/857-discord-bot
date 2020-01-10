@@ -54,6 +54,9 @@ public class Main {
     public static ArrayList<EmailSenderProfile> knownSenders = new ArrayList<>();
     public static ArrayList<String> knownDestinations = new ArrayList<>();
     public static ArrayList<RoleAssigner> roleAssigners = new ArrayList<>();
+    public static ArrayList<String> emailFilters = new ArrayList<>();
+
+    public static GmailAPIHandler emailHandler = new GmailAPIHandler();
 
     public static void main(String[] args) throws IOException {
 
@@ -75,7 +78,6 @@ public class Main {
 
         try {
             jda = new JDABuilder(AccountType.BOT).setToken(botTokenID).addEventListeners(eventHandler, commandClientBuilder.build()).build().awaitReady();
-            GmailAPIHandler emailHandler = new GmailAPIHandler();
             emailHandler.start();
             embedStartupLog();
             log("Started in " + RUN_DIR + " on " + hostname + " running " + OS_NAME + ".");
@@ -83,6 +85,11 @@ public class Main {
             log(e0);
             exit(-1, true);
         }
+    }
+
+    public static void restartGmailAPI(){
+        Main.log("Restarting Gmail API.");
+        emailHandler.restart();
     }
 
     public static void loadConfigs() throws IOException {

@@ -16,29 +16,45 @@ public class JSONConfigManager {
         JSONObject jsonObject = (JSONObject) obj;
         JSONArray approvedSenders = (JSONArray) jsonObject.get("approved-senders");
 
-        for (Object approvedSender : approvedSenders) {
-            EmailSenderProfile esp = new EmailSenderProfile(null, null, null);
-            for (Object o : ((Map) approvedSender).entrySet()) {
-                Map.Entry pair = (Map.Entry) o;
-                if(pair.getKey().equals("name")){
-                    esp.setSenderName(pair.getValue().toString());
-                } else if (pair.getKey().equals("address")){
-                    esp.setSenderAddress(pair.getValue().toString());
-                } else if (pair.getKey().equals("img-url")){
-                    esp.setProfileImageUrl(pair.getValue().toString());
+        if(approvedSenders != null) {
+            for (Object approvedSender : approvedSenders) {
+                EmailSenderProfile esp = new EmailSenderProfile(null, null, null);
+                for (Object o : ((Map) approvedSender).entrySet()) {
+                    Map.Entry pair = (Map.Entry) o;
+                    if (pair.getKey().equals("name")) {
+                        esp.setSenderName(pair.getValue().toString());
+                    } else if (pair.getKey().equals("address")) {
+                        esp.setSenderAddress(pair.getValue().toString());
+                    } else if (pair.getKey().equals("img-url")) {
+                        esp.setProfileImageUrl(pair.getValue().toString());
+                    }
                 }
+                Main.knownSenders.add(esp);
             }
-            Main.knownSenders.add(esp);
         }
 
         JSONArray approvedDestinations = (JSONArray) jsonObject.get("approved-destinations");
 
-        for(Object approvedDest : approvedDestinations){
-            String s = "";
-            for(Object o : ((Map) approvedDest).entrySet()){
-                Map.Entry pair = (Map.Entry) o;
-                if(pair.getKey().equals("to")){
-                    Main.knownDestinations.add(pair.getValue().toString());
+        if (approvedDestinations != null) {
+            for (Object approvedDest : approvedDestinations) {
+                for (Object o : ((Map) approvedDest).entrySet()) {
+                    Map.Entry pair = (Map.Entry) o;
+                    if (pair.getKey().equals("to")) {
+                        Main.knownDestinations.add(pair.getValue().toString());
+                    }
+                }
+            }
+        }
+
+        JSONArray emailFilters = (JSONArray) jsonObject.get("message-filters");
+
+        if (emailFilters != null) {
+            for (Object filter : emailFilters) {
+                for (Object o : ((Map) filter).entrySet()) {
+                    Map.Entry pair = (Map.Entry) o;
+                    if (pair.getKey().equals("filter")) {
+                        Main.emailFilters.add(pair.getValue().toString());
+                    }
                 }
             }
         }
@@ -56,9 +72,9 @@ public class JSONConfigManager {
             RoleAssigner ra = new RoleAssigner(null, null);
             for (Object o : ((Map) roleAssigner).entrySet()) {
                 Map.Entry pair = (Map.Entry) o;
-                if(pair.getKey().equals("id")){
+                if (pair.getKey().equals("id")) {
                     ra.setRoleId(pair.getValue().toString());
-                } else if (pair.getKey().equals("emote")){
+                } else if (pair.getKey().equals("emote")) {
                     ra.setEmote(pair.getValue().toString());
                 }
             }

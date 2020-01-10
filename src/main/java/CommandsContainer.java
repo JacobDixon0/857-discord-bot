@@ -45,16 +45,16 @@ public class CommandsContainer {
         @Override
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MESSAGE_MANAGE)) {
-                try{
+                try {
                     event.getChannel().getHistory().retrievePast(Integer.parseInt(event.getArgs()) + 1).complete(true).forEach(e -> {
                         try {
                             e.delete().queue();
-                        } catch (Exception e0){
+                        } catch (Exception e0) {
                             Main.log("Exception caught attempting to clear message: \"" + e.getContentDisplay() + "\".");
                         }
                     });
                     Main.embedPurgeLog("Cleared " + event.getArgs() + " message(s)", event.getChannel());
-                } catch (Exception e){
+                } catch (Exception e) {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 }
             }
@@ -75,12 +75,12 @@ public class CommandsContainer {
 
                 String[] args = event.getArgs().split("%s%");
 
-                if(args.length == 5) {
+                if (args.length == 5) {
                     List<String> attachmentsList = new ArrayList<>();
                     attachmentsList.add(args[4]);
                     Main.emailAnnounce(new EmailSenderProfile(args[0], args[1], null), args[2], new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()), args[3], attachmentsList);
                 } else {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments "  + args.length);
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments " + args.length);
                 }
                 event.getMessage().addReaction("\u2705").complete();
             }
@@ -101,7 +101,7 @@ public class CommandsContainer {
 
                 String[] args = event.getArgs().split("%s%");
 
-                if(args.length == 2) {
+                if (args.length == 2) {
                     EmbedBuilder embedBuilder = new EmbedBuilder();
 
                     embedBuilder.setAuthor(args[0], "https://calendar.google.com/", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Google_Calendar_icon.svg/512px-Google_Calendar_icon.svg.png");
@@ -116,9 +116,9 @@ public class CommandsContainer {
         }
     }
 
-    public static class ModeCommand extends Command{
+    public static class ModeCommand extends Command {
 
-        ModeCommand(){
+        ModeCommand() {
             this.name = "mode";
             this.help = "[Administrative] Sets bot mode.";
             this.hidden = true;
@@ -126,7 +126,7 @@ public class CommandsContainer {
 
         @Override
         protected void execute(CommandEvent event) {
-            if(event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
                 if (event.getArgs() != null && event.getArgs().split(" ")[0] != null) {
                     if (event.getArgs().split(" ")[0].equals("m")) {
                         Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
@@ -142,9 +142,9 @@ public class CommandsContainer {
         }
     }
 
-    public static class PingCommand extends Command{
+    public static class PingCommand extends Command {
 
-        PingCommand(){
+        PingCommand() {
             this.name = "ping";
             this.help = "Tests bot status";
             this.hidden = true;
@@ -156,9 +156,9 @@ public class CommandsContainer {
         }
     }
 
-    public static class StopCommand extends Command{
+    public static class StopCommand extends Command {
 
-        StopCommand(){
+        StopCommand() {
             this.name = "stop";
             this.help = "Shuts down bot.";
             this.hidden = true;
@@ -166,16 +166,16 @@ public class CommandsContainer {
 
         @Override
         protected void execute(CommandEvent event) {
-            if(event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
                 event.getMessage().addReaction("\u2705").complete();
                 Main.exit(0);
             }
         }
     }
 
-    public static class DebugCommand extends Command{
+    public static class DebugCommand extends Command {
 
-        DebugCommand(){
+        DebugCommand() {
             this.name = "debug";
             this.help = "Gets bot information.";
             this.hidden = true;
@@ -183,38 +183,43 @@ public class CommandsContainer {
 
         @Override
         protected void execute(CommandEvent event) {
-            if(event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
                 boolean successfulQuery = false;
-                if(event.getArgs().equals("senders")){
+                if (event.getArgs().equals("senders")) {
                     StringBuilder s = new StringBuilder();
-                    for(EmailSenderProfile emailSenderProfile : Main.knownSenders){
+                    for (EmailSenderProfile emailSenderProfile : Main.knownSenders) {
                         s.append(emailSenderProfile.getSenderName()).append(" <").append(emailSenderProfile.getSenderAddress()).append(">\n");
                     }
                     event.reply(s.toString());
                     successfulQuery = true;
-                } else if (event.getArgs().equals("destinations")){
+                } else if (event.getArgs().equals("destinations")) {
                     StringBuilder s = new StringBuilder();
-                    for(String dest : Main.knownDestinations){
+                    for (String dest : Main.knownDestinations) {
                         s.append("<").append(dest).append(">").append("\n");
                     }
                     event.reply(s.toString());
                     successfulQuery = true;
-                } else if (event.getArgs().equals("saveconfigs")){
+                } else if (event.getArgs().equals("saveconfigs")) {
                     try {
                         JSONConfigManager.saveConfigs(Main.configLocation);
                         successfulQuery = true;
+                        Main.log("Saved config file " + Main.configLocation);
                     } catch (ParseException | FileNotFoundException e) {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to save configs.");
                     }
-                } else if (event.getArgs().equals("loadconfigs")){
+                } else if (event.getArgs().equals("loadconfigs")) {
                     try {
                         Main.loadConfigs();
                         successfulQuery = true;
+                        Main.log("Loaded config file " + Main.configLocation);
                     } catch (IOException e) {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to load configs.");
                     }
+                } else if (event.getArgs().equals("restartgmailapi")) {
+                    Main.restartGmailAPI();
+                    successfulQuery = true;
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }

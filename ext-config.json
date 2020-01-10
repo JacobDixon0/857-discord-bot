@@ -31,5 +31,8 @@
   }],
   "approved-destinations": [{
     "to": "first857-l@mtu.edu"
+  }],
+  "message-filters": [{
+    "filter": "[\\n]+--.+"
   }]
 }
