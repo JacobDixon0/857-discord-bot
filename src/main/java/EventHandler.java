@@ -39,7 +39,6 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (!event.getAuthor().isBot()) {
-            Main.log("\n>>>>\n");
 
             boolean allowed = true;
 
@@ -71,8 +70,8 @@ public class EventHandler extends ListenerAdapter {
                 event.getAuthor().openPrivateChannel().queue(privateChannel -> {
                     privateChannel.sendMessage("Your message: \"" + message.replaceAll(finalViolatingPhrase, "`" + finalViolatingPhrase1 + "`") + "\" was automatically removed for violating the guild's content policy. If this was a mistake, please contact an admin.").queue();
                 });
+                Main.embedFilterLog(event.getMember(), event.getChannel(), message, violatingPhrase);
             }
-            Main.log("\n<<<<\n");
         }
     }
 

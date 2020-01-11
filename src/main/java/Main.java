@@ -247,6 +247,18 @@ public class Main {
         jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
+    public static void embedFilterLog(Member member, MessageChannel channel, String message, String violation) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+
+        embedBuilder.setTitle("Filtered Message");
+        embedBuilder.setColor(Color.RED);
+        embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
+        embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
+        embedBuilder.addField(new MessageEmbed.Field("Message", message.replaceAll(violation, "`" + violation + "`"), false));
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://www.jacobdixon.us/cache/res/discord-logo-blue.png");
+        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+    }
+
     public static void embedMemberLog(String title, Member member) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
