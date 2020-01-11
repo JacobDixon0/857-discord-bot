@@ -117,7 +117,7 @@ public class CommandsContainer {
                 if (args.length == 2) {
                     EmbedBuilder embedBuilder = new EmbedBuilder();
 
-                    embedBuilder.setAuthor(args[0], "https://calendar.google.com/", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Google_Calendar_icon.svg/512px-Google_Calendar_icon.svg.png");
+                    embedBuilder.setAuthor(args[0], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/calendar-icon.png");
                     embedBuilder.addField(new MessageEmbed.Field("Event", args[1], false));
 
                     event.reply(embedBuilder.build());
@@ -230,9 +230,6 @@ public class CommandsContainer {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to load configs.");
                     }
-                } else if (event.getArgs().equals("restartgmailapi")) {
-                    Main.restartGmailAPI();
-                    successfulQuery = true;
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }

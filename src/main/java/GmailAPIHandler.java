@@ -31,8 +31,6 @@ public class GmailAPIHandler extends Thread {
 
     private static String lastId = "0";
     private static boolean running = false;
-    private static boolean processing = false;
-    private static int exCount = 0;
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -73,13 +71,11 @@ public class GmailAPIHandler extends Thread {
             Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                     .setApplicationName(APPLICATION_NAME)
                     .build();
-
             String user = "me";
 
             running = true;
 
             while (running) {
-                processing = true;
 
                 ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
                 List<Message> messages = listMessagesResponse.getMessages();
@@ -105,7 +101,7 @@ public class GmailAPIHandler extends Thread {
 
                     try {
                         formattedDate = gmailDateFormat.format(messageDateFormat.parse(date));
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         Main.log(Main.LogPriority.ERROR, "Exception caught while attempting to parse email date.");
                     }
 
@@ -115,21 +111,21 @@ public class GmailAPIHandler extends Thread {
 
                     Matcher nameMatcher = Pattern.compile("^(.+)<(.+)>$").matcher(from);
 
-                    if(nameMatcher.find() && nameMatcher.group(1) != null && nameMatcher.group(2) != null){
+                    if (nameMatcher.find() && nameMatcher.group(1) != null && nameMatcher.group(2) != null) {
                         emailSenderProfile.setSenderName(nameMatcher.group(1).trim());
                         emailSenderProfile.setSenderAddress(nameMatcher.group(2).trim());
                     }
 
-                    for(String dest : Main.knownDestinations){
-                        if(to.contains(dest)){
+                    for (String dest : Main.knownDestinations) {
+                        if (to.contains(dest)) {
                             allowed = true;
                             break;
                         }
                     }
 
-                    if(!allowed){
-                        for(EmailSenderProfile sender : Main.knownSenders){
-                            if((sender.getSenderName() + " <" + sender.getSenderAddress().toLowerCase() + ">").equals(from)){
+                    if (!allowed) {
+                        for (EmailSenderProfile sender : Main.knownSenders) {
+                            if ((sender.getSenderName() + " <" + sender.getSenderAddress().toLowerCase() + ">").equals(from)) {
                                 allowed = true;
                                 emailSenderProfile = sender;
                                 break;
@@ -147,34 +143,12 @@ public class GmailAPIHandler extends Thread {
                 }
 
                 lastId = messages.get(0).getId();
-                if(running) {
-                    Thread.sleep(4000);
-                }
-                processing = false;
+                Thread.sleep(4000);
             }
-
         } catch (Exception e) {
             Main.log(e);
             Main.log(Main.LogPriority.ERROR, "Encountered error while handling Gmail API.");
-            if(exCount++ < 5){
-                Main.log(Main.LogPriority.ERROR, "Retrying Gmail API Handler");
-                restart();
-            }
         }
-    }
-
-    public void restart(){
-        running = false;
-        while (processing){}
-
-        try {
-            this.join();
-            Main.emailHandler.start();
-        } catch (InterruptedException e) {
-            Main.log(e);
-            Main.log(Main.LogPriority.ERROR, "Could not join Gmail API thread.");
-        }
-
     }
 
     private static String headerValueGetterThing(String name, List<MessagePartHeader> headers) {
@@ -207,7 +181,7 @@ public class GmailAPIHandler extends Thread {
 
                 Base64 base64Url = new Base64(true);
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
-                if(Main.isUnixLike && new File(Main.cacheLocation).exists()){
+                if (Main.isUnixLike && new File(Main.cacheLocation).exists()) {
                     String timestamp = new SimpleDateFormat("yyyy.MM.dd.").format(new Date());
                     FileOutputStream fileOutFile = new FileOutputStream(Main.cacheLocation + timestamp + filename);
                     result.add(formatUrl("https://" + Main.domain + Main.extCacheLocation + timestamp + filename));
@@ -222,12 +196,12 @@ public class GmailAPIHandler extends Thread {
         return result;
     }
 
-    public static String formatUrl(String s){
+    public static String formatUrl(String s) {
         return s.replaceAll(" ", "%20");
     }
 
-    public static String formatMessage(String s){
-        for(String filter : Main.emailFilters){
+    public static String formatMessage(String s) {
+        for (String filter : Main.emailFilters) {
             s = Pattern.compile(filter, Pattern.DOTALL).matcher(s).replaceAll("");
         }
         return s;

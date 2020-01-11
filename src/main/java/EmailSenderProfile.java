@@ -2,7 +2,7 @@ public class EmailSenderProfile {
 
     private String senderName = "";
     private String senderAddress = "";
-    private String profileImageUrl = "https://ssl.gstatic.com/ui/v1/icons/mail/profile_mask2.png";
+    private String profileImageUrl = "https://www.jacobdixon.us/cache/res/profile_mask2.png";
 
     public EmailSenderProfile(String senderName, String senderAddress, String profileImageUrl) {
         if (senderName != null) this.senderName = senderName;

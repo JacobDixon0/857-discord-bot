@@ -97,7 +97,7 @@ public class JSONConfigManager {
         JSONObject jsonObject = new JSONObject();
 
         jsonObject.put("token", Main.botTokenID);
-        jsonObject.put("cache", Main.cacheLocation);
+        jsonObject.put("cache-location", Main.cacheLocation);
         jsonObject.put("admin-id", Main.adminId);
         jsonObject.put("server-id", Main.serverId);
         jsonObject.put("announcements-channel-id", Main.announcementsChannelId);
