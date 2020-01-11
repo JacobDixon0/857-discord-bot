@@ -64,7 +64,7 @@ public class Main {
 
         commandClientBuilder.setOwnerId(adminId);
         commandClientBuilder.addCommands(
-                new CommandsContainer.SayCommand(),
+                new CommandsContainer.EchoCommand(),
                 new CommandsContainer.AnnouncementCommand(),
                 new CommandsContainer.PurgeCommand(),
                 new CommandsContainer.EventAnnounceCommand(),

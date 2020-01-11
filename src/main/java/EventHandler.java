@@ -28,13 +28,13 @@ public class EventHandler extends ListenerAdapter {
             }
         }
         Main.embedMemberLog("Member Joined", event.getMember());
-        Main.log("Member joined: \"" + event.getMember() + "\".");
+        Main.log("Member joined: \"" + event.getMember().getEffectiveName() + "\".");
     }
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
         Main.embedMemberLog("Member Left", event.getMember());
-        Main.log("Member left: \"" + event.getMember() + "\".");
+        Main.log("Member left: \"" + event.getMember().getEffectiveName() + "\".");
     }
 
     @Override

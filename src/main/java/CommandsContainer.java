@@ -16,10 +16,10 @@ import java.util.List;
 
 public class CommandsContainer {
 
-    public static class SayCommand extends Command {
+    public static class EchoCommand extends Command {
 
-        SayCommand() {
-            this.name = "say";
+        EchoCommand() {
+            this.name = "echo";
             this.help = "[Administrative] Posts message.";
             this.hidden = true;
         }
@@ -28,8 +28,21 @@ public class CommandsContainer {
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER) &&
                     event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.adminRoleId)).contains(event.getMember())) {
-                event.reply(event.getArgs());
-                event.getMessage().addReaction("\u2705").complete();
+                boolean successfulQuery = false;
+                String[] args = event.getArgs().split(" ");
+                if(args[0].matches("<#\\d+>")){
+                    try {
+                        event.getGuild().getTextChannelById(args[0].replaceAll("[<#>]", "")).sendMessage(event.getArgs().replace(args[0], "")).queue();
+                        successfulQuery = true;
+                    } catch (Exception e){
+                        Main.log(e);
+                        Main.log(Main.LogPriority.ERROR, "Exception caught while echoing message.");
+                        event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                    }
+                } else {
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                }
+                if(successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
         }
     }

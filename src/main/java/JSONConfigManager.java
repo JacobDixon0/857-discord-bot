@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class JSONConfigManager {
@@ -15,6 +16,8 @@ public class JSONConfigManager {
         Object obj = new JSONParser().parse(new FileReader(name));
         JSONObject jsonObject = (JSONObject) obj;
         JSONArray approvedSenders = (JSONArray) jsonObject.get("approved-senders");
+
+        Main.knownSenders = new ArrayList<>();
 
         if(approvedSenders != null) {
             for (Object approvedSender : approvedSenders) {
@@ -35,6 +38,8 @@ public class JSONConfigManager {
 
         JSONArray approvedDestinations = (JSONArray) jsonObject.get("approved-destinations");
 
+        Main.knownDestinations = new ArrayList<>();
+
         if (approvedDestinations != null) {
             for (Object approvedDest : approvedDestinations) {
                 for (Object o : ((Map) approvedDest).entrySet()) {
@@ -47,6 +52,8 @@ public class JSONConfigManager {
         }
 
         JSONArray emailFilters = (JSONArray) jsonObject.get("message-filters");
+
+        Main.emailFilters = new ArrayList<>();
 
         if (emailFilters != null) {
             for (Object filter : emailFilters) {
@@ -67,6 +74,8 @@ public class JSONConfigManager {
         JSONObject jsonObject = (JSONObject) obj;
 
         JSONArray roleAssigners = (JSONArray) jsonObject.get("role-assigners");
+
+        Main.roleAssigners = new ArrayList<>();
 
         for (Object roleAssigner : roleAssigners) {
             RoleAssigner ra = new RoleAssigner(null, null);
