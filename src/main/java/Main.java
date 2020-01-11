@@ -1,3 +1,10 @@
+/*
+ * Name: 857-discord-bot
+ * Date: 2020/1/11
+ * Author(s): jd@jacobdixon.us (Jacob Dixon)
+ * Version: 1.0a
+ */
+
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -76,7 +83,8 @@ public class Main {
                 new CommandsContainer.ModeCommand(),
                 new CommandsContainer.PingCommand(),
                 new CommandsContainer.StopCommand(),
-                new CommandsContainer.DebugCommand());
+                new CommandsContainer.DebugCommand(),
+                new CommandsContainer.FilterCommand());
         commandClientBuilder.setPrefix("!");
         commandClientBuilder.setActivity(Activity.playing(status));
         commandClientBuilder.useHelpBuilder(false);
@@ -138,9 +146,8 @@ public class Main {
         try {
             JSONConfigManager.saveConfigs(configLocation);
             loadConfigs();
-            JSONConfigManager.loadRoleAssigners(extConfigLocation);
-            JSONConfigManager.loadEmailConfigs(extConfigLocation);
-            JSONConfigManager.loadBannedPhrases(extConfigLocation);
+            JSONConfigManager.loadExtConfigs(extConfigLocation);
+            JSONConfigManager.loadBannedPhrases(configLocation);
         } catch (IOException | ParseException e) {
             log(e);
             log(LogPriority.ERROR, "Could not save configs " + configLocation + "");
@@ -149,8 +156,7 @@ public class Main {
 
     public static void loadConfigs() throws IOException {
         try {
-            JSONConfigManager.loadRoleAssigners(extConfigLocation);
-            JSONConfigManager.loadEmailConfigs(extConfigLocation);
+            JSONConfigManager.loadExtConfigs(extConfigLocation);
             JSONConfigManager.loadBannedPhrases(configLocation);
         } catch (ParseException e) {
             log(e);

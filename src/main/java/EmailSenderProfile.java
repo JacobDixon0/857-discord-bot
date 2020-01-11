@@ -1,3 +1,10 @@
+/*
+ * Name: 857-discord-bot
+ * Date: 2020/1/11
+ * Author(s): jd@jacobdixon.us (Jacob Dixon)
+ * Version: 1.0a
+ */
+
 public class EmailSenderProfile {
 
     private String senderName = "";

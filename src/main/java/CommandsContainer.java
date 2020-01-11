@@ -1,3 +1,10 @@
+/*
+ * Name: 857-discord-bot
+ * Date: 2020/1/11
+ * Author(s): jd@jacobdixon.us (Jacob Dixon)
+ * Version: 1.0a
+ */
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -5,10 +12,8 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import org.json.simple.parser.ParseException;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -182,6 +187,53 @@ public class CommandsContainer {
             if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
                 event.getMessage().addReaction("\u2705").complete();
                 Main.exit(0);
+            }
+        }
+    }
+
+    public static class FilterCommand extends Command{
+
+        FilterCommand(){
+            this.name = "filter";
+            this.help = "[Administrative] Modifies message filters";
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            if(event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+                String args = event.getArgs();
+                String[] argsList = event.getArgs().split(" ");
+                boolean successfulQuery = false;
+
+                if (argsList[0] == null) {
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                } else if (argsList[0].equals("add")){
+                    if(argsList[1] != null){
+                        if(!Main.bannedPhrases.contains(args.replaceFirst(argsList[0] + " ", ""))) {
+                            Main.bannedPhrases.add(args.replaceFirst(argsList[0] + " ", ""));
+                            Main.reloadConfigs();
+                        }
+                        successfulQuery = true;
+                    } else {
+                        event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                    }
+                } else if (argsList[0].equals("remove")){
+                    if(argsList[1] != null){
+                        Main.bannedPhrases.remove(args.replaceFirst(argsList[0] + " ", ""));
+                        Main.reloadConfigs();
+                        successfulQuery = true;
+                    } else {
+                        event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                    }
+                } else if (argsList[0].equals("list")){
+                    StringBuilder sb = new StringBuilder();
+                    for(String s : Main.bannedPhrases){
+                        sb.append("\"").append(s).append("\"\n");
+                    }
+                    event.reply(sb.toString());
+                    successfulQuery = true;
+                }
+                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
         }
     }

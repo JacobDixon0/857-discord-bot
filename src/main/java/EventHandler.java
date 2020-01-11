@@ -1,3 +1,10 @@
+/*
+ * Name: 857-discord-bot
+ * Date: 2020/1/11
+ * Author(s): jd@jacobdixon.us (Jacob Dixon)
+ * Version: 1.0a
+ */
+
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -38,7 +45,7 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (!event.getAuthor().isBot()) {
+        if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.adminRoleId)).contains(event.getMember()) && !event.getAuthor().isBot()) {
 
             boolean allowed = true;
 

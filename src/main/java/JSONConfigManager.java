@@ -1,3 +1,10 @@
+/*
+ * Name: 857-discord-bot
+ * Date: 2020/1/11
+ * Author(s): jd@jacobdixon.us (Jacob Dixon)
+ * Version: 1.0a
+ */
+
 import com.google.gson.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -12,11 +19,11 @@ import java.util.Map;
 
 public class JSONConfigManager {
 
-    public static void loadEmailConfigs(String name) throws IOException, ParseException {
+    public static void loadExtConfigs(String name) throws IOException, ParseException {
         Object obj = new JSONParser().parse(new FileReader(name));
         JSONObject jsonObject = (JSONObject) obj;
-        JSONArray approvedSenders = (JSONArray) jsonObject.get("approved-senders");
 
+        JSONArray approvedSenders = (JSONArray) jsonObject.get("approved-senders");
         Main.knownSenders = new ArrayList<>();
 
         if(approvedSenders != null) {
@@ -37,7 +44,6 @@ public class JSONConfigManager {
         }
 
         JSONArray approvedDestinations = (JSONArray) jsonObject.get("approved-destinations");
-
         Main.knownDestinations = new ArrayList<>();
 
         if (approvedDestinations != null) {
@@ -52,7 +58,6 @@ public class JSONConfigManager {
         }
 
         JSONArray emailFilters = (JSONArray) jsonObject.get("message-filters");
-
         Main.emailFilters = new ArrayList<>();
 
         if (emailFilters != null) {
@@ -65,14 +70,8 @@ public class JSONConfigManager {
                 }
             }
         }
-        Main.log("Loaded configs " + name + ".");
-    }
 
-    public static void loadRoleAssigners(String name) throws IOException, ParseException {
-        Object obj = new JSONParser().parse(new FileReader(name));
-        JSONObject jsonObject = (JSONObject) obj;
         JSONArray roleAssigners = (JSONArray) jsonObject.get("role-assigners");
-
         Main.roleAssigners = new ArrayList<>();
 
         for (Object roleAssigner : roleAssigners) {
@@ -87,14 +86,8 @@ public class JSONConfigManager {
             }
             Main.roleAssigners.add(ra);
         }
-        Main.log("Loaded configs " + name + ".");
-    }
 
-    public static void loadBannedPhrases(String name) throws IOException, ParseException {
-        Object obj = new JSONParser().parse(new FileReader(name));
-        JSONObject jsonObject = (JSONObject) obj;
         JSONArray bannedPhrases = (JSONArray) jsonObject.get("banned-phrases");
-
         Main.bannedPhrases = new ArrayList<>();
 
         if(bannedPhrases != null) {
@@ -102,7 +95,22 @@ public class JSONConfigManager {
                 Main.bannedPhrases.add(phrase.toString());
             }
         }
+
         Main.log("Loaded configs " + name + ".");
+    }
+
+    public static void loadBannedPhrases(String name) throws IOException, ParseException {
+        Object obj = new JSONParser().parse(new FileReader(name));
+        JSONObject jsonObject = (JSONObject) obj;
+
+        JSONArray bannedPhrases = (JSONArray) jsonObject.get("banned-phrases");
+        Main.bannedPhrases = new ArrayList<>();
+
+        if(bannedPhrases != null) {
+            for (Object phrase : bannedPhrases) {
+                Main.bannedPhrases.add(phrase.toString());
+            }
+        }
     }
 
     public static void saveConfigs(String name) throws FileNotFoundException {
