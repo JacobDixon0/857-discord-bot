@@ -70,9 +70,7 @@ public class JSONConfigManager {
 
     public static void loadRoleAssigners(String name) throws IOException, ParseException {
         Object obj = new JSONParser().parse(new FileReader(name));
-
         JSONObject jsonObject = (JSONObject) obj;
-
         JSONArray roleAssigners = (JSONArray) jsonObject.get("role-assigners");
 
         Main.roleAssigners = new ArrayList<>();
@@ -92,7 +90,21 @@ public class JSONConfigManager {
 
     }
 
-    public static void saveConfigs(String name) throws FileNotFoundException, ParseException {
+    public static void loadBannedPhrases(String name) throws IOException, ParseException {
+        Object obj = new JSONParser().parse(new FileReader(name));
+        JSONObject jsonObject = (JSONObject) obj;
+        JSONArray bannedPhrases = (JSONArray) jsonObject.get("banned-phrases");
+
+        Main.bannedPhrases = new ArrayList<>();
+
+        if(bannedPhrases != null) {
+            for (Object phrase : bannedPhrases) {
+                Main.bannedPhrases.add(phrase.toString());
+            }
+        }
+    }
+
+    public static void saveConfigs(String name) throws FileNotFoundException {
 
         JSONObject jsonObject = new JSONObject();
 
@@ -110,6 +122,14 @@ public class JSONConfigManager {
         jsonObject.put("status", Main.status);
         jsonObject.put("domain", Main.domain);
         jsonObject.put("ext-cache-location", Main.extCacheLocation);
+
+        JSONArray bannedPhrasesArray = new JSONArray();
+
+        for(String s : Main.bannedPhrases){
+            bannedPhrasesArray.add(s);
+        }
+
+        jsonObject.put("banned-phrases", bannedPhrasesArray);
 
         PrintWriter pw = new PrintWriter(name);
 

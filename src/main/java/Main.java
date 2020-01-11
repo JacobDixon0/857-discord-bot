@@ -45,7 +45,7 @@ public class Main {
     public static String cacheLocation = RUN_DIR + "/cache/";
     public static String extCacheLocation = "/cache/";
     public static String configLocation = RUN_DIR + "/config.json";
-    public static String roleAssignersConfigLocation = RUN_DIR + "/ext-config.json";
+    public static String extConfigLocation = RUN_DIR + "/ext-config.json";
 
     public static String status = "Bot Stuff";
 
@@ -60,6 +60,8 @@ public class Main {
     public static ArrayList<String> emailFilters = new ArrayList<>();
 
     public static GmailAPIHandler emailHandler = new GmailAPIHandler();
+
+    public static ArrayList<String> bannedPhrases = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
 
@@ -134,8 +136,9 @@ public class Main {
 
     public static void loadConfigs() throws IOException {
         try {
-            JSONConfigManager.loadRoleAssigners(roleAssignersConfigLocation);
-            JSONConfigManager.loadEmailConfigs(roleAssignersConfigLocation);
+            JSONConfigManager.loadRoleAssigners(extConfigLocation);
+            JSONConfigManager.loadEmailConfigs(extConfigLocation);
+            JSONConfigManager.loadBannedPhrases(configLocation);
         } catch (ParseException e) {
             log(e);
             log(LogPriority.ERROR, "Exception was caught parsing role assigners JSON file.");
@@ -379,7 +382,7 @@ public class Main {
             jda.shutdown();
             try {
                 JSONConfigManager.saveConfigs(configLocation);
-            } catch (FileNotFoundException | ParseException e) {
+            } catch (FileNotFoundException e) {
                 log(e);
                 log(LogPriority.ERROR, "Failed to save configurations before exiting.");
             }

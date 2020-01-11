@@ -30,11 +30,11 @@ public class CommandsContainer {
                     event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.adminRoleId)).contains(event.getMember())) {
                 boolean successfulQuery = false;
                 String[] args = event.getArgs().split(" ");
-                if(args[0].matches("<#\\d+>")){
+                if (args[0].matches("<#\\d+>")) {
                     try {
                         event.getGuild().getTextChannelById(args[0].replaceAll("[<#>]", "")).sendMessage(event.getArgs().replace(args[0], "")).queue();
                         successfulQuery = true;
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Exception caught while echoing message.");
                         event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
@@ -42,7 +42,7 @@ public class CommandsContainer {
                 } else {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 }
-                if(successfulQuery) event.getMessage().addReaction("\u2705").complete();
+                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
@@ -217,7 +217,7 @@ public class CommandsContainer {
                         JSONConfigManager.saveConfigs(Main.configLocation);
                         successfulQuery = true;
                         Main.log("Saved config file " + Main.configLocation);
-                    } catch (ParseException | FileNotFoundException e) {
+                    } catch (FileNotFoundException e) {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to save configs.");
                     }
@@ -225,12 +225,19 @@ public class CommandsContainer {
                     try {
                         Main.loadConfigs();
                         successfulQuery = true;
-                        Main.log("Loaded config file " + Main.configLocation);
                     } catch (IOException e) {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to load configs.");
                     }
+                } else if (event.getArgs().equals("bp")) {
+                    StringBuilder reply = new StringBuilder();
+                    for (String s : Main.bannedPhrases) {
+                        reply.append("\"").append(s).append("\"").append("\n");
+                    }
+                    event.reply(reply.toString());
+                    successfulQuery = true;
                 }
+
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
         }
