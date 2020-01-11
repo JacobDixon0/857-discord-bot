@@ -39,6 +39,8 @@ public class GmailAPIHandler extends Thread {
     private static String lastId = "0";
     private static boolean running = false;
 
+    private static int retryCount = 0;
+
     /**
      * Global instance of the scopes required by this quickstart.
      * If modifying these scopes, delete your previously saved tokens/ folder.
@@ -73,6 +75,10 @@ public class GmailAPIHandler extends Thread {
 
     @Override
     public void run() {
+        runInboxPolling();
+    }
+
+    private static void runInboxPolling(){
         try {
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
@@ -81,7 +87,6 @@ public class GmailAPIHandler extends Thread {
             String user = "me";
 
             running = true;
-
             while (running) {
 
                 ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
@@ -151,10 +156,15 @@ public class GmailAPIHandler extends Thread {
 
                 lastId = messages.get(0).getId();
                 Thread.sleep(4000);
+                retryCount = 0;
             }
         } catch (Exception e) {
             Main.log(e);
             Main.log(Main.LogPriority.ERROR, "Encountered error while handling Gmail API.");
+            if(++retryCount <= 4){
+                Main.log("Reattempting to run Gmail API handler.");
+                runInboxPolling();
+            }
         }
     }
 
