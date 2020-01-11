@@ -65,7 +65,7 @@ public class JSONConfigManager {
                 }
             }
         }
-
+        Main.log("Loaded configs " + name + ".");
     }
 
     public static void loadRoleAssigners(String name) throws IOException, ParseException {
@@ -87,7 +87,7 @@ public class JSONConfigManager {
             }
             Main.roleAssigners.add(ra);
         }
-
+        Main.log("Loaded configs " + name + ".");
     }
 
     public static void loadBannedPhrases(String name) throws IOException, ParseException {
@@ -102,6 +102,7 @@ public class JSONConfigManager {
                 Main.bannedPhrases.add(phrase.toString());
             }
         }
+        Main.log("Loaded configs " + name + ".");
     }
 
     public static void saveConfigs(String name) throws FileNotFoundException {
@@ -140,7 +141,7 @@ public class JSONConfigManager {
 
         pw.flush();
         pw.close();
-
+        Main.log("saved configs " + name + ".");
     }
 
 }

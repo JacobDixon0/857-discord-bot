@@ -216,7 +216,6 @@ public class CommandsContainer {
                     try {
                         JSONConfigManager.saveConfigs(Main.configLocation);
                         successfulQuery = true;
-                        Main.log("Saved config file " + Main.configLocation);
                     } catch (FileNotFoundException e) {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to save configs.");
@@ -229,6 +228,10 @@ public class CommandsContainer {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to load configs.");
                     }
+                } else if (event.getArgs().equals("reloadconfigs")) {
+                    Main.reloadConfigs();
+                    successfulQuery = true;
+
                 } else if (event.getArgs().equals("bp")) {
                     StringBuilder reply = new StringBuilder();
                     for (String s : Main.bannedPhrases) {

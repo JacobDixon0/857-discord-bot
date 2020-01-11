@@ -134,6 +134,19 @@ public class Main {
 
     }
 
+    public static void reloadConfigs(){
+        try {
+            JSONConfigManager.saveConfigs(configLocation);
+            loadConfigs();
+            JSONConfigManager.loadRoleAssigners(extConfigLocation);
+            JSONConfigManager.loadEmailConfigs(extConfigLocation);
+            JSONConfigManager.loadBannedPhrases(extConfigLocation);
+        } catch (IOException | ParseException e) {
+            log(e);
+            log(LogPriority.ERROR, "Could not save configs " + configLocation + "");
+        }
+    }
+
     public static void loadConfigs() throws IOException {
         try {
             JSONConfigManager.loadRoleAssigners(extConfigLocation);
