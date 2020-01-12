@@ -23,5 +23,10 @@ dependencies {
     compile 'com.google.apis:google-api-services-gmail:v1-rev83-1.23.0'
     compile 'com.google.api-client:google-api-client:1.30.5'
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
+    /*compile (
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.0'],
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.10.0'],
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0']
+    )*/
     implementation 'com.google.code.gson:gson:2.8.6'
 }

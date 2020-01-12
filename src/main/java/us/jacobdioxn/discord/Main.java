@@ -5,6 +5,8 @@
  * Version: 1.0a
  */
 
+package us.jacobdioxn.discord;
+
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -36,7 +38,7 @@ public class Main {
 
     public static boolean isUnixLike = true;
     public static String hostname = "hostname";
-    static String botTokenID;
+    static String botToken;
 
     public static String adminId;
     public static String serverId;
@@ -51,8 +53,10 @@ public class Main {
 
     public static String cacheLocation = RUN_DIR + "/cache/";
     public static String extCacheLocation = "/cache/";
+
     public static String configLocation = RUN_DIR + "/config.json";
     public static String extConfigLocation = RUN_DIR + "/ext-config.json";
+    public static String banListLocation = RUN_DIR + "/banlist.txt";
 
     public static String status = "Bot Stuff";
 
@@ -65,10 +69,9 @@ public class Main {
     public static ArrayList<String> knownDestinations = new ArrayList<>();
     public static ArrayList<RoleAssigner> roleAssigners = new ArrayList<>();
     public static ArrayList<String> emailFilters = new ArrayList<>();
-
-    public static GmailAPIHandler emailHandler = new GmailAPIHandler();
-
     public static ArrayList<String> bannedPhrases = new ArrayList<>();
+
+    public static EmailHandler emailHandler = new EmailHandler();
 
     public static void main(String[] args) throws IOException {
 
@@ -76,22 +79,23 @@ public class Main {
 
         commandClientBuilder.setOwnerId(adminId);
         commandClientBuilder.addCommands(
-                new CommandsContainer.EchoCommand(),
-                new CommandsContainer.AnnouncementCommand(),
-                new CommandsContainer.PurgeCommand(),
-                new CommandsContainer.EventAnnounceCommand(),
-                new CommandsContainer.ModeCommand(),
-                new CommandsContainer.PingCommand(),
-                new CommandsContainer.StopCommand(),
-                new CommandsContainer.DebugCommand(),
-                new CommandsContainer.FilterCommand());
+                new Commands.EchoCommand(),
+                new Commands.AnnouncementCommand(),
+                new Commands.PurgeCommand(),
+                new Commands.EventAnnounceCommand(),
+                new Commands.ModeCommand(),
+                new Commands.PingCommand(),
+                new Commands.StopCommand(),
+                new Commands.DebugCommand(),
+                new Commands.FilterCommand());
         commandClientBuilder.setPrefix("!");
         commandClientBuilder.setActivity(Activity.playing(status));
         commandClientBuilder.useHelpBuilder(false);
 
         try {
-            jda = new JDABuilder(AccountType.BOT).setToken(botTokenID).addEventListeners(eventHandler, commandClientBuilder.build()).build().awaitReady();
+            jda = new JDABuilder(AccountType.BOT).setToken(botToken).addEventListeners(eventHandler, commandClientBuilder.build()).build().awaitReady();
             emailHandler.start();
+
             embedStartupLog();
             log("Started in " + RUN_DIR + " on " + hostname + " running " + OS_NAME + ".");
         } catch (LoginException | InterruptedException e0) {
@@ -144,11 +148,9 @@ public class Main {
 
     public static void reloadConfigs(){
         try {
-            JSONConfigManager.saveConfigs(configLocation);
             loadConfigs();
-            JSONConfigManager.loadExtConfigs(extConfigLocation);
-            JSONConfigManager.loadBannedPhrases(configLocation);
-        } catch (IOException | ParseException e) {
+            ConfigManager.saveConfigs(configLocation);
+        } catch (IOException e) {
             log(e);
             log(LogPriority.ERROR, "Could not save configs " + configLocation + "");
         }
@@ -156,78 +158,11 @@ public class Main {
 
     public static void loadConfigs() throws IOException {
         try {
-            JSONConfigManager.loadExtConfigs(extConfigLocation);
-            JSONConfigManager.loadBannedPhrases(configLocation);
+            ConfigManager.loadExtConfigs(extConfigLocation);
+            ConfigManager.loadConfigs(configLocation);
         } catch (ParseException e) {
             log(e);
             log(LogPriority.ERROR, "Exception was caught parsing role assigners JSON file.");
-        }
-
-        try {
-            if (!new File(configLocation).exists()) {
-                log(LogPriority.FATAL_ERROR, "No config file exists.");
-                exit(-1, true);
-            }
-            Scanner configReader = new Scanner(new File(configLocation));
-
-            // yes, i know. stop cyberbullying me
-            while (configReader.hasNextLine()) {
-                String line = configReader.nextLine();
-                Matcher tokenMatcher = Pattern.compile("^\\s+?\"token\": \"(.+)\",?$").matcher(line);
-                Matcher cacheLocationMatcher = Pattern.compile("^\\s+?\"cache-location\": \"(.+)\",?$").matcher(line);
-                Matcher adminIdMatcher = Pattern.compile("^\\s+?\"admin-id\": \"(.+)\",?$").matcher(line);
-                Matcher serverIdMatcher = Pattern.compile("^\\s+?\"server-id\": \"(.+)\",?$").matcher(line);
-                Matcher announcementsChannelIdMatcher = Pattern.compile("^\\s+?\"announcements-channel-id\": \"(.+)\",?$").matcher(line);
-                Matcher logChannelIdMatcher = Pattern.compile("^\\s+?\"log-channel-id\": \"(.+)\",?$").matcher(line);
-                Matcher roleAssignmentMessageIdMatcher = Pattern.compile("^\\s+?\"role-assignment-message-id\": \"(.+)\",?$").matcher(line);
-                Matcher announcementsRoleIdMatcher = Pattern.compile("^\\s+?\"announcements-role-id\": \"(.+)\",?$").matcher(line);
-                Matcher adminRoleIdMatcher = Pattern.compile("^\\s+?\"admin-role-id\": \"(.+)\",?$").matcher(line);
-                Matcher botAdminRoleIdMatcher = Pattern.compile("^\\s+?\"bot-admin-role-id\": \"(.+)\",?$").matcher(line);
-                Matcher memberRoleIdMatcher = Pattern.compile("^\\s+?\"member-role-id\": \"(.+)\",?$").matcher(line);
-                Matcher statusMatcher = Pattern.compile("^\\s+?\"status\": \"(.+)\",?$").matcher(line);
-                Matcher domainMatcher = Pattern.compile("^\\s+?\"domain\": \"(.+)\",?$").matcher(line);
-                Matcher extCacheLocationMatcher = Pattern.compile("^\\s+?\"ext-cache-location\": \"(.+)\",?$").matcher(line);
-
-                if (tokenMatcher.find()) {
-                    botTokenID = tokenMatcher.group(1);
-                } else if (cacheLocationMatcher.find()) {
-                    cacheLocation = cacheLocationMatcher.group(1);
-                } else if (adminIdMatcher.find()) {
-                    adminId = adminIdMatcher.group(1);
-                } else if (serverIdMatcher.find()) {
-                    serverId = serverIdMatcher.group(1);
-                } else if (announcementsChannelIdMatcher.find()) {
-                    announcementsChannelId = announcementsChannelIdMatcher.group(1);
-                } else if (logChannelIdMatcher.find()) {
-                    logChannelId = logChannelIdMatcher.group(1);
-                } else if (roleAssignmentMessageIdMatcher.find()) {
-                    roleAssignmentMessageId = roleAssignmentMessageIdMatcher.group(1);
-                } else if (announcementsRoleIdMatcher.find()) {
-                    announcementsRoleId = announcementsRoleIdMatcher.group(1);
-                } else if (adminRoleIdMatcher.find()) {
-                    adminRoleId = adminRoleIdMatcher.group(1);
-                } else if (botAdminRoleIdMatcher.find()) {
-                    botAdminRoleId = botAdminRoleIdMatcher.group(1);
-                } else if (memberRoleIdMatcher.find()) {
-                    memberRoleId = memberRoleIdMatcher.group(1);
-                } else if (statusMatcher.find()) {
-                    status = statusMatcher.group(1);
-                } else if (domainMatcher.find()) {
-                    domain = domainMatcher.group(1);
-                } else if (extCacheLocationMatcher.find()) {
-                    extCacheLocation = extCacheLocationMatcher.group(1);
-                }
-            }
-            configReader.close();
-            if (botTokenID == null) {
-                log(LogPriority.ERROR, "Invalid token file.");
-                exit(-1, true);
-            }
-            log("Loaded config file " + configLocation + ".");
-        } catch (Exception e) {
-            log(e);
-            log(LogPriority.ERROR, "Encountered error attempting to read token file.");
-            exit(-1, true);
         }
 
         if (OS_NAME.contains("win")) {
@@ -412,7 +347,7 @@ public class Main {
         if (!force) {
             jda.shutdown();
             try {
-                JSONConfigManager.saveConfigs(configLocation);
+                ConfigManager.saveConfigs(configLocation);
             } catch (FileNotFoundException e) {
                 log(e);
                 log(LogPriority.ERROR, "Failed to save configurations before exiting.");

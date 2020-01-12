@@ -5,6 +5,8 @@
  * Version: 1.0a
  */
 
+package us.jacobdioxn.discord;
+
 public class RoleAssigner{
     private String roleId;
     private String emote;

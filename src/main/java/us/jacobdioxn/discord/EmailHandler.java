@@ -5,6 +5,8 @@
  * Version: 1.0a
  */
 
+package us.jacobdioxn.discord;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -31,7 +33,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GmailAPIHandler extends Thread {
+public class EmailHandler extends Thread {
     private static final String APPLICATION_NAME = "857 Discord Bot Tools";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -57,7 +59,7 @@ public class GmailAPIHandler extends Thread {
      */
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = GmailAPIHandler.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = EmailHandler.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }

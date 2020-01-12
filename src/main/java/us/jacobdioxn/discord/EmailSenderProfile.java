@@ -5,10 +5,12 @@
  * Version: 1.0a
  */
 
+package us.jacobdioxn.discord;
+
 public class EmailSenderProfile {
 
-    private String senderName = "";
-    private String senderAddress = "";
+    private String senderName = "name";
+    private String senderAddress = "address";
     private String profileImageUrl = "https://www.jacobdixon.us/cache/res/profile_mask2.png";
 
     public EmailSenderProfile(String senderName, String senderAddress, String profileImageUrl) {

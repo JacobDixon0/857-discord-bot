@@ -5,6 +5,8 @@
  * Version: 1.0a
  */
 
+package us.jacobdioxn.discord;
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -19,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class CommandsContainer {
+public class Commands {
 
     public static class EchoCommand extends Command {
 
@@ -266,7 +268,7 @@ public class CommandsContainer {
                     successfulQuery = true;
                 } else if (event.getArgs().equals("saveconfigs")) {
                     try {
-                        JSONConfigManager.saveConfigs(Main.configLocation);
+                        ConfigManager.saveConfigs(Main.configLocation);
                         successfulQuery = true;
                     } catch (FileNotFoundException e) {
                         Main.log(e);

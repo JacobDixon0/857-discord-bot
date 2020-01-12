@@ -5,19 +5,19 @@
  * Version: 1.0a
  */
 
+package us.jacobdioxn.discord;
+
 import com.google.gson.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Scanner;
 
-public class JSONConfigManager {
+public class ConfigManager {
 
     public static void loadExtConfigs(String name) throws IOException, ParseException {
         Object obj = new JSONParser().parse(new FileReader(name));
@@ -99,17 +99,37 @@ public class JSONConfigManager {
         Main.log("Loaded configs " + name + ".");
     }
 
-    public static void loadBannedPhrases(String name) throws IOException, ParseException {
+    public static void loadConfigs(String name) throws IOException, ParseException {
+        if(!new File(name).exists()){
+            Main.log(Main.LogPriority.FATAL_ERROR, "No config file found.");
+            Main.exit(-1, true);
+        }
+
         Object obj = new JSONParser().parse(new FileReader(name));
         JSONObject jsonObject = (JSONObject) obj;
 
-        JSONArray bannedPhrases = (JSONArray) jsonObject.get("banned-phrases");
+        Main.announcementsRoleId = jsonObject.get("announcements-role-id").toString();
+        Main.adminId = jsonObject.get("admin-id").toString();
+        Main.adminRoleId = jsonObject.get("admin-role-id").toString();
+        Main.extCacheLocation = jsonObject.get("ext-cache-location").toString();
+        Main.announcementsChannelId = jsonObject.get("announcements-channel-id").toString();
+        Main.botAdminRoleId = jsonObject.get("bot-admin-role-id").toString();
+        Main.roleAssignmentMessageId = jsonObject.get("role-assignment-message-id").toString();
+        Main.botToken = jsonObject.get("token").toString();
+        Main.cacheLocation = jsonObject.get("cache-location").toString();
+        Main.memberRoleId = jsonObject.get("member-role-id").toString();
+        Main.domain = jsonObject.get("domain").toString();
+        Main.logChannelId = jsonObject.get("log-channel-id").toString();
+        Main.serverId = jsonObject.get("server-id").toString();
+        Main.status = jsonObject.get("status").toString();
+        Main.banListLocation = jsonObject.get("filter-list").toString();
+
         Main.bannedPhrases = new ArrayList<>();
 
-        if(bannedPhrases != null) {
-            for (Object phrase : bannedPhrases) {
-                Main.bannedPhrases.add(phrase.toString());
-            }
+        Scanner filterConfigScanner = new Scanner(new File(Main.banListLocation));
+        while(filterConfigScanner.hasNextLine()){
+            String line = filterConfigScanner.nextLine();
+            Main.bannedPhrases.add(line);
         }
     }
 
@@ -117,7 +137,7 @@ public class JSONConfigManager {
 
         JSONObject jsonObject = new JSONObject();
 
-        jsonObject.put("token", Main.botTokenID);
+        jsonObject.put("token", Main.botToken);
         jsonObject.put("cache-location", Main.cacheLocation);
         jsonObject.put("admin-id", Main.adminId);
         jsonObject.put("server-id", Main.serverId);
