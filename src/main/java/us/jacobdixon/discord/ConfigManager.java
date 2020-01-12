@@ -5,7 +5,7 @@
  * Version: 1.0a
  */
 
-package us.jacobdioxn.discord;
+package us.jacobdixon.discord;
 
 import com.google.gson.*;
 import org.json.simple.JSONArray;

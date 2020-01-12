@@ -5,7 +5,7 @@
  * Version: 1.0a
  */
 
-package us.jacobdioxn.discord;
+package us.jacobdixon.discord;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;

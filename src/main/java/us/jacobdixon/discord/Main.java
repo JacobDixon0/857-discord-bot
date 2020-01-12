@@ -5,7 +5,7 @@
  * Version: 1.0a
  */
 
-package us.jacobdioxn.discord;
+package us.jacobdixon.discord;
 
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import net.dv8tion.jda.api.AccountType;

@@ -5,7 +5,7 @@
  * Version: 1.0a
  */
 
-package us.jacobdioxn.discord;
+package us.jacobdixon.discord;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
