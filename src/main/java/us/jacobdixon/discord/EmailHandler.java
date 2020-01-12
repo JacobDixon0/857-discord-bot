@@ -200,7 +200,7 @@ public class EmailHandler extends Thread {
 
                 Base64 base64Url = new Base64(true);
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
-                if (Main.isUnixLike && new File(Main.cacheLocation).exists()) {
+                if (new File(Main.cacheLocation).exists()) {
                     String timestamp = new SimpleDateFormat("yyyy.MM.dd.").format(new Date());
                     FileOutputStream fileOutFile = new FileOutputStream(Main.cacheLocation + timestamp + filename);
                     result.add(formatUrl("https://" + Main.domain + Main.extCacheLocation + timestamp + filename));

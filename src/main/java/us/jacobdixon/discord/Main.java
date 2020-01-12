@@ -162,7 +162,8 @@ public class Main {
             ConfigManager.loadConfigs(configLocation);
         } catch (ParseException e) {
             log(e);
-            log(LogPriority.ERROR, "Exception was caught parsing role assigners JSON file.");
+            log(LogPriority.ERROR, "Exception was caught loading configs.");
+            exit(-1, true);
         }
 
         if (OS_NAME.contains("win")) {
@@ -187,7 +188,7 @@ public class Main {
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Role", "<@&" + role.getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://www.jacobdixon.us/cache/res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
         jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -197,7 +198,7 @@ public class Main {
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://www.jacobdixon.us/cache/res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
         jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -209,7 +210,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Message", message.replaceAll(violation, "`" + violation + "`"), false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://www.jacobdixon.us/cache/res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
         jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -219,7 +220,7 @@ public class Main {
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://www.jacobdixon.us/cache/res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
         jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -231,7 +232,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Sender", sender, false));
         embedBuilder.addField(new MessageEmbed.Field("Subject", subject, false));
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + announcementsChannelId + ">", false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://www.jacobdixon.us/cache/res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
         jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -241,7 +242,7 @@ public class Main {
         embedBuilder.setTitle("Bot Initiated");
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host `" + hostname + "`", false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://www.jacobdixon.us/cache/res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
         jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -252,7 +253,7 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Sender", "<@" + auth.getId() + ">", false));
         embedBuilder.addField(new MessageEmbed.Field("Message", content, false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://www.jacobdixon.us/cache/res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
 
         jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
     }
@@ -292,9 +293,9 @@ public class Main {
             embedBuilder.addField(new MessageEmbed.Field("Attached: ", sb.toString(), false));
         }
         if (time.equals("x")) {
-            embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://www.jacobdixon.us/cache/res/gmail-logo.png");
+            embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://" + domain + cacheLocation + "res/gmail-logo.png");
         } else {
-            embedBuilder.setFooter(time, "https://www.jacobdixon.us/cache/res/gmail-logo.png");
+            embedBuilder.setFooter(time, "https://" + domain + cacheLocation + "res/gmail-logo.png");
         }
 
         return embedBuilder.build();
