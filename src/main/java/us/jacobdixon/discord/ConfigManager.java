@@ -87,15 +87,6 @@ public class ConfigManager {
             Main.roleAssigners.add(ra);
         }
 
-        JSONArray bannedPhrases = (JSONArray) jsonObject.get("banned-phrases");
-        Main.bannedPhrases = new ArrayList<>();
-
-        if(bannedPhrases != null) {
-            for (Object phrase : bannedPhrases) {
-                Main.bannedPhrases.add(phrase.toString());
-            }
-        }
-
         Main.log("Loaded configs " + name + ".");
     }
 
@@ -152,23 +143,26 @@ public class ConfigManager {
         jsonObject.put("domain", Main.domain);
         jsonObject.put("ext-cache-location", Main.extCacheLocation);
 
-        JSONArray bannedPhrasesArray = new JSONArray();
-
-        for(String s : Main.bannedPhrases){
-            bannedPhrasesArray.add(s);
-        }
-
-        jsonObject.put("banned-phrases", bannedPhrasesArray);
-
-        PrintWriter pw = new PrintWriter(name);
+        PrintWriter configWriter = new PrintWriter(name);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonElement jsonElement = JsonParser.parseString(jsonObject.toJSONString());
 
-        pw.write(gson.toJson(jsonElement));
+        configWriter.write(gson.toJson(jsonElement));
+        configWriter.flush();
+        configWriter.close();
 
-        pw.flush();
-        pw.close();
+        PrintWriter filterListWriter = new PrintWriter(Main.banListLocation);
+
+        if(!Main.bannedPhrases.isEmpty()) {
+            for (String s : Main.bannedPhrases) {
+                filterListWriter.println(s);
+            }
+        }
+
+        filterListWriter.flush();
+        filterListWriter.close();
+
         Main.log("saved configs " + name + ".");
     }
 
