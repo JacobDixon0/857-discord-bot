@@ -28,6 +28,7 @@ class Configuration {
     Config<String> logChannelId = new Config<>(null, "log-channel-id");
     Config<String> roleAssignmentMessageId = new Config<>(null, "role-assignment-message-id");
     Config<String> domain = new Config<>(null, "domain");
+    Config<Boolean> useFilter = new Config<>(true, "use-filter");
 
     Config<String> cacheLocation = new Config<>(RUN_DIR.getValue() + "cache/", "cache-location");
     Config<String> extCacheLocation = new Config<>("cache/", "ext-cache-location");
@@ -78,6 +79,7 @@ class Configuration {
         configs.add(bannedPhrases);
         configs.add(restrictedMentions);
         configs.add(commandArgDelimiter);
+        configs.add(useFilter);
     }
 
     public ArrayList<Config<?>> getConfigs(){

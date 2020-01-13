@@ -285,6 +285,12 @@ public class Commands {
                     }
                     event.reply(sb.toString());
                     successfulQuery = true;
+                } else if (argsList[0].equals("start")) {
+                    Main.config.useFilter.setValue(true);
+                    successfulQuery = true;
+                } else if (argsList[0].equals("stop")) {
+                    Main.config.useFilter.setValue(false);
+                    successfulQuery = true;
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }

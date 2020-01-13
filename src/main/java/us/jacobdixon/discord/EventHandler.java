@@ -59,27 +59,29 @@ public class EventHandler extends ListenerAdapter {
         if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember()) && !event.getAuthor().isBot()) {
 
             boolean allowed = true;
-
             Message message = event.getMessage();
             String messageContent = event.getMessage().getContentDisplay();
             RemovalReason reason = RemovalReason.OTHER;
             String violation = "";
 
-            for (String s : Main.config.bannedPhrases.getValue()) {
-                if (messageContent.toLowerCase().contains(s.toLowerCase()) || messageContent.toLowerCase().contains(s.toLowerCase() + "s") || messageContent.toLowerCase().contains(s.toLowerCase() + "es")) {
-                    allowed = false;
-                    reason = RemovalReason.CONTENT_POLICY;
-                    violation = s;
-                    break;
-                }
+            if(Main.config.useFilter.getValue()) {
 
-                for (SimpleReplace simpleReplacement : simpleReplacements) {
-                    for (String replacement : simpleReplacement.replacements) {
-                        if (messageContent.toLowerCase().replaceAll(simpleReplacement.base, replacement).contains(s.toLowerCase().replaceAll(simpleReplacement.base, replacement))) {
-                            allowed = false;
-                            reason = RemovalReason.CONTENT_POLICY;
-                            violation = s.replaceAll(simpleReplacement.base, replacement);
-                            break;
+                for (String s : Main.config.bannedPhrases.getValue()) {
+                    if (messageContent.toLowerCase().contains(s.toLowerCase()) || messageContent.toLowerCase().contains(s.toLowerCase() + "s") || messageContent.toLowerCase().contains(s.toLowerCase() + "es")) {
+                        allowed = false;
+                        reason = RemovalReason.CONTENT_POLICY;
+                        violation = s;
+                        break;
+                    }
+
+                    for (SimpleReplace simpleReplacement : simpleReplacements) {
+                        for (String replacement : simpleReplacement.replacements) {
+                            if (messageContent.toLowerCase().replaceAll(simpleReplacement.base, replacement).contains(s.toLowerCase().replaceAll(simpleReplacement.base, replacement))) {
+                                allowed = false;
+                                reason = RemovalReason.CONTENT_POLICY;
+                                violation = s.replaceAll(simpleReplacement.base, replacement);
+                                break;
+                            }
                         }
                     }
                 }
