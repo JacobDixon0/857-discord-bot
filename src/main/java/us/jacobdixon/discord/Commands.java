@@ -12,8 +12,8 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.*;
+import us.jacobdixon.utils.StringFormatting;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -34,19 +34,51 @@ public class Commands {
         @Override
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER) &&
-                    event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.adminRoleId)).contains(event.getMember())) {
+                    event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember())) {
                 boolean successfulQuery = false;
-                String[] args = event.getArgs().split(" ");
-                if (args[0].matches("<#\\d+>")) {
-                    try {
-                        event.getGuild().getTextChannelById(args[0].replaceAll("[<#>]", "")).sendMessage(event.getArgs().replace(args[0], "")).queue();
-                        successfulQuery = true;
-                    } catch (Exception e) {
-                        Main.log(e);
-                        Main.log(Main.LogPriority.ERROR, "Exception caught while echoing message.");
-                        event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
-                    }
+                String args = event.getArgs();
+                if (args.equals("")) {
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 } else {
+                    String[] argsList = args.split(" ");
+                    if (argsList[0].matches("<#\\d+>")) {
+                        try {
+                            event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).sendMessage(event.getArgs().replace(argsList[0], "")).queue();
+                            successfulQuery = true;
+                        } catch (Exception e) {
+                            Main.log(e);
+                            Main.log(Main.LogPriority.ERROR, "Exception caught while echoing message.");
+                            event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                        }
+                    } else {
+                        event.reply(event.getArgs());
+                        successfulQuery = true;
+                    }
+                }
+                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
+            }
+        }
+    }
+
+    public static class EchoEditCommand extends Command {
+
+        EchoEditCommand() {
+            this.name = "eecho";
+            this.help = "[Administrative] edits a posted message.";
+            this.hidden = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
+                boolean successfulQuery = false;
+                String args = event.getArgs();
+                String[] argsList = args.split(" ");
+                try {
+                    event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).editMessageById(argsList[1], args.replace(argsList[0] + " " + argsList[1] + " ", "")).queue();
+                    successfulQuery = true;
+                } catch (Exception e) {
+                    e.printStackTrace();
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
@@ -92,17 +124,20 @@ public class Commands {
         @Override
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
+                boolean successfulQuery = false;
 
-                String[] args = event.getArgs().split("%s%");
+                String args = event.getArgs();
+                String[] argsList = StringFormatting.split(args, Main.config.commandArgDelimiter.getValue());
 
-                if (args.length == 5) {
+                if (argsList.length == 5) {
                     List<String> attachmentsList = new ArrayList<>();
-                    attachmentsList.add(args[4]);
-                    Main.emailAnnounce(new EmailSenderProfile(args[0], args[1], null), args[2], new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()), args[3], attachmentsList);
+                    attachmentsList.add(argsList[4]);
+                    Main.emailAnnounce(new EmailSenderProfile(argsList[0], argsList[1], null), argsList[2], new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()), argsList[3], attachmentsList);
+                    successfulQuery = true;
                 } else {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments " + args.length);
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments " + argsList.length);
                 }
-                event.getMessage().addReaction("\u2705").complete();
+                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
@@ -118,20 +153,27 @@ public class Commands {
         @Override
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
+                boolean successfulQuery = false;
 
-                String[] args = event.getArgs().split("%s%");
+                String args = event.getArgs();
+                String[] argsList = StringFormatting.split(args, Main.config.commandArgDelimiter.getValue());
+                Message message = event.getMessage();
 
-                if (args.length == 2) {
+                if (!message.getMentionedChannels().isEmpty() && argsList.length == 4) {
+                    TextChannel channel = message.getMentionedChannels().get(0);
+
                     EmbedBuilder embedBuilder = new EmbedBuilder();
 
-                    embedBuilder.setAuthor(args[0], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/calendar-icon.png");
-                    embedBuilder.addField(new MessageEmbed.Field("Event", args[1], false));
+                    embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/calendar-icon.png");
+                    embedBuilder.setTitle(argsList[2]);
+                    embedBuilder.addField(new MessageEmbed.Field("Event", argsList[3], false));
 
-                    event.reply(embedBuilder.build());
+                    channel.sendMessage(embedBuilder.build()).queue();
+                    successfulQuery = true;
                 } else {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 }
-                event.getMessage().addReaction("\u2705").complete();
+                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
@@ -146,7 +188,9 @@ public class Commands {
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
+                if (event.getArgs().equals(""))
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 if (event.getArgs() != null && event.getArgs().split(" ")[0] != null) {
                     if (event.getArgs().split(" ")[0].equals("m")) {
                         Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
@@ -154,7 +198,7 @@ public class Commands {
                         event.getMessage().addReaction("\u2705").complete();
                     } else if (event.getArgs().split(" ")[0].equals("online")) {
                         Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
-                        Main.jda.getPresence().setActivity(Activity.playing(Main.status));
+                        Main.jda.getPresence().setActivity(Activity.playing(Main.config.status.getValue()));
                         event.getMessage().addReaction("\u2705").complete();
                     }
                 }
@@ -180,13 +224,13 @@ public class Commands {
 
         StopCommand() {
             this.name = "stop";
-            this.help = "Shuts down bot.";
+            this.help = "[Administrative] Shuts down bot.";
             this.hidden = true;
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
                 event.getMessage().addReaction("\u2705").complete();
                 Main.exit(0);
             }
@@ -198,21 +242,24 @@ public class Commands {
         FilterCommand() {
             this.name = "filter";
             this.help = "[Administrative] Modifies message filters";
+            this.hidden = true;
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
                 String args = event.getArgs();
-                String[] argsList = event.getArgs().split(" ");
+                String[] argsList = args.split(" ");
+                if (event.getArgs().equals(""))
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 boolean successfulQuery = false;
 
                 if (argsList[0] == null) {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 } else if (argsList[0].equals("add")) {
                     if (argsList[1] != null) {
-                        if (!Main.bannedPhrases.contains(args.replaceFirst(argsList[0] + " ", ""))) {
-                            Main.bannedPhrases.add(args.replaceFirst(argsList[0] + " ", ""));
+                        if (!Main.config.bannedPhrases.getValue().contains(args.replaceFirst(argsList[0] + " ", ""))) {
+                            Main.config.bannedPhrases.getValue().add(args.replaceFirst(argsList[0] + " ", ""));
                             Main.reloadConfigs();
                         }
                         successfulQuery = true;
@@ -222,9 +269,9 @@ public class Commands {
                 } else if (argsList[0].equals("remove")) {
                     if (argsList[1] != null) {
                         if (argsList[1].equals("*")) {
-                            Main.bannedPhrases.clear();
+                            Main.config.bannedPhrases.getValue().clear();
                         } else {
-                            Main.bannedPhrases.remove(args.replaceFirst(argsList[0] + " ", ""));
+                            Main.config.bannedPhrases.getValue().remove(args.replaceFirst(argsList[0] + " ", ""));
                         }
                         Main.reloadConfigs();
                         successfulQuery = true;
@@ -233,7 +280,7 @@ public class Commands {
                     }
                 } else if (argsList[0].equals("list")) {
                     StringBuilder sb = new StringBuilder();
-                    for (String s : Main.bannedPhrases) {
+                    for (String s : Main.config.bannedPhrases.getValue()) {
                         sb.append("\"").append(s).append("\"\n");
                     }
                     event.reply(sb.toString());
@@ -248,31 +295,33 @@ public class Commands {
 
         DebugCommand() {
             this.name = "debug";
-            this.help = "Gets bot information.";
+            this.help = "[Administrative] Gets bot information.";
             this.hidden = true;
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.botAdminRoleId)).contains(event.getMember())) {
+            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
+                if (event.getArgs().equals(""))
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 boolean successfulQuery = false;
                 if (event.getArgs().equals("senders")) {
                     StringBuilder s = new StringBuilder();
-                    for (EmailSenderProfile emailSenderProfile : Main.knownSenders) {
+                    for (EmailSenderProfile emailSenderProfile : Main.config.knownSenders.getValue()) {
                         s.append(emailSenderProfile.getSenderName()).append(" <").append(emailSenderProfile.getSenderAddress()).append(">\n");
                     }
                     event.reply(s.toString());
                     successfulQuery = true;
                 } else if (event.getArgs().equals("destinations")) {
                     StringBuilder s = new StringBuilder();
-                    for (String dest : Main.knownDestinations) {
+                    for (String dest : Main.config.knownDestinations.getValue()) {
                         s.append("<").append(dest).append(">").append("\n");
                     }
                     event.reply(s.toString());
                     successfulQuery = true;
                 } else if (event.getArgs().equals("saveconfigs")) {
                     try {
-                        ConfigManager.saveConfigs(Main.configLocation);
+                        ConfigManager.saveConfigs(Main.config.configLocation.getValue());
                         successfulQuery = true;
                     } catch (FileNotFoundException e) {
                         Main.log(e);
@@ -292,16 +341,14 @@ public class Commands {
 
                 } else if (event.getArgs().equals("bp")) {
                     StringBuilder reply = new StringBuilder();
-                    for (String s : Main.bannedPhrases) {
+                    for (String s : Main.config.bannedPhrases.getValue()) {
                         reply.append("\"").append(s).append("\"").append("\n");
                     }
                     event.reply(reply.toString());
                     successfulQuery = true;
                 }
-
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
         }
     }
-
 }

@@ -130,7 +130,7 @@ public class EmailHandler extends Thread {
                         emailSenderProfile.setSenderAddress(nameMatcher.group(2).trim());
                     }
 
-                    for (String dest : Main.knownDestinations) {
+                    for (String dest : Main.config.knownDestinations.getValue()) {
                         if (to.contains(dest)) {
                             allowed = true;
                             break;
@@ -138,7 +138,7 @@ public class EmailHandler extends Thread {
                     }
 
                     if (!allowed) {
-                        for (EmailSenderProfile sender : Main.knownSenders) {
+                        for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
                             if ((sender.getSenderName() + " <" + sender.getSenderAddress().toLowerCase() + ">").equals(from)) {
                                 allowed = true;
                                 emailSenderProfile = sender;
@@ -200,13 +200,13 @@ public class EmailHandler extends Thread {
 
                 Base64 base64Url = new Base64(true);
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
-                if (new File(Main.cacheLocation).exists()) {
+                if (new File(Main.config.cacheLocation.getValue()).exists()) {
                     String timestamp = new SimpleDateFormat("yyyy.MM.dd.").format(new Date());
-                    FileOutputStream fileOutFile = new FileOutputStream(Main.cacheLocation + timestamp + filename);
-                    result.add(formatUrl("https://" + Main.domain + Main.extCacheLocation + timestamp + filename));
+                    FileOutputStream fileOutFile = new FileOutputStream(Main.config.cacheLocation.getValue() + timestamp + filename);
+                    result.add(formatUrl("https://" + Main.config.domain.getValue() + Main.config.extConfigLocation.getValue() + timestamp + filename));
                     fileOutFile.write(fileByteArray);
                     fileOutFile.close();
-                    Main.log("Created email attachment cache file: \"" + Main.cacheLocation + timestamp + filename + "\".");
+                    Main.log("Created email attachment cache file: \"" + Main.config.cacheLocation.getValue() + timestamp + filename + "\".");
                 } else {
                     result.add("ERROR: Failed to load " + filename);
                 }
@@ -220,7 +220,7 @@ public class EmailHandler extends Thread {
     }
 
     public static String formatMessage(String s) {
-        for (String filter : Main.emailFilters) {
+        for (String filter : Main.config.emailFilters.getValue()) {
             s = Pattern.compile(filter, Pattern.DOTALL).matcher(s).replaceAll("");
         }
         return s;

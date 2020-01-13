@@ -7,6 +7,8 @@
 
 package us.jacobdixon.discord;
 
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -27,6 +29,10 @@ public class EventHandler extends ListenerAdapter {
         }
     }
 
+    private enum RemovalReason {
+        MENTIONED_ROLE, CONTENT_POLICY, OTHER;
+    }
+
     private SimpleReplace[] simpleReplacements = {
             new SimpleReplace("a", new String[]{"@", "4", "\u00E2", "\u00E3", "\u00E4", "\u00E5"}),
             new SimpleReplace("i", new String[]{"1", "!", "\u00EC", "\u00ED", "\u00EE", "\u00EF"}),
@@ -42,30 +48,50 @@ public class EventHandler extends ListenerAdapter {
         if (!event.getAuthor().getId().equals(Main.jda.getSelfUser().getId())) {
             Main.embedMessageLog(event.getAuthor(), event.getMessage().getContentDisplay());
             Main.log("Received private message from \"" + event.getAuthor().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\".");
+            event.getAuthor().openPrivateChannel().queue(privateChannel -> {
+                privateChannel.sendMessage("This bot is not setup to handle private messages. If you have an issue please contact the admin beluga#6796, or send an email to discord@jacobdixon.us.").queue();
+            });
         }
     }
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.adminRoleId)).contains(event.getMember()) && !event.getAuthor().isBot()) {
+        if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember()) && !event.getAuthor().isBot()) {
 
             boolean allowed = true;
 
-            String message = event.getMessage().getContentDisplay();
-            String violatingPhrase = "";
+            Message message = event.getMessage();
+            String messageContent = event.getMessage().getContentDisplay();
+            RemovalReason reason = RemovalReason.OTHER;
+            String violation = "";
 
-            for (String s : Main.bannedPhrases) {
-                if (message.toLowerCase().contains(s.toLowerCase()) || message.toLowerCase().contains(s.toLowerCase() + "s") || message.toLowerCase().contains(s.toLowerCase() + "es")) {
+            for (String s : Main.config.bannedPhrases.getValue()) {
+                if (messageContent.toLowerCase().contains(s.toLowerCase()) || messageContent.toLowerCase().contains(s.toLowerCase() + "s") || messageContent.toLowerCase().contains(s.toLowerCase() + "es")) {
                     allowed = false;
-                    violatingPhrase = s;
+                    reason = RemovalReason.CONTENT_POLICY;
+                    violation = s;
                     break;
                 }
 
                 for (SimpleReplace simpleReplacement : simpleReplacements) {
                     for (String replacement : simpleReplacement.replacements) {
-                        if (message.toLowerCase().replaceAll(simpleReplacement.base, replacement).contains(s.toLowerCase().replaceAll(simpleReplacement.base, replacement))) {
+                        if (messageContent.toLowerCase().replaceAll(simpleReplacement.base, replacement).contains(s.toLowerCase().replaceAll(simpleReplacement.base, replacement))) {
                             allowed = false;
-                            violatingPhrase = s.replaceAll(simpleReplacement.base, replacement);
+                            reason = RemovalReason.CONTENT_POLICY;
+                            violation = s.replaceAll(simpleReplacement.base, replacement);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (allowed) {
+                for (String is : Main.config.restrictedMentions.getValue()) {
+                    for (Role role : message.getMentionedRoles()) {
+                        if (role.getId().equals(is)) {
+                            allowed = false;
+                            reason = RemovalReason.MENTIONED_ROLE;
+                            violation = "@" + role.getName();
                             break;
                         }
                     }
@@ -74,21 +100,26 @@ public class EventHandler extends ListenerAdapter {
 
             if (!allowed) {
                 event.getMessage().delete().queue();
-                String finalViolatingPhrase = violatingPhrase;
-                String finalViolatingPhrase1 = violatingPhrase;
+                String finalViolatingPhrase = violation;
+                RemovalReason finalReason = reason;
                 event.getAuthor().openPrivateChannel().queue(privateChannel -> {
-                    privateChannel.sendMessage("Your message: \"" + message.replaceAll(finalViolatingPhrase, "`" + finalViolatingPhrase1 + "`") + "\" was automatically removed for violating the guild's content policy. If this was a mistake, please contact an admin.").queue();
+                    if (finalReason == RemovalReason.CONTENT_POLICY) {
+                        privateChannel.sendMessage("Your message: \"" + messageContent.replaceAll(finalViolatingPhrase, "`" + finalViolatingPhrase + "`") + "\" was automatically removed for violating the guild's content policy. If this was a mistake, please contact an admin.").queue();
+
+                    } else if(finalReason == RemovalReason.MENTIONED_ROLE){
+                        privateChannel.sendMessage("Your message: \"" + messageContent.replaceAll(finalViolatingPhrase, "`" + finalViolatingPhrase + "`") + "\" was automatically removed because you mentioned a role that has restricted mentioning. If this was a mistake, please contact an admin.").queue();
+                    }
                 });
-                Main.embedFilterLog(event.getMember(), event.getChannel(), message, violatingPhrase);
+                Main.embedFilterLog(event.getMember(), event.getChannel(), messageContent, reason.name(), violation);
             }
         }
     }
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        if (event.getGuild().getId().equals(Main.serverId)) {
-            if (event.getGuild().getId().equals(Main.serverId)) {
-                event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(Main.memberRoleId)).queue();
+        if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
+            if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
+                event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(Main.config.memberRoleId.getValue())).queue();
             }
         }
         Main.embedMemberLog("Member Joined", event.getMember());
@@ -103,9 +134,9 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
-        for (RoleAssigner role : Main.roleAssigners) {
-            if (event.getMessageId().equals(Main.roleAssignmentMessageId) && event.getReactionEmote().getEmoji().equals(role.getEmote())) {
-                if (event.getGuild().getId().equals(Main.serverId)) {
+        for (RoleAssigner role : Main.config.roleAssigners.getValue()) {
+            if (event.getMessageId().equals(Main.config.roleAssignmentMessageId.getValue()) && event.getReactionEmote().getEmoji().equals(role.getEmote())) {
+                if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
                     event.getGuild().addRoleToMember(event.getGuild().getMemberById(event.getUser().getId()), event.getGuild().getRoleById(role.getRoleId())).queue(success -> {
                         event.getMember().getUser().openPrivateChannel().queue(privateChannel -> {
                             privateChannel.sendMessage("Assigned Role: " + event.getGuild().getRoleById(role.getRoleId()).getName()).queue();
@@ -120,9 +151,9 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReactionRemove(GuildMessageReactionRemoveEvent event) {
-        for (RoleAssigner role : Main.roleAssigners) {
-            if (event.getMessageId().equals(Main.roleAssignmentMessageId) && event.getReactionEmote().getEmoji().equals(role.getEmote())) {
-                if (event.getGuild().getId().equals(Main.serverId)) {
+        for (RoleAssigner role : Main.config.roleAssigners.getValue()) {
+            if (event.getMessageId().equals(Main.config.roleAssignmentMessageId.getValue()) && event.getReactionEmote().getEmoji().equals(role.getEmote())) {
+                if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
                     event.getGuild().removeRoleFromMember(event.getGuild().getMemberById(event.getUser().getId()), event.getGuild().getRoleById(role.getRoleId())).queue(success -> {
                         event.getMember().getUser().openPrivateChannel().queue(privateChannel -> {
                             privateChannel.sendMessage("Removed Role: " + event.getGuild().getRoleById(role.getRoleId()).getName()).queue();

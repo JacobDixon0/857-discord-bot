@@ -23,8 +23,8 @@ public class ConfigManager {
         Object obj = new JSONParser().parse(new FileReader(name));
         JSONObject jsonObject = (JSONObject) obj;
 
-        JSONArray approvedSenders = (JSONArray) jsonObject.get("approved-senders");
-        Main.knownSenders = new ArrayList<>();
+        JSONArray approvedSenders = (JSONArray) jsonObject.get(Main.config.knownSenders.getKey());
+        Main.config.knownSenders.setValue(new ArrayList<>());
 
         if(approvedSenders != null) {
             for (Object approvedSender : approvedSenders) {
@@ -39,40 +39,40 @@ public class ConfigManager {
                         esp.setProfileImageUrl(pair.getValue().toString());
                     }
                 }
-                Main.knownSenders.add(esp);
+                Main.config.knownSenders.getValue().add(esp);
             }
         }
 
-        JSONArray approvedDestinations = (JSONArray) jsonObject.get("approved-destinations");
-        Main.knownDestinations = new ArrayList<>();
+        JSONArray approvedDestinations = (JSONArray) jsonObject.get(Main.config.knownDestinations.getKey());
+        Main.config.knownDestinations.setValue(new ArrayList<>());
 
         if (approvedDestinations != null) {
             for (Object approvedDest : approvedDestinations) {
                 for (Object o : ((Map) approvedDest).entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
                     if (pair.getKey().equals("to")) {
-                        Main.knownDestinations.add(pair.getValue().toString());
+                        Main.config.knownDestinations.getValue().add(pair.getValue().toString());
                     }
                 }
             }
         }
 
-        JSONArray emailFilters = (JSONArray) jsonObject.get("message-filters");
-        Main.emailFilters = new ArrayList<>();
+        JSONArray emailFilters = (JSONArray) jsonObject.get(Main.config.emailFilters.getKey());
+        Main.config.emailFilters.setValue(new ArrayList<>());
 
         if (emailFilters != null) {
             for (Object filter : emailFilters) {
                 for (Object o : ((Map) filter).entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
                     if (pair.getKey().equals("filter")) {
-                        Main.emailFilters.add(pair.getValue().toString());
+                        Main.config.emailFilters.getValue().add(pair.getValue().toString());
                     }
                 }
             }
         }
 
-        JSONArray roleAssigners = (JSONArray) jsonObject.get("role-assigners");
-        Main.roleAssigners = new ArrayList<>();
+        JSONArray roleAssigners = (JSONArray) jsonObject.get(Main.config.roleAssigners.getKey());
+        Main.config.roleAssigners.setValue(new ArrayList<>());
 
         for (Object roleAssigner : roleAssigners) {
             RoleAssigner ra = new RoleAssigner(null, null);
@@ -84,9 +84,20 @@ public class ConfigManager {
                     ra.setEmote(pair.getValue().toString());
                 }
             }
-            Main.roleAssigners.add(ra);
+            Main.config.roleAssigners.getValue().add(ra);
         }
 
+        JSONArray restrictedMentions = (JSONArray) jsonObject.get(Main.config.restrictedMentions.getKey());
+        Main.config.restrictedMentions.setValue(new ArrayList<>());
+
+        for (Object restriction : restrictedMentions) {
+            for (Object o : ((Map) restriction).entrySet()) {
+                Map.Entry pair = (Map.Entry) o;
+                if (pair.getKey().equals("id")) {
+                    Main.config.restrictedMentions.getValue().add(pair.getValue().toString());
+                }
+            }
+        }
         Main.log("Loaded configs " + name + ".");
     }
 
@@ -99,28 +110,18 @@ public class ConfigManager {
         Object obj = new JSONParser().parse(new FileReader(name));
         JSONObject jsonObject = (JSONObject) obj;
 
-        Main.announcementsRoleId = jsonObject.get("announcements-role-id").toString();
-        Main.adminId = jsonObject.get("admin-id").toString();
-        Main.adminRoleId = jsonObject.get("admin-role-id").toString();
-        Main.extCacheLocation = jsonObject.get("ext-cache-location").toString();
-        Main.announcementsChannelId = jsonObject.get("announcements-channel-id").toString();
-        Main.botAdminRoleId = jsonObject.get("bot-admin-role-id").toString();
-        Main.roleAssignmentMessageId = jsonObject.get("role-assignment-message-id").toString();
-        Main.botToken = jsonObject.get("token").toString();
-        Main.cacheLocation = jsonObject.get("cache-location").toString();
-        Main.memberRoleId = jsonObject.get("member-role-id").toString();
-        Main.domain = jsonObject.get("domain").toString();
-        Main.logChannelId = jsonObject.get("log-channel-id").toString();
-        Main.serverId = jsonObject.get("server-id").toString();
-        Main.status = jsonObject.get("status").toString();
-        Main.banListLocation = jsonObject.get("filter-list").toString();
+        for (Config config : Main.config.getConfigs()){
+            if(!config.isVolatile() && jsonObject.get(config.getKey()) != null) {
+                Main.config.setConfigValueByKey(config.getKey(), jsonObject.get(config.getKey()).toString());
+            }
+        }
 
-        Main.bannedPhrases = new ArrayList<>();
+        Main.config.bannedPhrases.setValue(new ArrayList<>());
 
-        Scanner filterConfigScanner = new Scanner(new File(Main.banListLocation));
+        Scanner filterConfigScanner = new Scanner(new File(Main.config.banListLocation.getValue()));
         while(filterConfigScanner.hasNextLine()){
             String line = filterConfigScanner.nextLine();
-            Main.bannedPhrases.add(line);
+            Main.config.bannedPhrases.getValue().add(line);
         }
     }
 
@@ -128,20 +129,11 @@ public class ConfigManager {
 
         JSONObject jsonObject = new JSONObject();
 
-        jsonObject.put("token", Main.botToken);
-        jsonObject.put("cache-location", Main.cacheLocation);
-        jsonObject.put("admin-id", Main.adminId);
-        jsonObject.put("server-id", Main.serverId);
-        jsonObject.put("announcements-channel-id", Main.announcementsChannelId);
-        jsonObject.put("log-channel-id", Main.logChannelId);
-        jsonObject.put("role-assignment-message-id", Main.roleAssignmentMessageId);
-        jsonObject.put("announcements-role-id", Main.announcementsRoleId);
-        jsonObject.put("admin-role-id", Main.adminRoleId);
-        jsonObject.put("bot-admin-role-id", Main.botAdminRoleId);
-        jsonObject.put("member-role-id", Main.memberRoleId);
-        jsonObject.put("status", Main.status);
-        jsonObject.put("domain", Main.domain);
-        jsonObject.put("ext-cache-location", Main.extCacheLocation);
+        for (Config<?> config : Main.config.getConfigs()) {
+            if(!config.isVolatile() && !config.isExternal()) {
+                jsonObject.put(config.getKey(), config.getValue());
+            }
+        }
 
         PrintWriter configWriter = new PrintWriter(name);
 
@@ -152,10 +144,10 @@ public class ConfigManager {
         configWriter.flush();
         configWriter.close();
 
-        PrintWriter filterListWriter = new PrintWriter(Main.banListLocation);
+        PrintWriter filterListWriter = new PrintWriter(Main.config.banListLocation.getValue());
 
-        if(!Main.bannedPhrases.isEmpty()) {
-            for (String s : Main.bannedPhrases) {
+        if(!Main.config.bannedPhrases.getValue().isEmpty()) {
+            for (String s : Main.config.bannedPhrases.getValue()) {
                 filterListWriter.println(s);
             }
         }

@@ -33,51 +33,20 @@ import java.util.regex.Pattern;
 
 public class Main {
 
-    public static final String OS_NAME = System.getProperty("os.name").toLowerCase();
-    public static final String RUN_DIR = System.getProperty("user.dir");
-
-    public static boolean isUnixLike = true;
-    public static String hostname = "hostname";
-    static String botToken;
-
-    public static String adminId;
-    public static String serverId;
-    public static String announcementsChannelId;
-    public static String logChannelId;
-    public static String roleAssignmentMessageId;
-    public static String announcementsRoleId;
-    public static String adminRoleId;
-    public static String botAdminRoleId;
-    public static String memberRoleId;
-    public static String domain;
-
-    public static String cacheLocation = RUN_DIR + "/cache/";
-    public static String extCacheLocation = "/cache/";
-
-    public static String configLocation = RUN_DIR + "/config.json";
-    public static String extConfigLocation = RUN_DIR + "/ext-config.json";
-    public static String banListLocation = RUN_DIR + "/banlist.txt";
-
-    public static String status = "Bot Stuff";
+    public static Configuration config = new Configuration();
 
     public static EventHandler eventHandler = new EventHandler();
     public static CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
 
-    public static JDA jda;
-
-    public static ArrayList<EmailSenderProfile> knownSenders = new ArrayList<>();
-    public static ArrayList<String> knownDestinations = new ArrayList<>();
-    public static ArrayList<RoleAssigner> roleAssigners = new ArrayList<>();
-    public static ArrayList<String> emailFilters = new ArrayList<>();
-    public static ArrayList<String> bannedPhrases = new ArrayList<>();
-
     public static EmailHandler emailHandler = new EmailHandler();
+
+    public static JDA jda;
 
     public static void main(String[] args) throws IOException {
 
         loadConfigs();
 
-        commandClientBuilder.setOwnerId(adminId);
+        commandClientBuilder.setOwnerId(config.adminId.getValue());
         commandClientBuilder.addCommands(
                 new Commands.EchoCommand(),
                 new Commands.AnnouncementCommand(),
@@ -87,17 +56,18 @@ public class Main {
                 new Commands.PingCommand(),
                 new Commands.StopCommand(),
                 new Commands.DebugCommand(),
-                new Commands.FilterCommand());
+                new Commands.FilterCommand(),
+                new Commands.EchoEditCommand());
         commandClientBuilder.setPrefix("!");
-        commandClientBuilder.setActivity(Activity.playing(status));
+        commandClientBuilder.setActivity(Activity.playing(config.status.getValue()));
         commandClientBuilder.useHelpBuilder(false);
 
         try {
-            jda = new JDABuilder(AccountType.BOT).setToken(botToken).addEventListeners(eventHandler, commandClientBuilder.build()).build().awaitReady();
+            jda = new JDABuilder(AccountType.BOT).setToken(config.botToken.getValue()).addEventListeners(eventHandler, commandClientBuilder.build()).build().awaitReady();
             emailHandler.start();
 
             embedStartupLog();
-            log("Started in " + RUN_DIR + " on " + hostname + " running " + OS_NAME + ".");
+            log("Started in " + config.RUN_DIR.getValue() + " on " + config.hostname.getValue() + " running " + config.OS_NAME.getValue() + ".");
         } catch (LoginException | InterruptedException e0) {
             log(e0);
             exit(-1, true);
@@ -118,22 +88,22 @@ public class Main {
     public static void cacheFile(String url, String name) {
         try {
             ReadableByteChannel bc = Channels.newChannel(new URL(url).openStream());
-            FileOutputStream fos = new FileOutputStream(cacheLocation + "/res/" + name);
+            FileOutputStream fos = new FileOutputStream(config.cacheLocation.getValue() + "/res/" + name);
             FileChannel fc = fos.getChannel();
 
             fos.getChannel().transferFrom(bc, 0, Long.MAX_VALUE);
 
-            File f = new File(cacheLocation + "/res/" + name);
+            File f = new File(config.cacheLocation.getValue() + "/res/" + name);
 
             if(!name.matches("^.+\\.[a-zA-Z0-9]+$")) {
                 String type = URLConnection.guessContentTypeFromStream(new BufferedInputStream(new FileInputStream(f)));
 
                 if (type.equals("image/png")) {
-                    boolean success = f.renameTo(new File(cacheLocation + "/res/" + name + ".png"));
+                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "/res/" + name + ".png"));
                     if (!success)
                         log(LogPriority.ERROR, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
                 } else if (type.equals("image/jpeg")) {
-                    boolean success = f.renameTo(new File(cacheLocation + "/res/" + name + ".jpg"));
+                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "/res/" + name + ".jpg"));
                     if (!success)
                         log(LogPriority.ERROR, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
                 }
@@ -149,29 +119,29 @@ public class Main {
     public static void reloadConfigs(){
         try {
             loadConfigs();
-            ConfigManager.saveConfigs(configLocation);
+            ConfigManager.saveConfigs(config.configLocation.getValue());
         } catch (IOException e) {
             log(e);
-            log(LogPriority.ERROR, "Could not save configs " + configLocation + "");
+            log(LogPriority.ERROR, "Could not save configs " + config.configLocation.getValue() + "");
         }
     }
 
     public static void loadConfigs() throws IOException {
         try {
-            ConfigManager.loadExtConfigs(extConfigLocation);
-            ConfigManager.loadConfigs(configLocation);
+            ConfigManager.loadExtConfigs(config.extConfigLocation.getValue());
+            ConfigManager.loadConfigs(config.configLocation.getValue());
         } catch (ParseException e) {
             log(e);
             log(LogPriority.ERROR, "Exception was caught loading configs.");
             exit(-1, true);
         }
 
-        if (OS_NAME.contains("win")) {
-            isUnixLike = false;
-            hostname = execReadToString("hostname").replace("\n", "").replace("\r", "");
-        } else if (OS_NAME.contains("nix") || OS_NAME.contains("nux") || OS_NAME.contains("mac os x")) {
-            isUnixLike = true;
-            hostname = execReadToString("hostname").replace("\n", "").replace("\r", "");
+        if (config.OS_NAME.getValue().contains("win")) {
+            config.isUnixLike.setValue(false);
+            config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
+        } else if (config.OS_NAME.getValue().contains("nix") || config.OS_NAME.getValue().contains("nux") || config.OS_NAME.getValue().contains("mac os x")) {
+            config.isUnixLike.setValue(true);
+            config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
         }
     }
 
@@ -188,8 +158,8 @@ public class Main {
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Role", "<@&" + role.getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
-        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extConfigLocation.getValue() + "res/discord-logo-blue.png");
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedPurgeLog(String title, MessageChannel channel) {
@@ -198,20 +168,21 @@ public class Main {
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
-        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extConfigLocation.getValue() + "res/discord-logo-blue.png");
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
-    public static void embedFilterLog(Member member, MessageChannel channel, String message, String violation) {
+    public static void embedFilterLog(Member member, MessageChannel channel, String message, String reason, String violation) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         embedBuilder.setTitle("Filtered Message");
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
+        embedBuilder.addField(new MessageEmbed.Field("Reason", reason, true));
         embedBuilder.addField(new MessageEmbed.Field("Message", message.replaceAll(violation, "`" + violation + "`"), false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
-        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extConfigLocation.getValue() + "res/discord-logo-blue.png");
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedMemberLog(String title, Member member) {
@@ -220,8 +191,8 @@ public class Main {
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
-        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedAnnouncementLog(String sender, String subject) {
@@ -231,9 +202,9 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Sender", sender, false));
         embedBuilder.addField(new MessageEmbed.Field("Subject", subject, false));
-        embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + announcementsChannelId + ">", false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
-        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+        embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + config.announcementsChannelId.getValue() + ">", false));
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedStartupLog() {
@@ -241,9 +212,9 @@ public class Main {
 
         embedBuilder.setTitle("Bot Initiated");
         embedBuilder.setColor(Color.GREEN);
-        embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host `" + hostname + "`", false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
-        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+        embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host `" + config.hostname.getValue() + "`", false));
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void embedMessageLog(User auth, String content) {
@@ -253,18 +224,18 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Sender", "<@" + auth.getId() + ">", false));
         embedBuilder.addField(new MessageEmbed.Field("Message", content, false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + domain + cacheLocation + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
 
-        jda.getGuildById(serverId).getTextChannelById(logChannelId).sendMessage(embedBuilder.build()).queue();
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
     public static void emailAnnounce(EmailSenderProfile senderProfile, String title, String time, String content, List<String> attachments) {
         if (title.length() > 50) {
             title = title.substring(0, 40).trim() + "...";
         }
-        jda.getGuildById(serverId).getTextChannelById(announcementsChannelId)
-                .sendMessage("<@&" + Main.announcementsRoleId + "> Email announcement posted for 857 - \"" + title + "\"").queue();
-        jda.getGuildById(serverId).getTextChannelById(announcementsChannelId).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.announcementsChannelId.getValue())
+                .sendMessage("<@&" + config.announcementsRoleId.getValue() + "> Email announcement posted for 857 - \"" + title + "\"").queue();
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.announcementsChannelId.getValue()).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
         Main.embedAnnouncementLog(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", title);
     }
 
@@ -293,9 +264,9 @@ public class Main {
             embedBuilder.addField(new MessageEmbed.Field("Attached: ", sb.toString(), false));
         }
         if (time.equals("x")) {
-            embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://" + domain + cacheLocation + "res/gmail-logo.png");
+            embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://" + config.domain.getValue() + config.extConfigLocation.getValue() + "res/gmail-logo.png");
         } else {
-            embedBuilder.setFooter(time, "https://" + domain + cacheLocation + "res/gmail-logo.png");
+            embedBuilder.setFooter(time, "https://" + config.domain.getValue() + config.cacheLocation.getValue() + "res/gmail-logo.png");
         }
 
         return embedBuilder.build();
@@ -312,7 +283,7 @@ public class Main {
     }
 
     enum LogPriority {
-        INFO, WARNING, ERROR, FATAL_ERROR;
+        INFO, WARNING, ERROR, FATAL_ERROR, DEBUG;
     }
 
     public static void log(Exception e) {
@@ -333,6 +304,8 @@ public class Main {
             System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " ERROR: " + message);
         } else if (priority == LogPriority.FATAL_ERROR) {
             System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " FATAL ERROR: " + message);
+        } else if (priority == LogPriority.DEBUG) {
+            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " DEBUG: " + message);
         }
     }
 
@@ -348,7 +321,7 @@ public class Main {
         if (!force) {
             jda.shutdown();
             try {
-                ConfigManager.saveConfigs(configLocation);
+                ConfigManager.saveConfigs(config.configLocation.getValue());
             } catch (FileNotFoundException e) {
                 log(e);
                 log(LogPriority.ERROR, "Failed to save configurations before exiting.");
