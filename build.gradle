@@ -4,7 +4,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '4.0.2'
 }
 
-mainClassName = "us.jacobdioxn.discord.Main"
+mainClassName = "us.jacobdixon.discord.Main"
 
 group '857-discord-bot'
 version '1.0-SNAPSHOT'
