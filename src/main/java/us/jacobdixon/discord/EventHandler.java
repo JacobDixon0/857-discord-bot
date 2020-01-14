@@ -38,7 +38,7 @@ public class EventHandler extends ListenerAdapter {
             new SimpleReplace("a", new String[]{"@", "4", "\u00E2", "\u00E3", "\u00E4", "\u00E5"}),
             new SimpleReplace("i", new String[]{"1", "!", "\u00EC", "\u00ED", "\u00EE", "\u00EF"}),
             new SimpleReplace("n", new String[]{"\u0144", "\u00F1"}),
-            new SimpleReplace("s", new String[]{"5", "\\$"}),
+            new SimpleReplace("s", new String[]{"5", "$"}),
             new SimpleReplace("t", new String[]{"7"}),
             new SimpleReplace("e", new String[]{"3"}),
             new SimpleReplace("o", new String[]{"0"}),
@@ -83,7 +83,7 @@ public class EventHandler extends ListenerAdapter {
 
                     for (SimpleReplace simpleReplacement : simpleReplacements) {
                         for (String replacement : simpleReplacement.replacements) {
-                            if (messageContent.toLowerCase().replaceAll(simpleReplacement.base, replacement).matches(s.replaceAll(simpleReplacement.base, replacement))) {
+                            if (messageContent.toLowerCase().replaceAll(StringFormatting.formatRegex(simpleReplacement.base), replacement).matches(s.replaceAll(simpleReplacement.base, replacement))) {
                                 allowed = false;
                                 reason = RemovalReason.CONTENT_POLICY;
                                 violation = phrase.replaceAll(simpleReplacement.base, replacement);
