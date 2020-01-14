@@ -318,14 +318,21 @@ public class Commands {
                     }
                     event.reply(s.toString());
                     successfulQuery = true;
-                } else if (event.getArgs().equals("destinations")) {
+                } else if (event.getArgs().equals("list dest")) {
                     StringBuilder s = new StringBuilder();
                     for (String dest : Main.config.knownDestinations.getValue()) {
                         s.append("<").append(dest).append(">").append("\n");
                     }
                     event.reply(s.toString());
                     successfulQuery = true;
-                } else if (event.getArgs().equals("saveconfigs")) {
+                } else if (event.getArgs().equals("list send")) {
+                    StringBuilder s = new StringBuilder();
+                    for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
+                        s.append(sender.getSenderName()).append(" <").append(sender.getSenderAddress()).append(">").append("\n");
+                    }
+                    event.reply(s.toString());
+                    successfulQuery = true;
+                } else if (event.getArgs().equals("config save")) {
                     try {
                         ConfigManager.saveConfigs(Main.config.configLocation.getValue());
                         successfulQuery = true;
@@ -333,7 +340,7 @@ public class Commands {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to save configs.");
                     }
-                } else if (event.getArgs().equals("loadconfigs")) {
+                } else if (event.getArgs().equals("config load")) {
                     try {
                         Main.loadConfigs();
                         successfulQuery = true;
@@ -341,16 +348,8 @@ public class Commands {
                         Main.log(e);
                         Main.log(Main.LogPriority.ERROR, "Failed to load configs.");
                     }
-                } else if (event.getArgs().equals("reloadconfigs")) {
+                } else if (event.getArgs().equals("config reload")) {
                     Main.reloadConfigs();
-                    successfulQuery = true;
-
-                } else if (event.getArgs().equals("bp")) {
-                    StringBuilder reply = new StringBuilder();
-                    for (String s : Main.config.bannedPhrases.getValue()) {
-                        reply.append("\"").append(s).append("\"").append("\n");
-                    }
-                    event.reply(reply.toString());
                     successfulQuery = true;
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
