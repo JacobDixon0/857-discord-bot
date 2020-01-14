@@ -28,7 +28,7 @@ public class ConfigManager {
 
         if(approvedSenders != null) {
             for (Object approvedSender : approvedSenders) {
-                EmailSenderProfile esp = new EmailSenderProfile(null, null, null);
+                EmailSenderProfile esp = new EmailSenderProfile();
                 for (Object o : ((Map) approvedSender).entrySet()) {
                     Map.Entry pair = (Map.Entry) o;
                     if (pair.getKey().equals("name")) {
@@ -110,9 +110,9 @@ public class ConfigManager {
         Object obj = new JSONParser().parse(new FileReader(name));
         JSONObject jsonObject = (JSONObject) obj;
 
-        for (Config config : Main.config.getConfigs()){
+        for (Config<?> config : Main.config.getConfigs()){
             if(!config.isVolatile() && jsonObject.get(config.getKey()) != null) {
-                Main.config.setConfigValueByKey(config.getKey(), jsonObject.get(config.getKey()).toString());
+                Main.config.setConfigValueByKey(config.getKey(), jsonObject.get(config.getKey()));
             }
         }
 

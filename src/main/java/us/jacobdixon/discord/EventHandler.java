@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEve
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import us.jacobdixon.utils.StringFormatting;
 
 public class EventHandler extends ListenerAdapter {
 
@@ -67,19 +68,25 @@ public class EventHandler extends ListenerAdapter {
             if(Main.config.useFilter.getValue()) {
 
                 for (String s : Main.config.bannedPhrases.getValue()) {
-                    if (messageContent.toLowerCase().contains(s.toLowerCase()) || messageContent.toLowerCase().contains(s.toLowerCase() + "s") || messageContent.toLowerCase().contains(s.toLowerCase() + "es")) {
+                    String phrase = s;
+                    s = "(?:.*)(?:^|\\s+)" + StringFormatting.formatRegex(s.toLowerCase()) + "(?:$|\\s+)(?:.*)";
+                    Main.log(Main.LogPriority.DEBUG, s);
+                if (messageContent.toLowerCase().matches(s) ||
+                            messageContent.toLowerCase().matches(s + "s") ||
+                            messageContent.toLowerCase().matches(s + "es")) {
+                    Main.log(Main.LogPriority.DEBUG, "hmm");
                         allowed = false;
                         reason = RemovalReason.CONTENT_POLICY;
-                        violation = s;
+                        violation = phrase;
                         break;
                     }
 
                     for (SimpleReplace simpleReplacement : simpleReplacements) {
                         for (String replacement : simpleReplacement.replacements) {
-                            if (messageContent.toLowerCase().replaceAll(simpleReplacement.base, replacement).contains(s.toLowerCase().replaceAll(simpleReplacement.base, replacement))) {
+                            if (messageContent.toLowerCase().replaceAll(simpleReplacement.base, replacement).matches(s.replaceAll(simpleReplacement.base, replacement))) {
                                 allowed = false;
                                 reason = RemovalReason.CONTENT_POLICY;
-                                violation = s.replaceAll(simpleReplacement.base, replacement);
+                                violation = phrase.replaceAll(simpleReplacement.base, replacement);
                                 break;
                             }
                         }

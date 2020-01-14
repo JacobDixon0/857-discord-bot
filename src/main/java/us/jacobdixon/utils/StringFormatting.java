@@ -7,6 +7,9 @@
 
 package us.jacobdixon.utils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class StringFormatting {
 
     public static String[] split(String string, String delim){
@@ -30,5 +33,18 @@ public class StringFormatting {
             }
         }
         return sections;
+    }
+
+    public static String formatUrl(String s) {
+        return s.replaceAll(" ", "%20");
+    }
+
+    public static String formatRegex(String s){
+        s = s.replaceAll("\\\\", "\\\\\\\\");
+        Matcher m = Pattern.compile("([\\^\\-\\[\\]*(){}.?+$])").matcher(s);
+        while (m.find()){
+            s = m.replaceAll("\\\\$1");
+        }
+        return s;
     }
 }

@@ -13,6 +13,10 @@ public class EmailSenderProfile {
     private String senderAddress = "address";
     private String profileImageUrl = "https://www.jacobdixon.us/cache/res/profile_mask2.png";
 
+    public EmailSenderProfile(){
+        new EmailSenderProfile(null, null, null);
+    }
+
     public EmailSenderProfile(String senderName, String senderAddress, String profileImageUrl) {
         if (senderName != null) this.senderName = senderName;
         if (senderAddress != null) this.senderAddress = senderAddress.toLowerCase();

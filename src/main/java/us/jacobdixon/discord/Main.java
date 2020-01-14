@@ -158,7 +158,7 @@ public class Main {
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Role", "<@&" + role.getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extConfigLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -168,7 +168,7 @@ public class Main {
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extConfigLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -181,7 +181,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Reason", reason, true));
         embedBuilder.addField(new MessageEmbed.Field("Message", message.replaceAll(violation, "`" + violation + "`"), false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extConfigLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 

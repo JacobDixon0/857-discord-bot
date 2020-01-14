@@ -21,6 +21,7 @@ import org.apache.commons.codec.binary.Base64;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
+import us.jacobdixon.utils.StringFormatting;
 
 import java.io.*;
 import java.lang.Thread;
@@ -203,7 +204,7 @@ public class EmailHandler extends Thread {
                 if (new File(Main.config.cacheLocation.getValue()).exists()) {
                     String timestamp = new SimpleDateFormat("yyyy.MM.dd.").format(new Date());
                     FileOutputStream fileOutFile = new FileOutputStream(Main.config.cacheLocation.getValue() + timestamp + filename);
-                    result.add(formatUrl("https://" + Main.config.domain.getValue() + Main.config.extConfigLocation.getValue() + timestamp + filename));
+                    result.add(StringFormatting.formatUrl("https://" + Main.config.domain.getValue() + Main.config.extConfigLocation.getValue() + timestamp + filename));
                     fileOutFile.write(fileByteArray);
                     fileOutFile.close();
                     Main.log("Created email attachment cache file: \"" + Main.config.cacheLocation.getValue() + timestamp + filename + "\".");
@@ -213,10 +214,6 @@ public class EmailHandler extends Thread {
             }
         }
         return result;
-    }
-
-    public static String formatUrl(String s) {
-        return s.replaceAll(" ", "%20");
     }
 
     public static String formatMessage(String s) {
