@@ -11,7 +11,7 @@ public class EmailSenderProfile {
 
     private String senderName = "name";
     private String senderAddress = "address";
-    private String profileImageUrl = "https://www.jacobdixon.us/cache/res/profile_mask2.png";
+    private String profileImageUrl = "https://" + Main.config.domain + Main.config.extCacheLocation + "res/profile_mask2.png";
 
     public EmailSenderProfile(){
         new EmailSenderProfile(null, null, null);

@@ -27,7 +27,7 @@ public class Commands {
 
         EchoCommand() {
             this.name = "echo";
-            this.help = "[Administrative] Posts message.";
+            this.help = "Posts message.";
             this.hidden = true;
         }
 
@@ -64,7 +64,7 @@ public class Commands {
 
         EchoEditCommand() {
             this.name = "eecho";
-            this.help = "[Administrative] edits a posted message.";
+            this.help = "edits a posted message.";
             this.hidden = true;
         }
 
@@ -90,7 +90,7 @@ public class Commands {
 
         PurgeCommand() {
             this.name = "purge";
-            this.help = "[Administrative] Clears channel history";
+            this.help = "Clears channel history";
             this.hidden = true;
         }
 
@@ -117,7 +117,7 @@ public class Commands {
 
         AnnouncementCommand() {
             this.name = "announce";
-            this.help = "[Administrative] Announces a message to #announcements channel.";
+            this.help = "Announces a message to #announcements channel.";
             this.hidden = true;
         }
 
@@ -146,7 +146,7 @@ public class Commands {
 
         EventAnnounceCommand() {
             this.name = "eannounce";
-            this.help = "[Administrative] posts generic embedded message.";
+            this.help = "posts generic embedded message.";
             this.hidden = true;
         }
 
@@ -182,7 +182,7 @@ public class Commands {
 
         ModeCommand() {
             this.name = "mode";
-            this.help = "[Administrative] Sets bot mode.";
+            this.help = "Sets bot mode.";
             this.hidden = true;
         }
 
@@ -224,7 +224,7 @@ public class Commands {
 
         StopCommand() {
             this.name = "stop";
-            this.help = "[Administrative] Shuts down bot.";
+            this.help = "Shuts down bot.";
             this.hidden = true;
         }
 
@@ -241,7 +241,7 @@ public class Commands {
 
         FilterCommand() {
             this.name = "filter";
-            this.help = "[Administrative] Modifies message filters";
+            this.help = "Modifies message filters";
             this.hidden = true;
         }
 
@@ -299,60 +299,122 @@ public class Commands {
 
     public static class DebugCommand extends Command {
 
+        private static String[] authorizedRoleIds = new String[]{Main.config.botAdminRoleId.getValue()};
+
         DebugCommand() {
             this.name = "debug";
-            this.help = "[Administrative] Gets bot information.";
+            this.help = "Gets bot information.";
+            this.aliases = new String[]{};
             this.hidden = true;
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
-                if (event.getArgs().equals(""))
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
-                boolean successfulQuery = false;
-                if (event.getArgs().equals("senders")) {
-                    StringBuilder s = new StringBuilder();
-                    for (EmailSenderProfile emailSenderProfile : Main.config.knownSenders.getValue()) {
-                        s.append(emailSenderProfile.getSenderName()).append(" <").append(emailSenderProfile.getSenderAddress()).append(">\n");
-                    }
-                    event.reply(s.toString());
-                    successfulQuery = true;
-                } else if (event.getArgs().equals("list dest")) {
-                    StringBuilder s = new StringBuilder();
-                    for (String dest : Main.config.knownDestinations.getValue()) {
-                        s.append("<").append(dest).append(">").append("\n");
-                    }
-                    event.reply(s.toString());
-                    successfulQuery = true;
-                } else if (event.getArgs().equals("list send")) {
-                    StringBuilder s = new StringBuilder();
-                    for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
-                        s.append(sender.getSenderName()).append(" <").append(sender.getSenderAddress()).append(">").append("\n");
-                    }
-                    event.reply(s.toString());
-                    successfulQuery = true;
-                } else if (event.getArgs().equals("config save")) {
-                    try {
-                        ConfigManager.saveConfigs(Main.config.configLocation.getValue());
-                        successfulQuery = true;
-                    } catch (FileNotFoundException e) {
-                        Main.log(e);
-                        Main.log(Main.LogPriority.ERROR, "Failed to save configs.");
-                    }
-                } else if (event.getArgs().equals("config load")) {
-                    try {
-                        Main.loadConfigs();
-                        successfulQuery = true;
-                    } catch (IOException e) {
-                        Main.log(e);
-                        Main.log(Main.LogPriority.ERROR, "Failed to load configs.");
-                    }
-                } else if (event.getArgs().equals("config reload")) {
-                    Main.reloadConfigs();
-                    successfulQuery = true;
+
+            Member author = event.getMember();
+            Guild guild = event.getGuild();
+
+            String args = event.getArgs();
+
+            boolean approved = false;
+
+            for (String roleId : authorizedRoleIds) {
+                if (guild.getMembersWithRoles(guild.getRoleById(roleId)).contains(author)) {
+                    approved = true;
+                    break;
                 }
-                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
+            }
+
+            if (approved) {
+                boolean successfulQuery = true;
+                boolean successfulResponse = true;
+
+                switch (args) {
+                    case "list dest": {
+                        successfulQuery = true;
+                        StringBuilder s = new StringBuilder();
+                        for (String dest : Main.config.knownDestinations.getValue()) {
+                            s.append("<").append(dest).append(">").append("\n");
+                        }
+                        event.reply(s.toString());
+                        break;
+                    }
+                    case "list send": {
+                        successfulQuery = true;
+                        StringBuilder s = new StringBuilder();
+                        for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
+                            s.append(sender.getSenderName()).append(" <").append(sender.getSenderAddress()).append(">\n");
+                        }
+                        event.reply(s.toString());
+                        break;
+                    }
+                    case "config save":
+                        successfulResponse = Main.saveConfigs();
+                        break;
+                    case "config load":
+                        successfulResponse = Main.loadConfigs();
+                        break;
+                    case "config reload":
+                        successfulResponse = Main.reloadConfigs();
+                        break;
+                    default:
+                        successfulQuery = false;
+                        break;
+                }
+
+                if (successfulQuery && successfulResponse) {
+                    event.getMessage().addReaction("\u2705").queue();
+                } else if (!successfulQuery){
+                    event.getMessage().addReaction("\u274C").queue();
+                    event.reply(author.getAsMention() + " Error: Invalid command.");
+                } else if (!successfulResponse){
+                    event.getMessage().addReaction("\u274C").queue();
+                    event.reply(author.getAsMention() + " Error: An internal error was encountered while trying to process your request.");
+                }
+            }
+        }
+    }
+
+    public static class OtherCommand extends Command {
+
+        private static String[] authorizedRoleIds = new String[]{};
+
+        OtherCommand() {
+            this.name = "name";
+            this.help = "Does something.";
+            this.aliases = new String[]{};
+            this.hidden = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+
+            Member author = event.getMember();
+            Message message = event.getMessage();
+            TextChannel channel = event.getTextChannel();
+            Guild guild = event.getGuild();
+
+            String args = event.getArgs();
+            String[] splitArgs = args.split(" ");
+
+            boolean approved = false;
+
+            for (String roleId : authorizedRoleIds) {
+                if (guild.getMembersWithRoles(guild.getRoleById(roleId)).contains(author)) {
+                    approved = true;
+                    break;
+                }
+            }
+
+            if (approved) {
+                boolean successfulQuery = false;
+
+                if (successfulQuery) {
+                    event.getMessage().addReaction("\u2705").queue();
+                } else {
+                    event.getMessage().addReaction("\u274C").queue();
+                    event.reply(author.getAsMention() + " Error: Invalid Command.");
+                }
             }
         }
     }

@@ -118,7 +118,7 @@ public class ConfigManager {
 
         Main.config.bannedPhrases.setValue(new ArrayList<>());
 
-        Scanner filterConfigScanner = new Scanner(new File(Main.config.banListLocation.getValue()));
+        Scanner filterConfigScanner = new Scanner(new File(Main.config.filterListLocation.getValue()));
         while(filterConfigScanner.hasNextLine()){
             String line = filterConfigScanner.nextLine();
             if(!line.equals("") && !line.matches("^\\s+$")) {
@@ -146,7 +146,7 @@ public class ConfigManager {
         configWriter.flush();
         configWriter.close();
 
-        PrintWriter filterListWriter = new PrintWriter(Main.config.banListLocation.getValue());
+        PrintWriter filterListWriter = new PrintWriter(Main.config.filterListLocation.getValue());
 
         if(!Main.config.bannedPhrases.getValue().isEmpty()) {
             for (String s : Main.config.bannedPhrases.getValue()) {

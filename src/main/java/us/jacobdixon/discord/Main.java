@@ -74,11 +74,11 @@ public class Main {
         }
     }
 
-    public static void cacheFile(String url){
+    public static void cacheFile(String url) {
         String name = "file";
         Matcher m = Pattern.compile("^https?://.+(/.+)$").matcher(url);
-        if(m.find()){
-            if(m.group(1) != null){
+        if (m.find()) {
+            if (m.group(1) != null) {
                 name = m.group(1);
             }
         }
@@ -95,7 +95,7 @@ public class Main {
 
             File f = new File(config.cacheLocation.getValue() + "/res/" + name);
 
-            if(!name.matches("^.+\\.[a-zA-Z0-9]+$")) {
+            if (!name.matches("^.+\\.[a-zA-Z0-9]+$")) {
                 String type = URLConnection.guessContentTypeFromStream(new BufferedInputStream(new FileInputStream(f)));
 
                 if (type.equals("image/png")) {
@@ -116,33 +116,52 @@ public class Main {
 
     }
 
-    public static void reloadConfigs(){
-        try {
-            loadConfigs();
-            ConfigManager.saveConfigs(config.configLocation.getValue());
-        } catch (IOException e) {
-            log(e);
-            log(LogPriority.ERROR, "Could not save configs " + config.configLocation.getValue() + "");
-        }
+    public static boolean reloadConfigs() {
+        return loadConfigs() && saveConfigs();
     }
 
-    public static void loadConfigs() throws IOException {
+    public static boolean loadConfigs() {
+        boolean returnValue = false;
         try {
             ConfigManager.loadExtConfigs(config.extConfigLocation.getValue());
             ConfigManager.loadConfigs(config.configLocation.getValue());
-        } catch (ParseException e) {
+            returnValue = true;
+        } catch (ParseException | IOException e) {
             log(e);
-            log(LogPriority.ERROR, "Exception was caught loading configs.");
+            log(LogPriority.FATAL_ERROR, "Exception was caught loading configs.");
             exit(-1, true);
         }
 
         if (config.OS_NAME.getValue().contains("win")) {
             config.isUnixLike.setValue(false);
-            config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
+            try {
+                config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
+            } catch (IOException e) {
+                log(e);
+                log(LogPriority.ERROR, "Exception was caught discovering hostname.");
+            }
         } else if (config.OS_NAME.getValue().contains("nix") || config.OS_NAME.getValue().contains("nux") || config.OS_NAME.getValue().contains("mac os x")) {
             config.isUnixLike.setValue(true);
-            config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
+            try {
+                config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
+            } catch (IOException e) {
+                log(e);
+                log(LogPriority.ERROR, "Exception was caught discovering hostname.");
+            }
         }
+        return returnValue;
+    }
+
+    public static boolean saveConfigs() {
+        boolean returnValue = false;
+        try {
+            ConfigManager.saveConfigs(config.configLocation.getValue());
+            returnValue = true;
+        } catch (FileNotFoundException e) {
+            log(e);
+            log(LogPriority.ERROR, "Exception was caught saving configs.");
+        }
+        return returnValue;
     }
 
     public static String execReadToString(String execCommand) throws IOException {

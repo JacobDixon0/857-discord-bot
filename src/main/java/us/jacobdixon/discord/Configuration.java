@@ -33,7 +33,7 @@ class Configuration {
     Config<String> cacheLocation = new Config<>(RUN_DIR.getValue() + "cache/", "cache-location");
     Config<String> extCacheLocation = new Config<>("cache/", "ext-cache-location");
 
-    Config<String> banListLocation = new Config<>(RUN_DIR.getValue() + "banlist.txt", "filter-list", false, true);
+    Config<String> filterListLocation = new Config<>(RUN_DIR.getValue() + "banlist.txt", "filter-list-location", false, true);
     Config<String> configLocation = new Config<>(RUN_DIR.getValue() + "config.json", "config-location", true);
     Config<String> extConfigLocation = new Config<>(RUN_DIR.getValue() + "ext-config.json", "ext-config-location", true);
 
@@ -70,7 +70,7 @@ class Configuration {
         configs.add(extCacheLocation);
         configs.add(configLocation);
         configs.add(extConfigLocation);
-        configs.add(banListLocation);
+        configs.add(filterListLocation);
         configs.add(status);
         configs.add(knownSenders);
         configs.add(knownDestinations);
