@@ -17,6 +17,8 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.model.*;
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
 import org.apache.commons.codec.binary.Base64;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
@@ -158,15 +160,25 @@ public class EmailHandler extends Thread {
                 }
 
                 lastId = messages.get(0).getId();
-                Thread.sleep(4000);
+                Thread.sleep(8000);
                 retryCount = 0;
             }
         } catch (Exception e) {
             Main.log(e);
             Main.log(Main.LogPriority.ERROR, "Encountered error while handling Gmail API.");
-            if(++retryCount <= 4){
-                Main.log("Reattempting to run Gmail API handler.");
+            if(++retryCount <= 8){
+                long backoff = (long) (retryCount * retryCount * 1000 + Math.random() * 1000);
+                Main.log("Reattempting to run Gmail API handler in " + backoff/1000 + " seconds.");
+                try{
+                    Thread.sleep(backoff);
+                } catch (InterruptedException e0){
+                    Main.log(Main.LogPriority.ERROR, "Error occurred waiting to retry Gmail API handling.");
+                }
                 runInboxPolling();
+            } else {
+                Main.log(Main.LogPriority.ERROR, "Could not retry Gmail API due to too many failed attempts.");
+                Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
+                Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
             }
         }
     }

@@ -200,6 +200,10 @@ public class Commands {
                         Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
                         Main.jda.getPresence().setActivity(Activity.playing(Main.config.status.getValue()));
                         event.getMessage().addReaction("\u2705").complete();
+                    } else if (event.getArgs().split(" ")[0].equals("disabled")) {
+                        Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
+                        Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
+                        event.getMessage().addReaction("\u2705").complete();
                     }
                 }
             }
@@ -370,50 +374,6 @@ public class Commands {
                 } else if (!successfulResponse){
                     event.getMessage().addReaction("\u274C").queue();
                     event.reply(author.getAsMention() + " Error: An internal error was encountered while trying to process your request.");
-                }
-            }
-        }
-    }
-
-    public static class OtherCommand extends Command {
-
-        private static String[] authorizedRoleIds = new String[]{};
-
-        OtherCommand() {
-            this.name = "name";
-            this.help = "Does something.";
-            this.aliases = new String[]{};
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-
-            Member author = event.getMember();
-            Message message = event.getMessage();
-            TextChannel channel = event.getTextChannel();
-            Guild guild = event.getGuild();
-
-            String args = event.getArgs();
-            String[] splitArgs = args.split(" ");
-
-            boolean approved = false;
-
-            for (String roleId : authorizedRoleIds) {
-                if (guild.getMembersWithRoles(guild.getRoleById(roleId)).contains(author)) {
-                    approved = true;
-                    break;
-                }
-            }
-
-            if (approved) {
-                boolean successfulQuery = false;
-
-                if (successfulQuery) {
-                    event.getMessage().addReaction("\u2705").queue();
-                } else {
-                    event.getMessage().addReaction("\u274C").queue();
-                    event.reply(author.getAsMention() + " Error: Invalid Command.");
                 }
             }
         }
