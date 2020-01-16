@@ -130,7 +130,6 @@ public class Commands {
                     attachmentsList.add(argsList[5]);
                     EmailSenderProfile sender = new EmailSenderProfile(argsList[0], argsList[1]);
                     for(EmailSenderProfile emailSenderProfile : Main.config.knownSenders.getValue()){
-                        Main.log(Main.LogPriority.DEBUG, sender.getSenderName() + ":" + sender.getSenderAddress() +" " + emailSenderProfile.getSenderName() + ":" + emailSenderProfile.getSenderAddress());
                         if(sender.getSenderAddress().equals(emailSenderProfile.getSenderAddress()) && sender.getSenderName().equals(emailSenderProfile.getSenderName())){
                             sender = emailSenderProfile;
                         }
@@ -138,7 +137,7 @@ public class Commands {
                     Main.emailAnnounce(sender, argsList[2], argsList[3], argsList[4], attachmentsList);
                     successfulQuery = true;
                 } else {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments " + argsList.length);
+                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments ");
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }

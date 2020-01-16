@@ -67,16 +67,14 @@ public class EventHandler extends ListenerAdapter {
             RemovalReason reason = RemovalReason.OTHER;
             String violation = "";
 
-            if(Main.config.useFilter.getValue()) {
+            if (Main.config.useFilter.getValue()) {
 
                 for (String s : Main.config.bannedPhrases.getValue()) {
                     String phrase = s;
                     s = "(?:.*)(?:^|\\s+)" + StringFormatting.formatRegex(s.toLowerCase()) + "(?:$|\\s+)(?:.*)";
-                    Main.log(Main.LogPriority.DEBUG, s);
-                if (messageContent.toLowerCase().matches(s) ||
+                    if (messageContent.toLowerCase().matches(s) ||
                             messageContent.toLowerCase().matches(s + "s") ||
                             messageContent.toLowerCase().matches(s + "es")) {
-                    Main.log(Main.LogPriority.DEBUG, "hmm");
                         allowed = false;
                         reason = RemovalReason.CONTENT_POLICY;
                         violation = phrase;
@@ -117,7 +115,7 @@ public class EventHandler extends ListenerAdapter {
                     if (finalReason == RemovalReason.CONTENT_POLICY) {
                         privateChannel.sendMessage("Your message: \"" + messageContent.replaceAll(finalViolatingPhrase, "`" + finalViolatingPhrase + "`") + "\" was automatically removed for violating the guild's content policy. If this was a mistake, please contact an admin.").queue();
 
-                    } else if(finalReason == RemovalReason.MENTIONED_ROLE){
+                    } else if (finalReason == RemovalReason.MENTIONED_ROLE) {
                         privateChannel.sendMessage("Your message: \"" + messageContent.replaceAll(finalViolatingPhrase, "`" + finalViolatingPhrase + "`") + "\" was automatically removed because you mentioned a role that has restricted mentioning. If this was a mistake, please contact an admin.").queue();
                     }
                 });

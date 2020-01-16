@@ -113,7 +113,6 @@ public class ConfigManager {
         for (Config<?> config : Main.config.getConfigs()){
             if(!config.isVolatile() && jsonObject.get(config.getKey()) != null) {
                 Main.config.setConfigValueByKey(config.getKey(), jsonObject.get(config.getKey()));
-                Main.log(Main.LogPriority.DEBUG, config.getKey() + " : " + jsonObject.get(config.getKey()));
             }
         }
 
