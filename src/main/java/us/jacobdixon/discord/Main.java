@@ -164,14 +164,19 @@ public class Main {
                     jda.getPresence().setStatus(OnlineStatus.IDLE);
                 } else if (config.onlineStatus.getValue().equals("dnd")) {
                     jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
+                } else {
+                    log(LogPriority.WARNING, "Invalid type set for \"" + config.onlineStatus.getKey() + "\".");
                 }
                 jda.getPresence().setActivity(Activity.playing(config.activityStatus.getValue()));
+                Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
             } else if(config.modeStatus.getValue() ==  1){
                 Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
                 Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
             } else if(config.modeStatus.getValue() ==  2){
                 Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
                 Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
+            } else {
+                log(LogPriority.WARNING, "Invalid type set for \"" + config.modeStatus.getKey() + "\".");
             }
         }
 

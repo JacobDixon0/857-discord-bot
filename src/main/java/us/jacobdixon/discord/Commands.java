@@ -210,6 +210,9 @@ public class Commands {
                         Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
                         Main.config.modeStatus.setValue((long)2);
                         event.getMessage().addReaction("\u2705").complete();
+                    } else{
+                        event.getMessage().addReaction("\u274C").queue();
+                        event.reply(event.getAuthor().getAsMention() + " Error: Invalid command.");
                     }
                 }
             }
