@@ -8,10 +8,7 @@
 package us.jacobdixon.discord;
 
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
-import net.dv8tion.jda.api.AccountType;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
 import org.json.simple.parser.ParseException;
 
@@ -42,9 +39,11 @@ public class Main {
 
     public static JDA jda;
 
+    public static boolean running = false;
+
     public static void main(String[] args) {
 
-        loadConfigs();
+        loadConfigs(false);
 
         commandClientBuilder.setOwnerId(config.adminId.getValue());
         commandClientBuilder.addCommands(
@@ -59,14 +58,17 @@ public class Main {
                 new Commands.FilterCommand(),
                 new Commands.EchoEditCommand());
         commandClientBuilder.setPrefix("!");
-        commandClientBuilder.setActivity(Activity.playing(config.status.getValue()));
+        commandClientBuilder.setActivity(Activity.playing(config.activityStatus.getValue()));
         commandClientBuilder.useHelpBuilder(false);
 
         try {
             jda = new JDABuilder(AccountType.BOT).setToken(config.botToken.getValue()).addEventListeners(eventHandler, commandClientBuilder.build()).build().awaitReady();
             emailHandler.start();
 
+            loadConfigs(true);
+
             embedStartupLog();
+            running = true;
             log("Started in " + config.RUN_DIR.getValue() + " on " + config.hostname.getValue() + " running " + config.OS_NAME.getValue() + ".");
         } catch (LoginException | InterruptedException e0) {
             log(e0);
@@ -117,10 +119,10 @@ public class Main {
     }
 
     public static boolean reloadConfigs() {
-        return loadConfigs() && saveConfigs();
+        return loadConfigs(true) && saveConfigs();
     }
 
-    public static boolean loadConfigs() {
+    public static boolean loadConfigs( boolean setBotValues) {
         boolean returnValue = false;
         try {
             ConfigManager.loadExtConfigs(config.extConfigLocation.getValue());
@@ -149,6 +151,30 @@ public class Main {
                 log(LogPriority.ERROR, "Exception was caught discovering hostname.");
             }
         }
+
+        if(running && setBotValues){
+            if(config.modeStatus.getValue() == 0) {
+                if (config.onlineStatus.getValue().equals("online")) {
+                    jda.getPresence().setStatus(OnlineStatus.ONLINE);
+                } else if (config.onlineStatus.getValue().equals("offline")) {
+                    jda.getPresence().setStatus(OnlineStatus.OFFLINE);
+                } else if (config.onlineStatus.getValue().equals("invisible")) {
+                    jda.getPresence().setStatus(OnlineStatus.INVISIBLE);
+                } else if (config.onlineStatus.getValue().equals("idle")) {
+                    jda.getPresence().setStatus(OnlineStatus.IDLE);
+                } else if (config.onlineStatus.getValue().equals("dnd")) {
+                    jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
+                }
+                jda.getPresence().setActivity(Activity.playing(config.activityStatus.getValue()));
+            } else if(config.modeStatus.getValue() ==  1){
+                Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
+                Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
+            } else if(config.modeStatus.getValue() ==  2){
+                Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
+                Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
+            }
+        }
+
         return returnValue;
     }
 
@@ -177,7 +203,8 @@ public class Main {
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Role", "<@&" + role.getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -187,7 +214,8 @@ public class Main {
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -200,7 +228,8 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Reason", reason, true));
         embedBuilder.addField(new MessageEmbed.Field("Message", message.replaceAll(violation, "`" + violation + "`"), false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -210,7 +239,8 @@ public class Main {
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -222,7 +252,8 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Sender", sender, false));
         embedBuilder.addField(new MessageEmbed.Field("Subject", subject, false));
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + config.announcementsChannelId.getValue() + ">", false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -232,7 +263,8 @@ public class Main {
         embedBuilder.setTitle("Bot Initiated");
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host `" + config.hostname.getValue() + "`", false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -243,7 +275,8 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Sender", "<@" + auth.getId() + ">", false));
         embedBuilder.addField(new MessageEmbed.Field("Message", content, false));
-        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()), "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/discord-logo-blue.png");
+        embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
 
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
@@ -252,9 +285,11 @@ public class Main {
         if (title.length() > 50) {
             title = title.substring(0, 40).trim() + "...";
         }
+
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.announcementsChannelId.getValue())
                 .sendMessage("<@&" + config.announcementsRoleId.getValue() + "> Email announcement posted for 857 - \"" + title + "\"").queue();
-        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.announcementsChannelId.getValue()).sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
+        jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.announcementsChannelId.getValue()).
+                sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
         Main.embedAnnouncementLog(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", title);
     }
 
@@ -282,10 +317,12 @@ public class Main {
             }
             embedBuilder.addField(new MessageEmbed.Field("Attached: ", sb.toString(), false));
         }
+
         if (time.equals("x")) {
-            embedBuilder.setFooter(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()), "https://" + config.domain.getValue() + config.extConfigLocation.getValue() + "res/gmail-logo.png");
+            embedBuilder.setFooter(new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()),
+                    "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/gmail-icon.png");
         } else {
-            embedBuilder.setFooter(time, "https://" + config.domain.getValue() + config.cacheLocation.getValue() + "res/gmail-logo.png");
+            embedBuilder.setFooter(time, "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/gmail-icon.png");
         }
 
         return embedBuilder.build();
@@ -345,11 +382,12 @@ public class Main {
                 log(e);
                 log(LogPriority.ERROR, "Failed to save configurations before exiting.");
             }
+            running = false;
         }
         if (status == 0) {
             log("Exiting...");
         } else {
-            log(LogPriority.ERROR, "Exiting due to runtime error...");
+            log(LogPriority.INFO, "Exiting due to runtime error...");
         }
         System.exit(status);
     }

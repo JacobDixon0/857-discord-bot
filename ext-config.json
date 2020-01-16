@@ -113,7 +113,7 @@
   ],
   "message-filters": [
     {
-      "filter": "[\\n]+--.+"
+      "filter": "\n+--.+"
     }
   ],
   "restricted-mentions": [

@@ -7,11 +7,13 @@
 
 package us.jacobdixon.discord;
 
+import java.time.Instant;
 import java.util.ArrayList;
 
 class Configuration {
     final Config<String> OS_NAME = new Config<>(System.getProperty("os.name").toLowerCase(), "os-name", true);
     final Config<String> RUN_DIR = new Config<>(System.getProperty("user.dir") + "/", "run-dir", true);
+    final Config<Long> START_TIME = new Config<>(Instant.now().getEpochSecond(), "start-time", true);
 
     Config<Boolean> isUnixLike = new Config<>(true, "is-unix-like", true);
     Config<String> hostname = new Config<>("hostname", "hostname", true);
@@ -38,12 +40,14 @@ class Configuration {
     Config<String> configLocation = new Config<>(RUN_DIR.getValue() + "config.json", "config-location", true);
     Config<String> extConfigLocation = new Config<>(RUN_DIR.getValue() + "ext-config.json", "ext-config-location", true);
 
-    Config<String> status = new Config<>("Bot Things", "status");
+    Config<String> activityStatus = new Config<>("Bot Things", "activity");
+    Config<String> onlineStatus = new Config<>("online", "online-status");
+    Config<Long> modeStatus = new Config<>((long)0, "mode");
 
-    Config<ArrayList<EmailSenderProfile>> knownSenders = new Config<>(new ArrayList<>(), "known-senders", false, true);
-    Config<ArrayList<String>> knownDestinations = new Config<>(new ArrayList<>(), "known-destinations", false, true);
+    Config<ArrayList<EmailSenderProfile>> knownSenders = new Config<>(new ArrayList<>(), "approved-senders", false, true);
+    Config<ArrayList<String>> knownDestinations = new Config<>(new ArrayList<>(), "approved-destinations", false, true);
     Config<ArrayList<RoleAssigner>> roleAssigners = new Config<>(new ArrayList<>(), "role-assigners", false, true);
-    Config<ArrayList<String>> emailFilters = new Config<>(new ArrayList<>(), "email-filters", false, true);
+    Config<ArrayList<String>> emailFilters = new Config<>(new ArrayList<>(), "message-filters", false, true);
     Config<ArrayList<String>> bannedPhrases = new Config<>(new ArrayList<>(), "banned-phrases", true);
     Config<ArrayList<String>> restrictedMentions = new Config<>(new ArrayList<>(), "restricted-mentions", false, true);
 
@@ -72,7 +76,9 @@ class Configuration {
         configs.add(configLocation);
         configs.add(extConfigLocation);
         configs.add(filterListLocation);
-        configs.add(status);
+        configs.add(activityStatus);
+        configs.add(onlineStatus);
+        configs.add(modeStatus);
         configs.add(knownSenders);
         configs.add(knownDestinations);
         configs.add(roleAssigners);

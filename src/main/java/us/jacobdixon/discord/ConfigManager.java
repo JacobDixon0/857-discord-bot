@@ -113,6 +113,7 @@ public class ConfigManager {
         for (Config<?> config : Main.config.getConfigs()){
             if(!config.isVolatile() && jsonObject.get(config.getKey()) != null) {
                 Main.config.setConfigValueByKey(config.getKey(), jsonObject.get(config.getKey()));
+                Main.log(Main.LogPriority.DEBUG, config.getKey() + " : " + jsonObject.get(config.getKey()));
             }
         }
 
@@ -123,6 +124,13 @@ public class ConfigManager {
             String line = filterConfigScanner.nextLine();
             if(!line.equals("") && !line.matches("^\\s+$")) {
                 Main.config.bannedPhrases.getValue().add(line);
+            }
+        }
+
+        for(Config<?> config : Main.config.configs){
+            if(config.getValue() == null){
+                Main.log(Main.LogPriority.FATAL_ERROR, "Missing config \"" + config.getKey() + "\" in " + Main.config.configLocation.getValue() + ".");
+                Main.exit(-1, true);
             }
         }
     }

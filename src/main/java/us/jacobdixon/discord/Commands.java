@@ -15,9 +15,8 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import us.jacobdixon.utils.StringFormatting;
 
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class Commands {
@@ -76,7 +75,6 @@ public class Commands {
                     event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).editMessageById(argsList[1], args.replace(argsList[0] + " " + argsList[1] + " ", "")).queue();
                     successfulQuery = true;
                 } catch (Exception e) {
-                    e.printStackTrace();
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
@@ -127,10 +125,17 @@ public class Commands {
                 String args = event.getArgs();
                 String[] argsList = StringFormatting.split(args, Main.config.commandArgDelimiter.getValue());
 
-                if (argsList.length == 5) {
+                if (argsList.length == 6) {
                     List<String> attachmentsList = new ArrayList<>();
-                    attachmentsList.add(argsList[4]);
-                    Main.emailAnnounce(new EmailSenderProfile(argsList[0], argsList[1], null), argsList[2], new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()), argsList[3], attachmentsList);
+                    attachmentsList.add(argsList[5]);
+                    EmailSenderProfile sender = new EmailSenderProfile(argsList[0], argsList[1]);
+                    for(EmailSenderProfile emailSenderProfile : Main.config.knownSenders.getValue()){
+                        Main.log(Main.LogPriority.DEBUG, sender.getSenderName() + ":" + sender.getSenderAddress() +" " + emailSenderProfile.getSenderName() + ":" + emailSenderProfile.getSenderAddress());
+                        if(sender.getSenderAddress().equals(emailSenderProfile.getSenderAddress()) && sender.getSenderName().equals(emailSenderProfile.getSenderName())){
+                            sender = emailSenderProfile;
+                        }
+                    }
+                    Main.emailAnnounce(sender, argsList[2], argsList[3], argsList[4], attachmentsList);
                     successfulQuery = true;
                 } else {
                     event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments " + argsList.length);
@@ -193,14 +198,17 @@ public class Commands {
                     if (event.getArgs().split(" ")[0].equals("m")) {
                         Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
                         Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
+                        Main.config.modeStatus.setValue((long)1);
                         event.getMessage().addReaction("\u2705").complete();
                     } else if (event.getArgs().split(" ")[0].equals("online")) {
                         Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
-                        Main.jda.getPresence().setActivity(Activity.playing(Main.config.status.getValue()));
+                        Main.jda.getPresence().setActivity(Activity.playing(Main.config.activityStatus.getValue()));
+                        Main.config.modeStatus.setValue((long)0);
                         event.getMessage().addReaction("\u2705").complete();
                     } else if (event.getArgs().split(" ")[0].equals("disabled")) {
                         Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
                         Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
+                        Main.config.modeStatus.setValue((long)2);
                         event.getMessage().addReaction("\u2705").complete();
                     }
                 }
@@ -369,10 +377,32 @@ public class Commands {
                         successfulResponse = Main.saveConfigs();
                         break;
                     case "config load":
-                        successfulResponse = Main.loadConfigs();
+                        successfulResponse = Main.loadConfigs(true);
                         break;
                     case "config reload":
                         successfulResponse = Main.reloadConfigs();
+                        break;
+                    case "uptime":
+                        long uptime = (Instant.now().getEpochSecond() - Main.config.START_TIME.getValue());
+                        long days = uptime / 86400;
+                        uptime = uptime % 86400;
+                        long hours = uptime / 3600;
+                        uptime = uptime % 3600;
+                        long minutes = uptime / 60;
+                        uptime = uptime % 60;
+                        long seconds = uptime;
+                        StringBuilder replyBuilder = new StringBuilder();
+                        if(days > 0) replyBuilder.append(days).append(" days ");
+                        if(hours > 0) replyBuilder.append(hours).append(" hours ");
+                        if(minutes > 0) replyBuilder.append(minutes).append(" minutes ");
+                        if(seconds > 0) replyBuilder.append(seconds).append( "seconds");
+                        event.reply(author.getAsMention() + " Uptime: " + replyBuilder.toString());
+                        break;
+                    case "activity":
+                        Main.config.activityStatus.setValue(args.replaceFirst("activity", "").trim());
+                        break;
+                    case "status":
+                        Main.config.activityStatus.setValue(args.replaceFirst("status", "").trim());
                         break;
                     default:
                         successfulQuery = false;
