@@ -16,19 +16,20 @@ class Configuration {
     Config<Boolean> isUnixLike = new Config<>(true, "is-unix-like", true);
     Config<String> hostname = new Config<>("hostname", "hostname", true);
 
-    Config<String> botToken = new Config<>(null, "token");
+    Config<String> botToken = new Config<>("token");
 
-    Config<String> serverId = new Config<>(null, "server-id");
-    Config<String> adminId = new Config<>(null, "admin-id");
-    Config<String> botAdminRoleId = new Config<>(null, "bot-admin-role-id");
-    Config<String> adminRoleId = new Config<>(null, "admin-role-id");
-    Config<String> memberRoleId = new Config<>(null, "member-role-id");
-    Config<String> announcementsRoleId = new Config<>(null, "announcements-role-id");
-    Config<String> announcementsChannelId = new Config<>(null, "announcements-channel-id");
-    Config<String> logChannelId = new Config<>(null, "log-channel-id");
-    Config<String> roleAssignmentMessageId = new Config<>(null, "role-assignment-message-id");
-    Config<String> domain = new Config<>(null, "domain");
-    Config<Boolean> useFilter = new Config<>(true, "use-filter");
+    Config<String> serverId = new Config<>("server-id");
+    Config<String> adminId = new Config<>("admin-id");
+    Config<String> botAdminRoleId = new Config<>("bot-admin-role-id");
+    Config<String> adminRoleId = new Config<>("admin-role-id");
+    Config<String> memberRoleId = new Config<>("member-role-id");
+    Config<String> announcementsRoleId = new Config<>("announcements-role-id");
+    Config<String> announcementsChannelId = new Config<>("announcements-channel-id");
+    Config<String> logChannelId = new Config<>("log-channel-id");
+    Config<String> roleAssignmentMessageId = new Config<>("role-assignment-message-id");
+    Config<String> domain = new Config<>("domain");
+    Config<String> mentorRoleId = new Config<>("mentor-role-id");
+    Config<Boolean> useFilter = new Config<>("use-filter");
 
     Config<String> cacheLocation = new Config<>(RUN_DIR.getValue() + "cache/", "cache-location");
     Config<String> extCacheLocation = new Config<>("cache/", "ext-cache-location");
@@ -80,6 +81,7 @@ class Configuration {
         configs.add(restrictedMentions);
         configs.add(commandArgDelimiter);
         configs.add(useFilter);
+        configs.add(mentorRoleId);
     }
 
     public ArrayList<Config<?>> getConfigs(){

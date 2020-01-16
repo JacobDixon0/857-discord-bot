@@ -57,7 +57,9 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember()) && !event.getAuthor().isBot()) {
+        if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember())
+                && !event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.mentorRoleId.getValue())).contains(event.getMember())
+                && !event.getAuthor().isBot()) {
 
             boolean allowed = true;
             Message message = event.getMessage();

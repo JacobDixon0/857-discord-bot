@@ -33,6 +33,10 @@ public class Config<T> {
         this.key = key;
     }
 
+    public Config(String key) {
+        this.key = key;
+    }
+
     public void setValue(T value) {
         this.value = value;
     }

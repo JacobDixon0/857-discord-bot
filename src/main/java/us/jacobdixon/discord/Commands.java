@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import us.jacobdixon.utils.StringFormatting;
 
-import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,8 +32,7 @@ public class Commands {
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER) &&
-                    event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember())) {
+            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
                 boolean successfulQuery = false;
                 String args = event.getArgs();
                 if (args.equals("")) {
@@ -243,60 +241,75 @@ public class Commands {
 
     public static class FilterCommand extends Command {
 
+        private static String[] authorizedRoleIds = new String[]{Main.config.botAdminRoleId.getValue()};
+
         FilterCommand() {
             this.name = "filter";
-            this.help = "Modifies message filters";
+            this.help = "Modifies message filters.";
+            this.aliases = new String[]{};
             this.hidden = true;
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
-                String args = event.getArgs();
-                String[] argsList = args.split(" ");
-                if (event.getArgs().equals(""))
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
-                boolean successfulQuery = false;
 
-                if (argsList[0] == null) {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
-                } else if (argsList[0].equals("add")) {
-                    if (argsList[1] != null) {
-                        if (!Main.config.bannedPhrases.getValue().contains(args.replaceFirst(argsList[0] + " ", ""))) {
-                            Main.config.bannedPhrases.getValue().add(args.replaceFirst(argsList[0] + " ", ""));
+            Member author = event.getMember();
+            Guild guild = event.getGuild();
+
+            String args = event.getArgs();
+            String[] splitArgs = args.split(" ");
+
+            boolean approved = false;
+
+            for (String roleId : authorizedRoleIds) {
+                if (guild.getMembersWithRoles(guild.getRoleById(roleId)).contains(author)) {
+                    approved = true;
+                    break;
+                }
+            }
+
+            if (approved) {
+                boolean successfulQuery = true;
+
+                if (splitArgs[0] == null || splitArgs[0].equals("")) {
+                    successfulQuery = false;
+                } else if (splitArgs[0].equals("add")) {
+                    if (splitArgs[1] != null && !splitArgs[1].matches("\\s") && !splitArgs[1].equals("")) {
+                        String filter = args.replaceFirst(splitArgs[0], "").trim();
+                        if (!Main.config.bannedPhrases.getValue().contains(filter)) {
+                            Main.config.bannedPhrases.getValue().add(filter);
                             Main.reloadConfigs();
                         }
-                        successfulQuery = true;
-                    } else {
-                        event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                     }
-                } else if (argsList[0].equals("remove")) {
-                    if (argsList[1] != null) {
-                        if (argsList[1].equals("*")) {
+                } else if (splitArgs[0].equals("list")) {
+                    StringBuilder replyBuilder = new StringBuilder();
+                    for (String s : Main.config.bannedPhrases.getValue()) {
+                        replyBuilder.append("\"").append(s).append("\"\n");
+                    }
+                    event.reply(event.getAuthor().getAsMention() + "\n" + replyBuilder.toString());
+                } else if (splitArgs[0].equals("remove")) {
+                    if (splitArgs[1] != null && !splitArgs[1].matches("\\s") && !splitArgs[1].equals("")) {
+                        if (splitArgs[1].equals("*")) {
                             Main.config.bannedPhrases.getValue().clear();
                         } else {
-                            Main.config.bannedPhrases.getValue().remove(args.replaceFirst(argsList[0] + " ", ""));
+                            Main.config.bannedPhrases.getValue().remove(args.replaceFirst(splitArgs[0], "").trim());
                         }
                         Main.reloadConfigs();
-                        successfulQuery = true;
-                    } else {
-                        event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
                     }
-                } else if (argsList[0].equals("list")) {
-                    StringBuilder sb = new StringBuilder();
-                    for (String s : Main.config.bannedPhrases.getValue()) {
-                        sb.append("\"").append(s).append("\"\n");
-                    }
-                    event.reply(sb.toString());
-                    successfulQuery = true;
-                } else if (argsList[0].equals("start")) {
+                } else if (splitArgs[0].equals("start")) {
                     Main.config.useFilter.setValue(true);
-                    successfulQuery = true;
-                } else if (argsList[0].equals("stop")) {
-                    Main.config.useFilter.setValue(false);
-                    successfulQuery = true;
+                } else if (splitArgs[0].equals("stop")) {
+                    Main.config.useFilter.setValue(true);
+                } else {
+                    successfulQuery = false;
                 }
-                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
+
+                if (successfulQuery) {
+                    event.getMessage().addReaction("\u2705").queue();
+                } else {
+                    event.getMessage().addReaction("\u274C").queue();
+                    event.reply(author.getAsMention() + " Error: Invalid command.");
+                }
             }
         }
     }
@@ -368,10 +381,10 @@ public class Commands {
 
                 if (successfulQuery && successfulResponse) {
                     event.getMessage().addReaction("\u2705").queue();
-                } else if (!successfulQuery){
+                } else if (!successfulQuery) {
                     event.getMessage().addReaction("\u274C").queue();
                     event.reply(author.getAsMention() + " Error: Invalid command.");
-                } else if (!successfulResponse){
+                } else if (!successfulResponse) {
                     event.getMessage().addReaction("\u274C").queue();
                     event.reply(author.getAsMention() + " Error: An internal error was encountered while trying to process your request.");
                 }

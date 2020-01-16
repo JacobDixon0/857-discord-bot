@@ -42,7 +42,7 @@ public class Main {
 
     public static JDA jda;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         loadConfigs();
 
