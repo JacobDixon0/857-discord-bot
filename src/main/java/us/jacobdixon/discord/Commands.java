@@ -401,12 +401,6 @@ public class Commands {
                         if(seconds > 0) replyBuilder.append(seconds).append( "seconds");
                         event.reply(author.getAsMention() + " Uptime: " + replyBuilder.toString());
                         break;
-                    case "activity":
-                        Main.config.activityStatus.setValue(args.replaceFirst("activity", "").trim());
-                        break;
-                    case "status":
-                        Main.config.activityStatus.setValue(args.replaceFirst("status", "").trim());
-                        break;
                     default:
                         successfulQuery = false;
                         break;
