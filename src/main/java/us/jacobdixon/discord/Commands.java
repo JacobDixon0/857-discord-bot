@@ -292,11 +292,15 @@ public class Commands {
                         }
                     }
                 } else if (splitArgs[0].equals("list")) {
-                    StringBuilder replyBuilder = new StringBuilder();
-                    for (String s : Main.config.bannedPhrases.getValue()) {
-                        replyBuilder.append("\"").append(s).append("\"\n");
+                    if(!Main.config.useFilter.getValue()) {
+                        StringBuilder replyBuilder = new StringBuilder();
+                        for (String s : Main.config.bannedPhrases.getValue()) {
+                            replyBuilder.append("\"").append(s).append("\"\n");
+                        }
+                        event.reply(event.getAuthor().getAsMention() + "\n" + replyBuilder.toString());
+                    } else {
+                        event.reply("Filters are not currently enabled.");
                     }
-                    event.reply(event.getAuthor().getAsMention() + "\n" + replyBuilder.toString());
                 } else if (splitArgs[0].equals("remove")) {
                     if (splitArgs[1] != null && !splitArgs[1].matches("\\s") && !splitArgs[1].equals("")) {
                         if (splitArgs[1].equals("*")) {
@@ -397,8 +401,8 @@ public class Commands {
                         if(days > 0) replyBuilder.append(days).append(" days ");
                         if(hours > 0) replyBuilder.append(hours).append(" hours ");
                         if(minutes > 0) replyBuilder.append(minutes).append(" minutes ");
-                        if(seconds > 0) replyBuilder.append(seconds).append( "seconds");
-                        event.reply(author.getAsMention() + " Uptime: " + replyBuilder.toString());
+                        if(seconds > 0) replyBuilder.append(seconds).append( " seconds");
+                        event.reply(author.getAsMention() + " **Uptime:** " + StringFormatting.normalizeSpacing(replyBuilder.toString()));
                         break;
                     default:
                         successfulQuery = false;

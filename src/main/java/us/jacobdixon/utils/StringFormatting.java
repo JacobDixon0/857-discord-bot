@@ -57,4 +57,9 @@ public class StringFormatting {
         }
         return s;
     }
+
+    public static String normalizeSpacing(String s){
+        return s.replaceAll(" {2,}", " ").trim();
+    }
+
 }
