@@ -129,8 +129,8 @@ public class Commands {
                     List<String> attachmentsList = new ArrayList<>();
                     attachmentsList.add(argsList[5]);
                     EmailSenderProfile sender = new EmailSenderProfile(argsList[0], argsList[1]);
-                    for(EmailSenderProfile emailSenderProfile : Main.config.knownSenders.getValue()){
-                        if(sender.getSenderAddress().equals(emailSenderProfile.getSenderAddress()) && sender.getSenderName().equals(emailSenderProfile.getSenderName())){
+                    for (EmailSenderProfile emailSenderProfile : Main.config.knownSenders.getValue()) {
+                        if (sender.getSenderAddress().equals(emailSenderProfile.getSenderAddress()) && sender.getSenderName().equals(emailSenderProfile.getSenderName())) {
                             sender = emailSenderProfile;
                         }
                     }
@@ -197,19 +197,19 @@ public class Commands {
                     if (event.getArgs().split(" ")[0].equals("m")) {
                         Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
                         Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
-                        Main.config.modeStatus.setValue((long)1);
+                        Main.config.modeStatus.setValue((long) 1);
                         event.getMessage().addReaction("\u2705").complete();
                     } else if (event.getArgs().split(" ")[0].equals("online")) {
                         Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
                         Main.jda.getPresence().setActivity(Activity.playing(Main.config.activityStatus.getValue()));
-                        Main.config.modeStatus.setValue((long)0);
+                        Main.config.modeStatus.setValue((long) 0);
                         event.getMessage().addReaction("\u2705").complete();
                     } else if (event.getArgs().split(" ")[0].equals("disabled")) {
                         Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
                         Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
-                        Main.config.modeStatus.setValue((long)2);
+                        Main.config.modeStatus.setValue((long) 2);
                         event.getMessage().addReaction("\u2705").complete();
-                    } else{
+                    } else {
                         event.getMessage().addReaction("\u274C").queue();
                         event.reply(event.getAuthor().getAsMention() + " Error: Invalid command.");
                     }
@@ -292,7 +292,7 @@ public class Commands {
                         }
                     }
                 } else if (splitArgs[0].equals("list")) {
-                    if(!Main.config.useFilter.getValue()) {
+                    if (!Main.config.useFilter.getValue()) {
                         StringBuilder replyBuilder = new StringBuilder();
                         for (String s : Main.config.bannedPhrases.getValue()) {
                             replyBuilder.append("\"").append(s).append("\"\n");
@@ -346,6 +346,7 @@ public class Commands {
             Guild guild = event.getGuild();
 
             String args = event.getArgs();
+            String[] splitArgs = args.split(" ");
 
             boolean approved = false;
 
@@ -360,7 +361,7 @@ public class Commands {
                 boolean successfulQuery = true;
                 boolean successfulResponse = true;
 
-                switch (args) {
+                switch (splitArgs[0]) {
                     case "list dest": {
                         successfulQuery = true;
                         StringBuilder s = new StringBuilder();
@@ -379,14 +380,27 @@ public class Commands {
                         event.reply(s.toString());
                         break;
                     }
-                    case "config save":
-                        successfulResponse = Main.saveConfigs();
-                        break;
-                    case "config load":
-                        successfulResponse = Main.loadConfigs(true);
-                        break;
-                    case "config reload":
-                        successfulResponse = Main.reloadConfigs();
+                    case "config":
+                        if(splitArgs[1].equals("reload")) {
+                            successfulResponse = Main.reloadConfigs();
+                        } else if(splitArgs[1].equals("save")){
+                            successfulResponse = Main.saveConfigs();
+                        } else if(splitArgs[1].equals("load")){
+                            successfulResponse = Main.loadConfigs(true);
+                        } else if(splitArgs[1].equals("get")){
+                            if(splitArgs[2] != null){
+                                if(splitArgs[2].equals("*")){
+                                    StringBuilder replyBuilder = new StringBuilder();
+                                    for(Config<?> config : Main.config.getConfigs()){
+                                        replyBuilder.append("**Key: ** " + config.getKey() + " Value: " + config.getValue() + "\n");
+                                    }
+                                    event.reply(author.getAsMention() + replyBuilder.toString());
+                                } else {
+                                    Object result = Main.config.getConfigValueByKey(splitArgs[2]);
+                                    event.reply(author.getAsMention() + " **Key: ** " + splitArgs[2] + " Value: " + result.toString());
+                                }
+                            }
+                        }
                         break;
                     case "uptime":
                         long uptime = (Instant.now().getEpochSecond() - Main.config.START_TIME.getValue());
@@ -398,10 +412,10 @@ public class Commands {
                         uptime = uptime % 60;
                         long seconds = uptime;
                         StringBuilder replyBuilder = new StringBuilder();
-                        if(days > 0) replyBuilder.append(days).append(" days ");
-                        if(hours > 0) replyBuilder.append(hours).append(" hours ");
-                        if(minutes > 0) replyBuilder.append(minutes).append(" minutes ");
-                        if(seconds > 0) replyBuilder.append(seconds).append( " seconds");
+                        if (days > 0) replyBuilder.append(days).append(" days ");
+                        if (hours > 0) replyBuilder.append(hours).append(" hours ");
+                        if (minutes > 0) replyBuilder.append(minutes).append(" minutes ");
+                        if (seconds > 0) replyBuilder.append(seconds).append(" seconds");
                         event.reply(author.getAsMention() + " **Uptime:** " + StringFormatting.normalizeSpacing(replyBuilder.toString()));
                         break;
                     default:
