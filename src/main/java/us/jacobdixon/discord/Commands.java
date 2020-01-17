@@ -397,8 +397,8 @@ public class Commands {
                         if(days > 0) replyBuilder.append(days).append(" days ");
                         if(hours > 0) replyBuilder.append(hours).append(" hours ");
                         if(minutes > 0) replyBuilder.append(minutes).append(" minutes ");
-                        if(seconds > 0) replyBuilder.append(seconds).append( "seconds");
-                        event.reply(author.getAsMention() + " Uptime: " + replyBuilder.toString());
+                        if(seconds > 0) replyBuilder.append(seconds).append( " seconds");
+                        event.reply(author.getAsMention() + " **Uptime:** " + StringFormatting.normalizeSpacing(replyBuilder.toString()));
                         break;
                     default:
                         successfulQuery = false;

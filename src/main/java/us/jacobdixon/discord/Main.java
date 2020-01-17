@@ -115,7 +115,6 @@ public class Main {
             log(e);
             log(LogPriority.ERROR, "Could not cache sender profile image");
         }
-
     }
 
     public static boolean reloadConfigs() {

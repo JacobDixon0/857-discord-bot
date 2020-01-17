@@ -9,14 +9,15 @@ package us.jacobdixon.discord;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 class Configuration {
     final Config<String> OS_NAME = new Config<>(System.getProperty("os.name").toLowerCase(), "os-name", true);
     final Config<String> RUN_DIR = new Config<>(System.getProperty("user.dir") + "/", "run-dir", true);
     final Config<Long> START_TIME = new Config<>(Instant.now().getEpochSecond(), "start-time", true);
 
-    Config<Boolean> isUnixLike = new Config<>(true, "is-unix-like", true);
     Config<String> hostname = new Config<>("hostname", "hostname", true);
+    Config<Boolean> isUnixLike = new Config<>(true, "is-unix-like", true);
 
     Config<String> botToken = new Config<>("token");
 
@@ -56,38 +57,13 @@ class Configuration {
     ArrayList<Config<?>> configs = new ArrayList<>();
 
     public Configuration() {
-        configs.add(OS_NAME);
-        configs.add(RUN_DIR);
-        configs.add(isUnixLike);
-        configs.add(hostname);
-        configs.add(botToken);
-        configs.add(serverId);
-        configs.add(adminId);
-        configs.add(botAdminRoleId);
-        configs.add(adminRoleId);
-        configs.add(memberRoleId);
-        configs.add(announcementsRoleId);
-        configs.add(announcementsChannelId);
-        configs.add(logChannelId);
-        configs.add(roleAssignmentMessageId);
-        configs.add(domain);
-        configs.add(cacheLocation);
-        configs.add(extCacheLocation);
-        configs.add(configLocation);
-        configs.add(extConfigLocation);
-        configs.add(filterListLocation);
-        configs.add(activityStatus);
-        configs.add(onlineStatus);
-        configs.add(modeStatus);
-        configs.add(knownSenders);
-        configs.add(knownDestinations);
-        configs.add(roleAssigners);
-        configs.add(emailFilters);
-        configs.add(bannedPhrases);
-        configs.add(restrictedMentions);
-        configs.add(commandArgDelimiter);
-        configs.add(useFilter);
-        configs.add(mentorRoleId);
+        configs.addAll(Arrays.asList(
+                OS_NAME, RUN_DIR, isUnixLike, hostname, botToken, serverId, adminId,
+                botAdminRoleId, adminRoleId, memberRoleId, announcementsRoleId, announcementsChannelId, logChannelId,
+                roleAssignmentMessageId, domain, cacheLocation, extCacheLocation, configLocation, extConfigLocation,
+                filterListLocation, activityStatus, onlineStatus, modeStatus, knownSenders, knownDestinations,
+                roleAssigners, emailFilters, bannedPhrases, restrictedMentions, commandArgDelimiter, useFilter,
+                mentorRoleId));
     }
 
     public ArrayList<Config<?>> getConfigs(){
