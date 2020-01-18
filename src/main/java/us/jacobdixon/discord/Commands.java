@@ -392,12 +392,16 @@ public class Commands {
                                 if(splitArgs[2].equals("*")){
                                     StringBuilder replyBuilder = new StringBuilder();
                                     for(Config<?> config : Main.config.getConfigs()){
-                                        replyBuilder.append("**Key: ** " + config.getKey() + " Value: " + config.getValue() + "\n");
+                                        replyBuilder.append("**Key: ** ").append(config.getKey()).append(" Value: ").append(config.getValue()).append("\n");
                                     }
                                     event.reply(author.getAsMention() + replyBuilder.toString());
                                 } else {
                                     Object result = Main.config.getConfigValueByKey(splitArgs[2]);
-                                    event.reply(author.getAsMention() + " **Key: ** " + splitArgs[2] + " Value: " + result.toString());
+                                    if(result != null) {
+                                        event.reply(author.getAsMention() + " **Key: ** " + splitArgs[2] + " Value: " + result.toString());
+                                    } else {
+                                        successfulQuery = false;
+                                    }
                                 }
                             }
                         }
