@@ -117,7 +117,7 @@ public class EmailHandler extends Thread {
                     Main.log("Received email from: \"" + from + "\".");
 
                     try {
-                        formattedDate = gmailDateFormat.format(messageDateFormat.parse(date));
+                        formattedDate = gmailDateFormat.format(messageDateFormat.parse(date + (Main.config.utc.getValue() * 60 * 60)));
                     } catch (Exception e) {
                         Main.log(Main.LogPriority.ERROR, "Exception caught while attempting to parse email date.");
                     }

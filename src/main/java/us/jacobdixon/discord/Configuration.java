@@ -18,6 +18,7 @@ class Configuration {
 
     Config<String> hostname = new Config<>("hostname", "hostname", true);
     Config<Boolean> isUnixLike = new Config<>(true, "is-unix-like", true);
+    Config<Integer> utc = new Config<>(0, "utc", true);
 
     Config<String> botToken = new Config<>("token");
 
@@ -58,7 +59,7 @@ class Configuration {
 
     public Configuration() {
         configs.addAll(Arrays.asList(
-                OS_NAME, RUN_DIR, isUnixLike, hostname, botToken, serverId, adminId,
+                OS_NAME, RUN_DIR, isUnixLike, hostname, utc, botToken, serverId, adminId,
                 botAdminRoleId, adminRoleId, memberRoleId, announcementsRoleId, announcementsChannelId, logChannelId,
                 roleAssignmentMessageId, domain, cacheLocation, extCacheLocation, configLocation, extConfigLocation,
                 filterListLocation, activityStatus, onlineStatus, modeStatus, knownSenders, knownDestinations,

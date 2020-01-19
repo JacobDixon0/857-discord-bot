@@ -141,7 +141,9 @@ public class Main {
                 log(e);
                 log(LogPriority.ERROR, "Exception was caught discovering hostname.");
             }
-        } else if (config.OS_NAME.getValue().contains("nix") || config.OS_NAME.getValue().contains("nux") || config.OS_NAME.getValue().contains("mac os x")) {
+        } else if (config.OS_NAME.getValue().toLowerCase().contains("nix") ||
+                config.OS_NAME.getValue().toLowerCase().contains("nux") ||
+                config.OS_NAME.getValue().toLowerCase().contains("mac os x")) {
             config.isUnixLike.setValue(true);
             try {
                 config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
