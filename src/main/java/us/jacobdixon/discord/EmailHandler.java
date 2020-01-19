@@ -114,12 +114,12 @@ public class EmailHandler extends Thread {
 
                     String formattedDate = date;
 
-                    Main.log("Received email from: \"" + from + "\".");
+                    Main.logger.log("Received email from: \"" + from + "\".");
 
                     try {
                         formattedDate = gmailDateFormat.format(messageDateFormat.parse(date + (Main.config.utc.getValue() * 60 * 60)));
                     } catch (Exception e) {
-                        Main.log(Main.LogPriority.ERROR, "Exception caught while attempting to parse email date.");
+                        Main.logger.log(1, "Exception caught while attempting to parse email date.");
                     }
 
                     EmailSenderProfile emailSenderProfile = new EmailSenderProfile("name", "address", null);
@@ -156,7 +156,7 @@ public class EmailHandler extends Thread {
                         List<String> attachments = getAttachments(service, user, msg.getId());
 
                         Main.emailAnnounce(emailSenderProfile, sub, formattedDate, content, attachments);
-                        Main.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
+                        Main.logger.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
                     }
                 }
 
@@ -165,19 +165,19 @@ public class EmailHandler extends Thread {
                 retryCount = 0;
             }
         } catch (Exception e) {
-            Main.log(e);
-            Main.log(Main.LogPriority.ERROR, "Encountered error while handling Gmail API.");
+            Main.logger.log(e);
+            Main.logger.log(1, "Encountered error while handling Gmail API.");
             if (++retryCount <= 8) {
                 long backoff = (long) (retryCount * retryCount * 1000 + Math.random() * 1000);
-                Main.log("Reattempting to run Gmail API handler in " + backoff / 1000 + " seconds.");
+                Main.logger.log("Reattempting to run Gmail API handler in " + backoff / 1000 + " seconds.");
                 try {
                     Thread.sleep(backoff);
                 } catch (InterruptedException e0) {
-                    Main.log(Main.LogPriority.ERROR, "Error occurred waiting to retry Gmail API handling.");
+                    Main.logger.log(1, "Error occurred waiting to retry Gmail API handling.");
                 }
                 runInboxPolling();
             } else {
-                Main.log(Main.LogPriority.ERROR, "Could not retry Gmail API due to too many failed attempts.");
+                Main.logger.log(1, "Could not retry Gmail API due to too many failed attempts.");
                 Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
                 Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
             }
@@ -220,7 +220,7 @@ public class EmailHandler extends Thread {
                     result.add(StringFormatting.formatUrl("https://" + Main.config.domain.getValue() + Main.config.extConfigLocation.getValue() + timestamp + filename));
                     fileOutFile.write(fileByteArray);
                     fileOutFile.close();
-                    Main.log("Created email attachment cache file: \"" + Main.config.cacheLocation.getValue() + timestamp + filename + "\".");
+                    Main.logger.log("Created email attachment cache file: \"" + Main.config.cacheLocation.getValue() + timestamp + filename + "\".");
                 } else {
                     result.add("ERROR: Failed to load " + filename);
                 }

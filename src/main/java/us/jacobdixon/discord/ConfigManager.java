@@ -98,12 +98,12 @@ public class ConfigManager {
                 }
             }
         }
-        Main.log("Loaded configs " + name + ".");
+        Main.logger.log("Loaded configs " + name + ".");
     }
 
     public static void loadConfigs(String name) throws IOException, ParseException {
         if (!new File(name).exists()) {
-            Main.log(Main.LogPriority.FATAL_ERROR, "No config file found.");
+            Main.logger.log(0, "No config file found.");
             Main.exit(-1, true);
         }
 
@@ -128,7 +128,7 @@ public class ConfigManager {
 
         for (Config<?> config : Main.config.configs) {
             if (config.getValue() == null) {
-                Main.log(Main.LogPriority.FATAL_ERROR, "Missing config \"" + config.getKey() + "\" in " + Main.config.configLocation.getValue() + ".");
+                Main.logger.log(0, "Missing config \"" + config.getKey() + "\" in " + Main.config.configLocation.getValue() + ".");
                 Main.exit(-1, true);
             }
         }
@@ -166,7 +166,7 @@ public class ConfigManager {
         filterListWriter.flush();
         filterListWriter.close();
 
-        Main.log("saved configs " + name + ".");
+        Main.logger.log("saved configs " + name + ".");
     }
 
 }

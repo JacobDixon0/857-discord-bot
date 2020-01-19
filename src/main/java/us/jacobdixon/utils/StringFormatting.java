@@ -7,6 +7,8 @@
 
 package us.jacobdixon.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +35,16 @@ public class StringFormatting {
             }
         }
         return sections;
+    }
+
+    public static List<String> splitGroups(String string, int length) {
+        List<String> s = new ArrayList<>();
+
+        for (int i = 0; i < (string.length() / length) + 1; i++) {
+            s.add(string.substring(i * 1024, Math.min(string.length(), (i * 1024) + length)));
+        }
+
+        return s;
     }
 
     public static String formatUrl(String s) {

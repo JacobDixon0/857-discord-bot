@@ -11,6 +11,8 @@ import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.entities.*;
 import org.json.simple.parser.ParseException;
+import us.jacobdixon.utils.Logger;
+import us.jacobdixon.utils.StringFormatting;
 
 import javax.security.auth.login.LoginException;
 import java.awt.Color;
@@ -21,7 +23,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
@@ -35,6 +36,7 @@ public class Main {
     public static EventHandler eventHandler = new EventHandler();
     public static EmailHandler emailHandler = new EmailHandler();
     public static CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
+    public static Logger logger = new Logger();
 
     public static JDA jda;
 
@@ -67,9 +69,9 @@ public class Main {
             loadConfigs(true);
             embedStartupLog();
             running = true;
-            log("Started in " + config.RUN_DIR.getValue() + " on " + config.hostname.getValue() + " running " + config.OS_NAME.getValue() + ".");
+            logger.log("Started in " + config.RUN_DIR.getValue() + " on " + config.hostname.getValue() + " running " + config.OS_NAME.getValue() + ".");
         } catch (LoginException | InterruptedException e0) {
-            log(e0);
+            logger.log(e0);
             exit(-1, true);
         }
     }
@@ -101,17 +103,17 @@ public class Main {
                 if (type.equals("image/png")) {
                     boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "/res/" + name + ".png"));
                     if (!success)
-                        log(LogPriority.ERROR, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
+                        logger.log(1, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
                 } else if (type.equals("image/jpeg")) {
                     boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "/res/" + name + ".jpg"));
                     if (!success)
-                        log(LogPriority.ERROR, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
+                        logger.log(Logger.LogPriority.ERROR, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
                 }
             }
 
         } catch (IOException e) {
-            log(e);
-            log(LogPriority.ERROR, "Could not cache sender profile image");
+            logger.log(e);
+            logger.log(Logger.LogPriority.ERROR, "Could not cache sender profile image");
         }
     }
 
@@ -126,18 +128,18 @@ public class Main {
             ConfigManager.loadConfigs(config.configLocation.getValue());
             returnValue = true;
         } catch (ParseException | IOException e) {
-            log(e);
-            log(LogPriority.FATAL_ERROR, "Exception was caught loading configs.");
+            logger.log(e);
+            logger.log(0, "Exception was caught loading configs.");
             exit(-1, true);
         }
 
-        if (config.OS_NAME.getValue().contains("win")) {
+        if (config.OS_NAME.getValue().toLowerCase().contains("win")) {
             config.isUnixLike.setValue(false);
             try {
                 config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
             } catch (IOException e) {
-                log(e);
-                log(LogPriority.ERROR, "Exception was caught discovering hostname.");
+                logger.log(e);
+                logger.log(1, "Exception was caught discovering hostname.");
             }
         } else if (config.OS_NAME.getValue().toLowerCase().contains("nix") ||
                 config.OS_NAME.getValue().toLowerCase().contains("nux") ||
@@ -146,8 +148,8 @@ public class Main {
             try {
                 config.hostname.setValue(execReadToString("hostname").replace("\n", "").replace("\r", ""));
             } catch (IOException e) {
-                log(e);
-                log(LogPriority.ERROR, "Exception was caught discovering hostname.");
+                logger.log(e);
+                logger.log(1, "Exception was caught discovering hostname.");
             }
         }
 
@@ -164,7 +166,7 @@ public class Main {
                 } else if (config.onlineStatus.getValue().equals("dnd")) {
                     jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
                 } else {
-                    log(LogPriority.WARNING, "Invalid type set for \"" + config.onlineStatus.getKey() + "\".");
+                    logger.log(2, "Invalid type set for \"" + config.onlineStatus.getKey() + "\".");
                 }
                 jda.getPresence().setActivity(Activity.playing(config.activityStatus.getValue()));
                 Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
@@ -175,7 +177,7 @@ public class Main {
                 Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
                 Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
             } else {
-                log(LogPriority.WARNING, "Invalid type set for \"" + config.modeStatus.getKey() + "\".");
+                logger.log(2, "Invalid type set for \"" + config.modeStatus.getKey() + "\".");
             }
         }
 
@@ -188,8 +190,8 @@ public class Main {
             ConfigManager.saveConfigs(config.configLocation.getValue());
             returnValue = true;
         } catch (FileNotFoundException e) {
-            log(e);
-            log(LogPriority.ERROR, "Exception was caught saving configs.");
+            logger.log(e);
+            logger.log(1, "Exception was caught saving configs.");
         }
         return returnValue;
     }
@@ -305,7 +307,7 @@ public class Main {
         embedBuilder.setAuthor(senderProfile.getIdentity(), "https://mail.google.com", senderProfile.getProfileImageUrl());
 
         if (content.length() > 1024) {
-            List<String> contentSections = getChunks(content, 1024);
+            List<String> contentSections = StringFormatting.splitGroups(content, 1024);
             embedBuilder.addField("Email Body: ", contentSections.get(0), false);
             for (int i = 1; i < contentSections.size(); i++) {
                 embedBuilder.addField("...", contentSections.get(i), false);
@@ -332,43 +334,6 @@ public class Main {
         return embedBuilder.build();
     }
 
-    private static List<String> getChunks(String text, int size) {
-        List<String> string = new ArrayList<>();
-
-        for (int i = 0; i < (text.length() / size) + 1; i++) {
-            string.add(text.substring(i * 1024, Math.min(text.length(), (i * 1024) + size)));
-        }
-
-        return string;
-    }
-
-    enum LogPriority {
-        INFO, WARNING, ERROR, FATAL_ERROR, DEBUG;
-    }
-
-    public static void log(Exception e) {
-        System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " EXCEPTION CAUGHT: ");
-        e.printStackTrace();
-    }
-
-    public static void log(String message) {
-        log(LogPriority.INFO, message);
-    }
-
-    public static void log(LogPriority priority, String message) {
-        if (priority == LogPriority.INFO) {
-            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " INFO: " + message);
-        } else if (priority == LogPriority.WARNING) {
-            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " WARNING: " + message);
-        } else if (priority == LogPriority.ERROR) {
-            System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " ERROR: " + message);
-        } else if (priority == LogPriority.FATAL_ERROR) {
-            System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " FATAL ERROR: " + message);
-        } else if (priority == LogPriority.DEBUG) {
-            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " DEBUG: " + message);
-        }
-    }
-
     public static void exit() {
         exit(0, false);
     }
@@ -383,15 +348,15 @@ public class Main {
             try {
                 ConfigManager.saveConfigs(config.configLocation.getValue());
             } catch (FileNotFoundException e) {
-                log(e);
-                log(LogPriority.ERROR, "Failed to save configurations before exiting.");
+                logger.log(e);
+                logger.log(1, "Failed to save configurations before exiting.");
             }
             running = false;
         }
         if (status == 0) {
-            log("Exiting...");
+            logger.log("Exiting...");
         } else {
-            log(LogPriority.INFO, "Exiting due to runtime error...");
+            logger.log("Exiting due to runtime error...");
         }
         System.exit(status);
     }
