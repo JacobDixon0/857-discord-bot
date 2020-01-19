@@ -43,8 +43,8 @@ public class Commands {
                             event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).sendMessage(event.getArgs().replace(argsList[0], "")).queue();
                             successfulQuery = true;
                         } catch (Exception e) {
-                            Main.log(e);
-                            Main.log(Main.LogPriority.ERROR, "Exception caught while echoing message.");
+                            Main.logger.log(e);
+                            Main.logger.log(1, "Exception caught while echoing message.");
                             event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
                         }
                     } else {
@@ -98,7 +98,7 @@ public class Commands {
                         try {
                             e.delete().queue();
                         } catch (Exception e0) {
-                            Main.log("Exception caught attempting to clear message: \"" + e.getContentDisplay() + "\".");
+                            Main.logger.log("Exception caught attempting to clear message: \"" + e.getContentDisplay() + "\".");
                         }
                     });
                     Main.embedPurgeLog("Cleared " + event.getArgs() + " message(s)", event.getChannel());
