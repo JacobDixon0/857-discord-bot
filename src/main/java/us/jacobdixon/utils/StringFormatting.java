@@ -12,18 +12,18 @@ import java.util.regex.Pattern;
 
 public class StringFormatting {
 
-    public static String[] split(String string, String delim){
+    public static String[] split(String string, String delim) {
         String[] sections = string.split("(?<!\\\\)" + delim);
-        for(int i = 0; i < sections.length; i++){
+        for (int i = 0; i < sections.length; i++) {
             sections[i] = sections[i].replaceAll("(?<!\\\\)\\\\", "");
             sections[i] = sections[i].trim();
         }
         return sections;
     }
 
-    public static String[] split(String string, String delim, String esc){
+    public static String[] split(String string, String delim, String esc) {
         String[] sections;
-        if(esc.equals("\\")) {
+        if (esc.equals("\\")) {
             sections = split(string, delim);
         } else {
             sections = string.split("(?<!" + esc + ")" + delim);
@@ -49,21 +49,21 @@ public class StringFormatting {
                 .replaceAll("\\[", "%5B").replaceAll("]", "%5D");
     }
 
-    public static String formatRegex(String s){
+    public static String formatRegex(String s) {
         s = s.replaceAll("\\\\", "\\\\\\\\");
         Matcher m = Pattern.compile("([\\^\\-\\[\\]*(){}.?+$])").matcher(s);
-        while (m.find()){
+        while (m.find()) {
             s = m.replaceAll("\\\\$1");
         }
         return s;
     }
 
-    public static String formatJSON(String s){
+    public static String formatJSON(String s) {
         s = s.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\"");
         return s;
     }
 
-    public static String normalizeSpacing(String s){
+    public static String normalizeSpacing(String s) {
         return s.replaceAll(" {2,}", " ").trim();
     }
 

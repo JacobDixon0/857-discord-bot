@@ -13,7 +13,8 @@ public class Config<T> {
     private boolean isVolatile;
     private boolean isExternal;
 
-    public Config(){}
+    public Config() {
+    }
 
     public Config(T value, String key, boolean isVolatile, boolean isExternal) {
         this.value = value;

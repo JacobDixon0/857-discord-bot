@@ -35,7 +35,7 @@ public class Commands {
                 boolean successfulQuery = false;
                 String args = event.getArgs();
                 if (args.equals("")) {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
                 } else {
                     String[] argsList = args.split(" ");
                     if (argsList[0].matches("<#\\d+>")) {
@@ -45,7 +45,7 @@ public class Commands {
                         } catch (Exception e) {
                             Main.log(e);
                             Main.log(Main.LogPriority.ERROR, "Exception caught while echoing message.");
-                            event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                            event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
                         }
                     } else {
                         event.reply(event.getArgs());
@@ -75,7 +75,7 @@ public class Commands {
                     event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).editMessageById(argsList[1], args.replace(argsList[0] + " " + argsList[1] + " ", "")).queue();
                     successfulQuery = true;
                 } catch (Exception e) {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
@@ -103,7 +103,7 @@ public class Commands {
                     });
                     Main.embedPurgeLog("Cleared " + event.getArgs() + " message(s)", event.getChannel());
                 } catch (Exception e) {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
                 }
             }
         }
@@ -137,7 +137,7 @@ public class Commands {
                     Main.emailAnnounce(sender, argsList[2], argsList[3], argsList[4], attachmentsList);
                     successfulQuery = true;
                 } else {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments ");
+                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments ");
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
@@ -173,7 +173,7 @@ public class Commands {
                     channel.sendMessage(embedBuilder.build()).queue();
                     successfulQuery = true;
                 } else {
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
             }
@@ -192,7 +192,7 @@ public class Commands {
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
                 if (event.getArgs().equals(""))
-                    event.reply("<@" + event.getAuthor().getId() + "> Error: Invalid arguments");
+                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
                 if (event.getArgs() != null && event.getArgs().split(" ")[0] != null) {
                     if (event.getArgs().split(" ")[0].equals("m")) {
                         Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
@@ -244,7 +244,7 @@ public class Commands {
         protected void execute(CommandEvent event) {
             if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
                 event.getMessage().addReaction("\u2705").complete();
-                Main.exit(0);
+                Main.exit();
             }
         }
     }

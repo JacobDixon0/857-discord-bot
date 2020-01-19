@@ -83,7 +83,7 @@ public class EmailHandler extends Thread {
         runInboxPolling();
     }
 
-    private static void runInboxPolling(){
+    private static void runInboxPolling() {
         try {
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
@@ -143,7 +143,7 @@ public class EmailHandler extends Thread {
                     if (allowed) {
                         allowed = false;
                         for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
-                            if ((sender.getSenderName() + " <" + sender.getSenderAddress().toLowerCase() + ">").equals(from)) {
+                            if ((sender.getIdentity()).equals(from)) {
                                 allowed = true;
                                 emailSenderProfile = sender;
                                 break;
@@ -167,12 +167,12 @@ public class EmailHandler extends Thread {
         } catch (Exception e) {
             Main.log(e);
             Main.log(Main.LogPriority.ERROR, "Encountered error while handling Gmail API.");
-            if(++retryCount <= 8){
+            if (++retryCount <= 8) {
                 long backoff = (long) (retryCount * retryCount * 1000 + Math.random() * 1000);
-                Main.log("Reattempting to run Gmail API handler in " + backoff/1000 + " seconds.");
-                try{
+                Main.log("Reattempting to run Gmail API handler in " + backoff / 1000 + " seconds.");
+                try {
                     Thread.sleep(backoff);
-                } catch (InterruptedException e0){
+                } catch (InterruptedException e0) {
                     Main.log(Main.LogPriority.ERROR, "Error occurred waiting to retry Gmail API handling.");
                 }
                 runInboxPolling();

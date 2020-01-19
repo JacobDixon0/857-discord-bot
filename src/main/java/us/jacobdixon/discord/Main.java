@@ -33,9 +33,8 @@ public class Main {
     public static Configuration config = new Configuration();
 
     public static EventHandler eventHandler = new EventHandler();
-    public static CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
-
     public static EmailHandler emailHandler = new EmailHandler();
+    public static CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
 
     public static JDA jda;
 
@@ -66,7 +65,6 @@ public class Main {
             emailHandler.start();
 
             loadConfigs(true);
-
             embedStartupLog();
             running = true;
             log("Started in " + config.RUN_DIR.getValue() + " on " + config.hostname.getValue() + " running " + config.OS_NAME.getValue() + ".");
@@ -121,7 +119,7 @@ public class Main {
         return loadConfigs(true) && saveConfigs();
     }
 
-    public static boolean loadConfigs( boolean setBotValues) {
+    public static boolean loadConfigs(boolean setBotValues) {
         boolean returnValue = false;
         try {
             ConfigManager.loadExtConfigs(config.extConfigLocation.getValue());
@@ -153,8 +151,8 @@ public class Main {
             }
         }
 
-        if(running && setBotValues){
-            if(config.modeStatus.getValue() == 0) {
+        if (running && setBotValues) {
+            if (config.modeStatus.getValue() == 0) {
                 if (config.onlineStatus.getValue().equals("online")) {
                     jda.getPresence().setStatus(OnlineStatus.ONLINE);
                 } else if (config.onlineStatus.getValue().equals("offline")) {
@@ -170,10 +168,10 @@ public class Main {
                 }
                 jda.getPresence().setActivity(Activity.playing(config.activityStatus.getValue()));
                 Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
-            } else if(config.modeStatus.getValue() ==  1){
+            } else if (config.modeStatus.getValue() == 1) {
                 Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
                 Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
-            } else if(config.modeStatus.getValue() ==  2){
+            } else if (config.modeStatus.getValue() == 2) {
                 Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
                 Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
             } else {
@@ -296,7 +294,7 @@ public class Main {
                 .sendMessage("<@&" + config.announcementsRoleId.getValue() + "> Email announcement posted for 857 - \"" + title + "\"").queue();
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.announcementsChannelId.getValue()).
                 sendMessage(getEmailEmbed(senderProfile, title, time, content, attachments)).queue();
-        Main.embedAnnouncementLog(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", title);
+        Main.embedAnnouncementLog(senderProfile.getIdentity(), title);
     }
 
     public static MessageEmbed getEmailEmbed(EmailSenderProfile senderProfile, String title, String time, String content, List<String> attachments) {
@@ -304,7 +302,7 @@ public class Main {
 
         embedBuilder.setTitle(title);
         embedBuilder.setColor(Color.RED);
-        embedBuilder.setAuthor(senderProfile.getSenderName() + " <" + senderProfile.getSenderAddress() + ">", "https://mail.google.com", senderProfile.getProfileImageUrl());
+        embedBuilder.setAuthor(senderProfile.getIdentity(), "https://mail.google.com", senderProfile.getProfileImageUrl());
 
         if (content.length() > 1024) {
             List<String> contentSections = getChunks(content, 1024);

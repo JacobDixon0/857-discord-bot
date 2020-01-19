@@ -9,7 +9,7 @@ package us.jacobdixon.discord;
 
 import us.jacobdixon.utils.StringFormatting;
 
-public class RoleAssigner{
+public class RoleAssigner {
     private String roleId;
     private String emote;
 
@@ -35,7 +35,7 @@ public class RoleAssigner{
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return StringFormatting.formatJSON("{\"role-id\":" + roleId + "\",\"emote\":\"" + emote + "\"}");
     }
 }

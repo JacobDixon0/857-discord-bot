@@ -26,7 +26,7 @@ public class ConfigManager {
         JSONArray approvedSenders = (JSONArray) jsonObject.get(Main.config.knownSenders.getKey());
         Main.config.knownSenders.setValue(new ArrayList<>());
 
-        if(approvedSenders != null) {
+        if (approvedSenders != null) {
             for (Object approvedSender : approvedSenders) {
                 EmailSenderProfile esp = new EmailSenderProfile();
                 for (Object o : ((Map) approvedSender).entrySet()) {
@@ -102,7 +102,7 @@ public class ConfigManager {
     }
 
     public static void loadConfigs(String name) throws IOException, ParseException {
-        if(!new File(name).exists()){
+        if (!new File(name).exists()) {
             Main.log(Main.LogPriority.FATAL_ERROR, "No config file found.");
             Main.exit(-1, true);
         }
@@ -110,8 +110,8 @@ public class ConfigManager {
         Object obj = new JSONParser().parse(new FileReader(name));
         JSONObject jsonObject = (JSONObject) obj;
 
-        for (Config<?> config : Main.config.getConfigs()){
-            if(!config.isVolatile() && jsonObject.get(config.getKey()) != null) {
+        for (Config<?> config : Main.config.getConfigs()) {
+            if (!config.isVolatile() && jsonObject.get(config.getKey()) != null) {
                 Main.config.setConfigValueByKey(config.getKey(), jsonObject.get(config.getKey()));
             }
         }
@@ -119,15 +119,15 @@ public class ConfigManager {
         Main.config.bannedPhrases.setValue(new ArrayList<>());
 
         Scanner filterConfigScanner = new Scanner(new File(Main.config.filterListLocation.getValue()));
-        while(filterConfigScanner.hasNextLine()){
+        while (filterConfigScanner.hasNextLine()) {
             String line = filterConfigScanner.nextLine();
-            if(!line.equals("") && !line.matches("^\\s+$")) {
+            if (!line.equals("") && !line.matches("^\\s+$")) {
                 Main.config.bannedPhrases.getValue().add(line);
             }
         }
 
-        for(Config<?> config : Main.config.configs){
-            if(config.getValue() == null){
+        for (Config<?> config : Main.config.configs) {
+            if (config.getValue() == null) {
                 Main.log(Main.LogPriority.FATAL_ERROR, "Missing config \"" + config.getKey() + "\" in " + Main.config.configLocation.getValue() + ".");
                 Main.exit(-1, true);
             }
@@ -139,7 +139,7 @@ public class ConfigManager {
         JSONObject jsonObject = new JSONObject();
 
         for (Config<?> config : Main.config.getConfigs()) {
-            if(!config.isVolatile() && !config.isExternal()) {
+            if (!config.isVolatile() && !config.isExternal()) {
                 jsonObject.put(config.getKey(), config.getValue());
             }
         }
@@ -155,7 +155,7 @@ public class ConfigManager {
 
         PrintWriter filterListWriter = new PrintWriter(Main.config.filterListLocation.getValue());
 
-        if(!Main.config.bannedPhrases.getValue().isEmpty()) {
+        if (!Main.config.bannedPhrases.getValue().isEmpty()) {
             for (String s : Main.config.bannedPhrases.getValue()) {
                 filterListWriter.println(s);
             }

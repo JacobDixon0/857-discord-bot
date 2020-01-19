@@ -44,7 +44,7 @@ class Configuration {
 
     Config<String> activityStatus = new Config<>("Bot Things", "activity");
     Config<String> onlineStatus = new Config<>("online", "online-status");
-    Config<Long> modeStatus = new Config<>((long)0, "mode");
+    Config<Long> modeStatus = new Config<>((long) 0, "mode");
 
     Config<ArrayList<EmailSenderProfile>> knownSenders = new Config<>(new ArrayList<>(), "approved-senders", false, true);
     Config<ArrayList<String>> knownDestinations = new Config<>(new ArrayList<>(), "approved-destinations", false, true);
@@ -67,23 +67,23 @@ class Configuration {
                 mentorRoleId));
     }
 
-    public ArrayList<Config<?>> getConfigs(){
+    public ArrayList<Config<?>> getConfigs() {
         return configs;
     }
 
-    public Object getConfigValueByKey(String key){
+    public Object getConfigValueByKey(String key) {
         Object returnValue = null;
-        for(Config<?> config : configs){
-            if(config.getKey().equals(key)){
+        for (Config<?> config : configs) {
+            if (config.getKey().equals(key)) {
                 returnValue = config.getValue();
             }
         }
         return returnValue;
     }
 
-    public <T> void setConfigValueByKey(String key, T value){
-        for(Config config : configs){
-            if(config.getKey().equals(key)){
+    public <T> void setConfigValueByKey(String key, T value) {
+        for (Config config : configs) {
+            if (config.getKey().equals(key)) {
                 config.setValue(value);
             }
         }

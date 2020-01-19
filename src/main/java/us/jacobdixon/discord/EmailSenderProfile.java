@@ -15,7 +15,7 @@ public class EmailSenderProfile {
     private String senderAddress = "address";
     private String profileImageUrl = "https://" + Main.config.domain.getValue() + Main.config.extCacheLocation.getValue() + "res/img/profile_mask2.png";
 
-    public EmailSenderProfile(){
+    public EmailSenderProfile() {
         new EmailSenderProfile(null, null, null);
     }
 
@@ -54,8 +54,12 @@ public class EmailSenderProfile {
         this.profileImageUrl = profileImageUrl;
     }
 
+    public String getIdentity() {
+        return senderName + " <" + senderAddress.toLowerCase() + ">";
+    }
+
     @Override
-    public String toString(){
+    public String toString() {
         return StringFormatting.formatJSON("{\"name\":\"" + senderName + "\",\"address\":\"" + senderAddress + "\",\"img-url\":\"" + profileImageUrl + "\"}");
     }
 }
