@@ -46,9 +46,10 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
+        Main.log("Received private message from: \"" + event.getAuthor().getAsTag() + "\" : \"" + event.getMessage().getContentDisplay() + "\"");
         if (!event.getAuthor().getId().equals(Main.jda.getSelfUser().getId())) {
             Main.embedMessageLog(event.getAuthor(), event.getMessage().getContentDisplay());
-            Main.log("Received private message from \"" + event.getAuthor().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\".");
+            Main.log("Received private message from \"" + event.getAuthor().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\"");
             event.getAuthor().openPrivateChannel().queue(privateChannel -> {
                 privateChannel.sendMessage("This bot is not setup to handle private messages. If you have an issue please contact the admin beluga#6796, or send an email to discord@jacobdixon.us.").queue();
             });
@@ -57,6 +58,7 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+        Main.log("Received message from: \"" + event.getAuthor().getAsTag() + "\" in: \"" + event.getGuild().getName() + "\"::\"" + event.getMessage().getTextChannel().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\"");
         if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember())
                 && !event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.mentorRoleId.getValue())).contains(event.getMember())
                 && !event.getAuthor().isBot()) {
@@ -125,19 +127,19 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        Main.log("Member joined: \"" + event.getMember().getUser().getAsTag() + "\"");
         if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
             if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
                 event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(Main.config.memberRoleId.getValue())).queue();
             }
         }
         Main.embedMemberLog("Member Joined", event.getMember());
-        Main.log("Member joined: \"" + event.getMember().getEffectiveName() + "\".");
     }
 
     @Override
     public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
+        Main.log("Member left: \"" + event.getMember().getUser().getAsTag() + "\"");
         Main.embedMemberLog("Member Left", event.getMember());
-        Main.log("Member left: \"" + event.getMember().getEffectiveName() + "\".");
     }
 
     @Override
@@ -150,8 +152,8 @@ public class EventHandler extends ListenerAdapter {
                             privateChannel.sendMessage("Assigned Role: " + event.getGuild().getRoleById(role.getRoleId()).getName()).queue();
                         });
                     });
+                    Main.log("Assigned role: \"" + event.getGuild().getRoleById(role.getRoleId()).getName() + "\" to: \"" + event.getMember().getEffectiveName() + "\"");
                     Main.embedRoleLog("Assigned Role", event.getMember(), event.getGuild().getRoleById(role.getRoleId()));
-                    Main.log("Assigned role: \"" + event.getGuild().getRoleById(role.getRoleId()).getName() + "\" to: \"" + event.getMember().getEffectiveName() + "\".");
                 }
             }
         }
@@ -167,8 +169,8 @@ public class EventHandler extends ListenerAdapter {
                             privateChannel.sendMessage("Removed Role: " + event.getGuild().getRoleById(role.getRoleId()).getName()).queue();
                         });
                     });
+                    Main.log("Unassigned role: \"" + event.getGuild().getRoleById(role.getRoleId()).getName() + "\" from: \"" + event.getMember().getEffectiveName() + "\"");
                     Main.embedRoleLog("Unassigned Role", event.getMember(), event.getGuild().getRoleById(role.getRoleId()));
-                    Main.log("Unassigned role: \"" + event.getGuild().getRoleById(role.getRoleId()).getName() + "\" from: \"" + event.getMember().getEffectiveName() + "\".");
                 }
             }
         }
