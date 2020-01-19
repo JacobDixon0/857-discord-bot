@@ -68,7 +68,6 @@ public class EventHandler extends ListenerAdapter {
             String violation = "";
 
             if (Main.config.useFilter.getValue()) {
-
                 for (String s : Main.config.bannedPhrases.getValue()) {
                     String phrase = s;
                     s = "(?:.*)(?:^|\\s+)" + StringFormatting.formatRegex(s.toLowerCase()) + "(?:$|\\s+)(?:.*)";

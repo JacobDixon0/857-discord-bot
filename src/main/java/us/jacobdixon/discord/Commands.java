@@ -362,47 +362,61 @@ public class Commands {
                 boolean successfulResponse = true;
 
                 switch (splitArgs[0]) {
-                    case "list dest": {
-                        successfulQuery = true;
-                        StringBuilder s = new StringBuilder();
-                        for (String dest : Main.config.knownDestinations.getValue()) {
-                            s.append("<").append(dest).append(">").append("\n");
+                    case "dest": {
+                        if (splitArgs[1] != null) {
+                            if (splitArgs[1].equals("list")) {
+                                StringBuilder s = new StringBuilder();
+                                for (String dest : Main.config.knownDestinations.getValue()) {
+                                    s.append("<").append(dest).append(">").append("\n");
+                                }
+                                event.reply(author.getAsMention() + s.toString());
+                            } else {
+                                successfulQuery = false;
+                            }
                         }
-                        event.reply(s.toString());
                         break;
                     }
-                    case "list send": {
-                        successfulQuery = true;
-                        StringBuilder s = new StringBuilder();
-                        for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
-                            s.append(sender.getSenderName()).append(" <").append(sender.getSenderAddress()).append(">\n");
+                    case "send": {
+                        if (splitArgs[1] != null) {
+                            if (splitArgs[1].equals("list")) {
+                                StringBuilder s = new StringBuilder();
+                                for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
+                                    s.append(sender.getSenderName()).append(" <").append(sender.getSenderAddress()).append(">\n");
+                                }
+                                event.reply(author.getAsMention() + s.toString());
+                            } else {
+                                successfulQuery = false;
+                            }
                         }
-                        event.reply(s.toString());
                         break;
                     }
                     case "config":
-                        if(splitArgs[1].equals("reload")) {
-                            successfulResponse = Main.reloadConfigs();
-                        } else if(splitArgs[1].equals("save")){
-                            successfulResponse = Main.saveConfigs();
-                        } else if(splitArgs[1].equals("load")){
-                            successfulResponse = Main.loadConfigs(true);
-                        } else if(splitArgs[1].equals("get")){
-                            if(splitArgs[2] != null){
-                                if(splitArgs[2].equals("*")){
-                                    StringBuilder replyBuilder = new StringBuilder();
-                                    for(Config<?> config : Main.config.getConfigs()){
-                                        replyBuilder.append("**Key: ** ").append(config.getKey()).append(" Value: ").append(config.getValue()).append("\n");
-                                    }
-                                    event.reply(author.getAsMention() + replyBuilder.toString());
-                                } else {
-                                    Object result = Main.config.getConfigValueByKey(splitArgs[2]);
-                                    if(result != null) {
-                                        event.reply(author.getAsMention() + " **Key: ** " + splitArgs[2] + " Value: " + result.toString());
+                        if (splitArgs[1] != null) {
+                            if (splitArgs[1].equals("reload")) {
+                                successfulResponse = Main.reloadConfigs();
+                            } else if (splitArgs[1].equals("save")) {
+                                successfulResponse = Main.saveConfigs();
+                            } else if (splitArgs[1].equals("load")) {
+                                successfulResponse = Main.loadConfigs(true);
+                            } else if (splitArgs[1].equals("get")) {
+                                if (splitArgs[2] != null) {
+                                    if (splitArgs[2].equals("*")) {
+                                        StringBuilder replyBuilder = new StringBuilder();
+                                        for (Config<?> config : Main.config.getConfigs()) {
+                                            replyBuilder.append("**Key: ** `").append(config.getKey()).append("` **Value:** `").append(config.getValue()).append("`\n");
+                                        }
+                                        event.reply(author.getAsMention() + replyBuilder.toString());
                                     } else {
-                                        successfulQuery = false;
+                                        Object result = Main.config.getConfigValueByKey(splitArgs[2]);
+                                        if (result != null) {
+                                            event.reply(author.getAsMention() + " **Key: ** `" + splitArgs[2] + "` **Value:** `" + result.toString() + "`");
+                                        } else {
+                                            successfulQuery = false;
+                                        }
                                     }
                                 }
+                            } else {
+                                successfulQuery = false;
                             }
                         }
                         break;

@@ -7,6 +7,8 @@
 
 package us.jacobdixon.discord;
 
+import us.jacobdixon.utils.StringFormatting;
+
 public class EmailSenderProfile {
 
     private String senderName = "name";
@@ -50,5 +52,10 @@ public class EmailSenderProfile {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    @Override
+    public String toString(){
+        return StringFormatting.formatJSON("{\"name\":\"" + senderName + "\",\"address\":\"" + senderAddress + "\",\"img-url\":\"" + profileImageUrl + "\"}");
     }
 }

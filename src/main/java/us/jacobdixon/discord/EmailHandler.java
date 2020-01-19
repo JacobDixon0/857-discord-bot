@@ -122,9 +122,9 @@ public class EmailHandler extends Thread {
                         Main.log(Main.LogPriority.ERROR, "Exception caught while attempting to parse email date.");
                     }
 
-                    boolean allowed = false;
-
                     EmailSenderProfile emailSenderProfile = new EmailSenderProfile("name", "address", null);
+
+                    boolean allowed = false;
 
                     Matcher nameMatcher = Pattern.compile("^(.+)<(.+)>$").matcher(from);
 
@@ -140,7 +140,8 @@ public class EmailHandler extends Thread {
                         }
                     }
 
-                    if (!allowed) {
+                    if (allowed) {
+                        allowed = false;
                         for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
                             if ((sender.getSenderName() + " <" + sender.getSenderAddress().toLowerCase() + ">").equals(from)) {
                                 allowed = true;
