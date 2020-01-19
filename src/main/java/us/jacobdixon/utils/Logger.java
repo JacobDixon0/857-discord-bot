@@ -12,6 +12,8 @@ import java.util.Date;
 
 public class Logger {
 
+    private SimpleDateFormat df = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ");
+
     public Logger(){
     }
 
@@ -20,9 +22,13 @@ public class Logger {
     }
 
     public void log(Exception e) {
-        System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()) + "EXCEPTION CAUGHT:");
+        System.err.println(df.format(new Date()) + "EXCEPTION CAUGHT:");
         e.printStackTrace();
 
+    }
+
+    public void log(Object o){
+        System.out.println(o.toString());
     }
 
     public void log(String message) {
@@ -48,15 +54,15 @@ public class Logger {
 
     public void log(LogPriority priority, String message) {
         if (priority == LogPriority.INFO) {
-            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()) + "INFO: " + message);
+            System.out.println(df.format(new Date()) + "INFO: " + message);
         } else if (priority == LogPriority.WARNING) {
-            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()) + "WARNING: " + message);
+            System.out.println(df.format(new Date()) + "WARNING: " + message);
         } else if (priority == LogPriority.ERROR) {
-            System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()) + "ERROR: " + message);
+            System.err.println(df.format(new Date()) + "ERROR: " + message);
         } else if (priority == LogPriority.FATAL_ERROR) {
-            System.err.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()) + "FATAL ERROR: " + message);
+            System.err.println(df.format(new Date()) + "FATAL ERROR: " + message);
         } else if (priority == LogPriority.DEBUG) {
-            System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()) + "DEBUG: " + message);
+            System.out.println(df.format(new Date()) + "DEBUG: " + message);
         }
     }
 
