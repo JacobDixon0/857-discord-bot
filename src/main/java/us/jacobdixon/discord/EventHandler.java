@@ -59,7 +59,7 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         if (event.getMessage().getEmbeds().size() != 0) {
-            Main.logger.log("Received message from: \"" + event.getAuthor().getAsTag() + "\" in: \"" + event.getGuild().getName() + "\"::\"" + event.getMessage().getTextChannel().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\" with: " + event.getMessage().getEmbeds().size() + " embeds");
+            Main.logger.log("Received message from: \"" + event.getAuthor().getAsTag() + "\" in: \"" + event.getGuild().getName() + "\"::\"" + event.getMessage().getTextChannel().getName() + "\" with: " + event.getMessage().getEmbeds().size() + " embeds : \"" + event.getMessage().getContentDisplay() + "\"");
         } else {
             Main.logger.log("Received message from: \"" + event.getAuthor().getAsTag() + "\" in: \"" + event.getGuild().getName() + "\"::\"" + event.getMessage().getTextChannel().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\"");
         }
