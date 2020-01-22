@@ -148,7 +148,7 @@ public class Commands {
 
         EventAnnounceCommand() {
             this.name = "eannounce";
-            this.help = "posts generic embedded message.";
+            this.help = "Posts generic embedded message.";
             this.hidden = true;
         }
 
@@ -161,12 +161,22 @@ public class Commands {
                 String[] argsList = StringFormatting.split(args, Main.config.commandArgDelimiter.getValue());
                 Message message = event.getMessage();
 
-                if (!message.getMentionedChannels().isEmpty() && argsList.length == 4) {
+                if (!message.getMentionedChannels().isEmpty() && (argsList.length == 4 || argsList.length == 5)) {
                     TextChannel channel = message.getMentionedChannels().get(0);
 
                     EmbedBuilder embedBuilder = new EmbedBuilder();
 
-                    embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/calendar-icon.png");
+                    if (argsList.length == 4) {
+                        embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/img/calendar-icon.png");
+                    } else {
+                        try {
+                            embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", argsList[4]);
+                        } catch (Exception e) {
+                            embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/img/calendar-icon.png");
+                            event.getMessage().addReaction("\u26A0").complete();
+                            event.reply(event.getAuthor().getAsMention() + " Warning: Could not apply custom icon");
+                        }
+                    }
                     embedBuilder.setTitle(argsList[2]);
                     embedBuilder.addField(new MessageEmbed.Field("Event", argsList[3], false));
 
