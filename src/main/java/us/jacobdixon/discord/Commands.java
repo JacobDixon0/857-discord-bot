@@ -125,9 +125,13 @@ public class Commands {
                 String args = event.getArgs();
                 String[] argsList = StringFormatting.split(args, Main.config.commandArgDelimiter.getValue());
 
-                if (argsList.length == 6) {
+                if (argsList.length == 5  || argsList.length == 6) {
                     List<String> attachmentsList = new ArrayList<>();
-                    attachmentsList.add(argsList[5]);
+                    if(argsList.length == 6){
+                        attachmentsList.add(argsList[5]);
+                    } else {
+                        attachmentsList.add("x");
+                    }
                     EmailSenderProfile sender = new EmailSenderProfile(argsList[0], argsList[1]);
                     for (EmailSenderProfile emailSenderProfile : Main.config.knownSenders.getValue()) {
                         if (sender.getSenderAddress().equals(emailSenderProfile.getSenderAddress()) && sender.getSenderName().equals(emailSenderProfile.getSenderName())) {
@@ -170,7 +174,9 @@ public class Commands {
                         embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/img/calendar-icon.png");
                     } else {
                         try {
-                            embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", argsList[4]);
+                            if(!argsList[4].equals("x")) {
+                                embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", argsList[4]);
+                            }
                         } catch (Exception e) {
                             embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/img/calendar-icon.png");
                             event.getMessage().addReaction("\u26A0").complete();
