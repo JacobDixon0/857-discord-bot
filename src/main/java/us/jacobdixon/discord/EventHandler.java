@@ -49,7 +49,6 @@ public class EventHandler extends ListenerAdapter {
         Main.logger.log("Received private message from: \"" + event.getAuthor().getAsTag() + "\" : \"" + event.getMessage().getContentDisplay() + "\"");
         if (!event.getAuthor().getId().equals(Main.jda.getSelfUser().getId())) {
             Main.embedMessageLog(event.getAuthor(), event.getMessage().getContentDisplay());
-            Main.logger.log("Received private message from \"" + event.getAuthor().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\"");
             event.getAuthor().openPrivateChannel().queue(privateChannel -> {
                 privateChannel.sendMessage("This bot is not setup to handle private messages. If you have an issue please contact the admin beluga#6796, or send an email to discord@jacobdixon.us.").queue();
             });

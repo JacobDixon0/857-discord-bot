@@ -59,7 +59,7 @@ public class Main {
                 new Commands.FilterCommand(),
                 new Commands.EchoEditCommand());
         commandClientBuilder.setPrefix("!");
-        commandClientBuilder.setActivity(Activity.playing(config.activityStatus.getValue()));
+        commandClientBuilder.setActivity(Activity.watching(config.activityStatus.getValue()));
         commandClientBuilder.useHelpBuilder(false);
 
         try {
@@ -168,7 +168,7 @@ public class Main {
                 } else {
                     logger.log(2, "Invalid type set for \"" + config.onlineStatus.getKey() + "\".");
                 }
-                jda.getPresence().setActivity(Activity.playing(config.activityStatus.getValue()));
+                jda.getPresence().setActivity(Activity.watching(config.activityStatus.getValue()));
                 Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
             } else if (config.modeStatus.getValue() == 1) {
                 Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));

@@ -267,7 +267,7 @@ public class Commands {
 
     public static class FilterCommand extends Command {
 
-        private static String[] authorizedRoleIds = new String[]{Main.config.botAdminRoleId.getValue()};
+        private static String[] authorizedRoleIds = new String[]{Main.config.adminRoleId.getValue(), Main.config.mentorRoleId.getValue()};
 
         FilterCommand() {
             this.name = "filter";
