@@ -12,11 +12,14 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import us.jacobdixon.utils.StringFormatting;
+
+import javax.annotation.Nonnull;
 
 public class EventHandler extends ListenerAdapter {
 
@@ -46,7 +49,19 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
-        Main.logger.log("Received private message from: \"" + event.getAuthor().getAsTag() + "\" : \"" + event.getMessage().getContentDisplay() + "\"");
+        StringBuilder logBuilder = new StringBuilder();
+        logBuilder.append("Received private message from: \"").append(event.getAuthor().getAsTag()).append("\"");
+        if(event.getMessage().getEmbeds().size() > 0){
+            logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
+            if(event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
+        }
+        if(event.getMessage().getAttachments().size() > 0){
+            logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
+        }
+        if(!event.getMessage().getContentRaw().equals("")){
+            logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
+        }
+        Main.logger.log(logBuilder.toString());
         if (!event.getAuthor().getId().equals(Main.jda.getSelfUser().getId())) {
             Main.embedMessageLog(event.getAuthor(), event.getMessage().getContentDisplay());
             event.getAuthor().openPrivateChannel().queue(privateChannel -> {
@@ -57,11 +72,20 @@ public class EventHandler extends ListenerAdapter {
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        if (event.getMessage().getEmbeds().size() != 0) {
-            Main.logger.log("Received message from: \"" + event.getAuthor().getAsTag() + "\" in: \"" + event.getGuild().getName() + "\"::\"" + event.getMessage().getTextChannel().getName() + "\" with: " + event.getMessage().getEmbeds().size() + " embeds : \"" + event.getMessage().getContentDisplay() + "\"");
-        } else {
-            Main.logger.log("Received message from: \"" + event.getAuthor().getAsTag() + "\" in: \"" + event.getGuild().getName() + "\"::\"" + event.getMessage().getTextChannel().getName() + "\" : \"" + event.getMessage().getContentDisplay() + "\"");
+        StringBuilder logBuilder = new StringBuilder();
+        logBuilder.append("Received message from: \"").append(event.getAuthor().getAsTag()).append("\" in: \"").
+                append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).append("\"");
+        if(event.getMessage().getEmbeds().size() > 0){
+            logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
+            if(event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
         }
+        if(event.getMessage().getAttachments().size() > 0){
+            logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
+        }
+        if(!event.getMessage().getContentRaw().equals("")){
+            logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
+        }
+        Main.logger.log(logBuilder.toString());
         if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember())
                 && !event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.mentorRoleId.getValue())).contains(event.getMember())
                 && !event.getAuthor().isBot()) {
@@ -129,6 +153,24 @@ public class EventHandler extends ListenerAdapter {
     }
 
     @Override
+    public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
+        StringBuilder logBuilder = new StringBuilder();
+        logBuilder.append("Received message edit from: \"").append(event.getAuthor().getAsTag()).append("\" in: \"").
+                append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).append("\"");
+        if(event.getMessage().getEmbeds().size() > 0){
+            logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
+            if(event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
+        }
+        if(event.getMessage().getAttachments().size() > 0){
+            logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
+        }
+        if(!event.getMessage().getContentRaw().equals("")){
+            logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
+        }
+        Main.logger.log(logBuilder.toString());
+    }
+
+    @Override
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         Main.logger.log("Member joined: \"" + event.getMember().getUser().getAsTag() + "\"");
         if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
@@ -178,5 +220,4 @@ public class EventHandler extends ListenerAdapter {
             }
         }
     }
-
 }

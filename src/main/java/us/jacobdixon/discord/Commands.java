@@ -385,7 +385,7 @@ public class Commands {
                                 for (String dest : Main.config.knownDestinations.getValue()) {
                                     s.append("<").append(dest).append(">").append("\n");
                                 }
-                                event.reply(author.getAsMention() + s.toString());
+                                event.reply(author.getAsMention() + "\n" + s.toString());
                             } else {
                                 successfulQuery = false;
                             }
@@ -399,7 +399,7 @@ public class Commands {
                                 for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
                                     s.append(sender.getSenderName()).append(" <").append(sender.getSenderAddress()).append(">\n");
                                 }
-                                event.reply(author.getAsMention() + s.toString());
+                                event.reply(author.getAsMention() + "\n" + s.toString());
                             } else {
                                 successfulQuery = false;
                             }
