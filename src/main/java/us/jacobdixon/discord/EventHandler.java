@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
@@ -23,7 +24,7 @@ import javax.annotation.Nonnull;
 
 public class EventHandler extends ListenerAdapter {
 
-    private class SimpleReplace {
+    private static class SimpleReplace {
         String base;
         String[] replacements;
 
@@ -74,7 +75,8 @@ public class EventHandler extends ListenerAdapter {
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
         StringBuilder logBuilder = new StringBuilder();
         logBuilder.append("Received message from: \"").append(event.getAuthor().getAsTag()).append("\" in: \"").
-                append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).append("\"");
+                append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).
+                append("\" message id: \"").append(event.getMessageId()).append("\"");
         if(event.getMessage().getEmbeds().size() > 0){
             logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
             if(event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
@@ -156,7 +158,8 @@ public class EventHandler extends ListenerAdapter {
     public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
         StringBuilder logBuilder = new StringBuilder();
         logBuilder.append("Received message edit from: \"").append(event.getAuthor().getAsTag()).append("\" in: \"").
-                append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).append("\"");
+                append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).
+                append("\" message id: \"").append(event.getMessageId()).append("\"");
         if(event.getMessage().getEmbeds().size() > 0){
             logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
             if(event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
@@ -168,6 +171,12 @@ public class EventHandler extends ListenerAdapter {
             logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
         }
         Main.logger.log(logBuilder.toString());
+    }
+
+    @Override
+    public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
+        Main.logger.log("Received message removal in: \"" +
+                event.getGuild().getName() + "\"::\"" + event.getChannel().getName() + "\" message id: \"" + event.getMessageId() + "\"");
     }
 
     @Override
