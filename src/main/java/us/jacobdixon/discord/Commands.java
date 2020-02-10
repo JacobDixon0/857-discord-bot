@@ -101,9 +101,36 @@ public class Commands {
                             Main.logger.log("Exception caught attempting to clear message: \"" + e.getContentDisplay() + "\".");
                         }
                     });
-                    Main.embedPurgeLog("Cleared " + event.getArgs() + " message(s)", event.getChannel());
+                    Main.embedPurgeLog("Cleared " + event.getArgs() + " Message(s)", event.getChannel());
                 } catch (Exception e) {
                     event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
+                }
+            }
+        }
+    }
+
+    public static class EmailAnnouncementCommand extends Command {
+
+        EmailAnnouncementCommand() {
+            this.name = "announceid";
+            this.help = "Announces an email message to #announcements channel.";
+            this.hidden = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
+                boolean successfulQuery = false;
+
+                String args = event.getArgs();
+
+                successfulQuery = Main.emailHandler.announceEmailByID(args);
+
+                if (successfulQuery){
+                    event.getMessage().addReaction("\u2705").complete();
+                } else {
+                    event.getMessage().addReaction("\u274C").queue();
+                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid command.");
                 }
             }
         }

@@ -28,6 +28,7 @@ import us.jacobdixon.utils.StringFormatting;
 import java.io.*;
 import java.lang.Thread;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -143,7 +144,7 @@ public class EmailHandler extends Thread {
                     if (allowed) {
                         allowed = false;
                         for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
-                            if ((sender.getIdentity()).equals(from)) {
+                            if ((sender.getIdentity()).contains(from)) {
                                 allowed = true;
                                 emailSenderProfile = sender;
                                 break;
@@ -155,7 +156,7 @@ public class EmailHandler extends Thread {
                         String content = formatMessage(msgContent);
                         List<String> attachments = getAttachments(service, user, msg.getId());
 
-                        Main.emailAnnounce(emailSenderProfile, sub, formattedDate, content, attachments);
+                        Main.emailAnnounce(emailSenderProfile, sub, formattedDate, StringFormatting.unformatEmailTextPlain(content), attachments);
                         Main.logger.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
                     }
                 }
@@ -227,6 +228,63 @@ public class EmailHandler extends Thread {
             }
         }
         return result;
+    }
+
+    public boolean announceEmailByID(String id) {
+        boolean success = true;
+        final NetHttpTransport HTTP_TRANSPORT;
+        try {
+            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+            String user = "me";
+            Message msg = service.users().messages().get(user, id).execute();
+
+            String msgContent = getContent(msg);
+
+            String from = headerValueGetterThing("from", msg.getPayload().getHeaders());
+            String date = headerValueGetterThing("date", msg.getPayload().getHeaders());
+            String sub = headerValueGetterThing("subject", msg.getPayload().getHeaders());
+
+            String content = formatMessage(msgContent);
+            List<String> attachments = getAttachments(service, user, msg.getId());
+
+            String formattedDate = date;
+            SimpleDateFormat messageDateFormat = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss Z");
+            SimpleDateFormat gmailDateFormat = new SimpleDateFormat("MMM d, yyyy, h:m a");
+
+            try {
+                formattedDate = gmailDateFormat.format(messageDateFormat.parse(date + (Main.config.utc.getValue() * 60 * 60)));
+            } catch (Exception e) {
+                Main.logger.log(1, "Exception caught while attempting to parse email date.");
+            }
+
+            EmailSenderProfile emailSenderProfile = new EmailSenderProfile("name", "address", null);
+            Matcher nameMatcher = Pattern.compile("^(.+)<(.+)>$").matcher(from);
+
+            if (nameMatcher.find() && nameMatcher.group(1) != null && nameMatcher.group(2) != null) {
+                emailSenderProfile.setSenderName(nameMatcher.group(1).trim());
+                emailSenderProfile.setSenderAddress(nameMatcher.group(2).trim());
+            }
+
+            for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
+                if ((sender.getIdentity()).contains(from)) {
+                    emailSenderProfile = sender;
+                    break;
+                }
+            }
+
+
+            System.out.println(emailSenderProfile.getProfileImageUrl());
+
+            Main.emailAnnounce(emailSenderProfile, sub, formattedDate, StringFormatting.unformatEmailTextPlain(content), attachments);
+            Main.logger.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
+        } catch (Exception e) {
+            success = false;
+        }
+
+        return success;
     }
 
     public static String formatMessage(String s) {

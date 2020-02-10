@@ -57,9 +57,10 @@ public class Main {
                 new Commands.StopCommand(),
                 new Commands.DebugCommand(),
                 new Commands.FilterCommand(),
-                new Commands.EchoEditCommand());
+                new Commands.EchoEditCommand(),
+                new Commands.EmailAnnouncementCommand());
         commandClientBuilder.setPrefix("!");
-        commandClientBuilder.setActivity(Activity.watching(config.activityStatus.getValue()));
+        commandClientBuilder.setActivity(Activity.playing(config.activityStatus.getValue()));
         commandClientBuilder.useHelpBuilder(false);
 
         try {
@@ -168,10 +169,10 @@ public class Main {
                 } else {
                     logger.log(2, "Invalid type set for \"" + config.onlineStatus.getKey() + "\".");
                 }
-                jda.getPresence().setActivity(Activity.watching(config.activityStatus.getValue()));
+                jda.getPresence().setActivity(Activity.playing(config.activityStatus.getValue()));
                 Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
             } else if (config.modeStatus.getValue() == 1) {
-                Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
+                Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Undergoing Maintenance"));
                 Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
             } else if (config.modeStatus.getValue() == 2) {
                 Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));

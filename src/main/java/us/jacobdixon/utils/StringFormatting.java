@@ -58,7 +58,8 @@ public class StringFormatting {
                 .replaceAll("%", "%25").replaceAll("\\^", "%5E")
                 .replaceAll("\\{", "%7B").replaceAll("}", "%7D")
                 .replaceAll("\\|", "%7C").replaceAll("`", "%80")
-                .replaceAll("\\[", "%5B").replaceAll("]", "%5D");
+                .replaceAll("\\[", "%5B").replaceAll("]", "%5D")
+                .replaceAll("'", "%39").replaceAll("\"", "%34");
     }
 
     public static String formatRegex(String s) {
@@ -77,6 +78,10 @@ public class StringFormatting {
 
     public static String normalizeSpacing(String s) {
         return s.replaceAll(" {2,}", " ").trim();
+    }
+
+    public static String unformatEmailTextPlain(String s){
+        return s.replaceAll("&#39;", "'").replaceAll("&#34;", "\"");
     }
 
 }
