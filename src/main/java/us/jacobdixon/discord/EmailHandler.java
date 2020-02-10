@@ -179,7 +179,7 @@ public class EmailHandler extends Thread {
                 runInboxPolling();
             } else {
                 Main.logger.log(1, "Could not retry Gmail API due to too many failed attempts.");
-                Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
+                Main.config.modeStatus.setValue(2L);
                 Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
             }
         }
@@ -274,10 +274,7 @@ public class EmailHandler extends Thread {
                     break;
                 }
             }
-
-
-            System.out.println(emailSenderProfile.getProfileImageUrl());
-
+            
             Main.emailAnnounce(emailSenderProfile, sub, formattedDate, StringFormatting.unformatEmailTextPlain(content), attachments);
             Main.logger.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
         } catch (Exception e) {

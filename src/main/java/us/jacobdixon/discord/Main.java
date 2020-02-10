@@ -67,9 +67,9 @@ public class Main {
             jda = new JDABuilder(AccountType.BOT).setToken(config.botToken.getValue()).addEventListeners(eventHandler, commandClientBuilder.build()).build().awaitReady();
             emailHandler.start();
 
+            running = true;
             loadConfigs(true);
             embedStartupLog();
-            running = true;
             logger.log("Started in " + config.RUN_DIR.getValue() + " on " + config.hostname.getValue() + " running " + config.OS_NAME.getValue() + ".");
         } catch (LoginException | InterruptedException e0) {
             logger.log(e0);
