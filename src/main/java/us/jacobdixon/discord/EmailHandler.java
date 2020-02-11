@@ -111,7 +111,7 @@ public class EmailHandler extends Thread {
                     String sub = headerValueGetterThing("subject", msg.getPayload().getHeaders());
 
                     SimpleDateFormat messageDateFormat = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss Z");
-                    SimpleDateFormat gmailDateFormat = new SimpleDateFormat("MMM d, yyyy, h:m a");
+                    SimpleDateFormat gmailDateFormat = new SimpleDateFormat("MMM d, yyyy, h:mm a");
 
                     String formattedDate = date;
 
@@ -274,7 +274,7 @@ public class EmailHandler extends Thread {
                     break;
                 }
             }
-            
+
             Main.emailAnnounce(emailSenderProfile, sub, formattedDate, StringFormatting.unformatEmailTextPlain(content), attachments);
             Main.logger.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
         } catch (Exception e) {

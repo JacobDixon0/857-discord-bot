@@ -238,7 +238,7 @@ public class Commands {
                     event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
                 if (event.getArgs() != null && event.getArgs().split(" ")[0] != null) {
                     if (event.getArgs().split(" ")[0].equals("m")) {
-                        Main.jda.getPresence().setActivity(Activity.playing("Undergoing Maintenance"));
+                        Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Undergoing Maintenance"));
                         Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
                         Main.config.modeStatus.setValue((long) 1);
                         event.getMessage().addReaction("\u2705").complete();
