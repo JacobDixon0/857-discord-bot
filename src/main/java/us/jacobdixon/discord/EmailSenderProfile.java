@@ -13,7 +13,7 @@ public class EmailSenderProfile {
 
     private String senderName = "name";
     private String senderAddress = "address";
-    private String profileImageUrl = "https://" + Main.config.domain.getValue() + Main.config.extCacheLocation.getValue() + "res/img/profile_mask2.png";
+    private String profileImageUrl = "https://" + Main.config.domain.getValue() + Main.config.extCacheLocation.getValue() + "img/profile_mask2.png";
 
     public EmailSenderProfile() {
         new EmailSenderProfile(null, null, null);

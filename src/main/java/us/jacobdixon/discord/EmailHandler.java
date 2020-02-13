@@ -217,11 +217,11 @@ public class EmailHandler extends Thread {
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
                 if (new File(Main.config.cacheLocation.getValue()).exists()) {
                     String timestamp = new SimpleDateFormat("yyyy.MM.dd.").format(new Date());
-                    FileOutputStream fileOutFile = new FileOutputStream(Main.config.cacheLocation.getValue() + timestamp + filename);
-                    result.add(StringFormatting.formatUrl("https://" + Main.config.domain.getValue() + Main.config.extConfigLocation.getValue() + timestamp + filename));
+                    FileOutputStream fileOutFile = new FileOutputStream(Main.config.cacheLocation.getValue() + "attachments/" + timestamp + filename);
+                    result.add("https://" + Main.config.domain.getValue() + Main.config.extCacheLocation.getValue() + "attachments/" + timestamp + StringFormatting.formatUrl(filename));
                     fileOutFile.write(fileByteArray);
                     fileOutFile.close();
-                    Main.logger.log("Created email attachment cache file: \"" + Main.config.cacheLocation.getValue() + timestamp + filename + "\".");
+                    Main.logger.log("Created email attachment cache file: \"" + Main.config.cacheLocation.getValue() + "attachments/" + timestamp + filename + "\".");
                 } else {
                     result.add("ERROR: Failed to load " + filename);
                 }

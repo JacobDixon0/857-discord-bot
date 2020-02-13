@@ -198,14 +198,14 @@ public class Commands {
                     EmbedBuilder embedBuilder = new EmbedBuilder();
 
                     if (argsList.length == 4) {
-                        embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/img/calendar-icon.png");
+                        embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/static/calendar-icon.png");
                     } else {
                         try {
                             if(!argsList[4].equals("x")) {
                                 embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", argsList[4]);
                             }
                         } catch (Exception e) {
-                            embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/res/img/calendar-icon.png");
+                            embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/static/calendar-icon.png");
                             event.getMessage().addReaction("\u26A0").complete();
                             event.reply(event.getAuthor().getAsMention() + " Warning: Could not apply custom icon");
                         }

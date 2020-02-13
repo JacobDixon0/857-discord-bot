@@ -91,22 +91,22 @@ public class Main {
     public static void cacheFile(String url, String name) {
         try {
             ReadableByteChannel bc = Channels.newChannel(new URL(url).openStream());
-            FileOutputStream fos = new FileOutputStream(config.cacheLocation.getValue() + "/res/" + name);
+            FileOutputStream fos = new FileOutputStream(config.cacheLocation.getValue() + "attachments/" + name);
             FileChannel fc = fos.getChannel();
 
             fos.getChannel().transferFrom(bc, 0, Long.MAX_VALUE);
 
-            File f = new File(config.cacheLocation.getValue() + "/res/" + name);
+            File f = new File(config.cacheLocation.getValue() + "attachments/" + name);
 
             if (!name.matches("^.+\\.[a-zA-Z0-9]+$")) {
                 String type = URLConnection.guessContentTypeFromStream(new BufferedInputStream(new FileInputStream(f)));
 
                 if (type.equals("image/png")) {
-                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "/res/" + name + ".png"));
+                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "attachments/" + name + ".png"));
                     if (!success)
                         logger.log(1, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
                 } else if (type.equals("image/jpeg")) {
-                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "/res/" + name + ".jpg"));
+                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "attachments/" + name + ".jpg"));
                     if (!success)
                         logger.log(Logger.LogPriority.ERROR, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
                 }
@@ -211,7 +211,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.addField(new MessageEmbed.Field("Role", "<@&" + role.getId() + ">", true));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
-                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -222,7 +222,7 @@ public class Main {
         embedBuilder.setColor(Color.RED);
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + channel.getId() + ">", true));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
-                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -236,7 +236,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Reason", reason, true));
         embedBuilder.addField(new MessageEmbed.Field("Message", message.replaceAll(violation, "`" + violation + "`"), false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
-                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -247,7 +247,7 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Member", "<@" + member.getUser().getId() + ">", true));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
-                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -260,7 +260,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Subject", subject, false));
         embedBuilder.addField(new MessageEmbed.Field("Channel", "<#" + config.announcementsChannelId.getValue() + ">", false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
-                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -271,7 +271,7 @@ public class Main {
         embedBuilder.setColor(Color.GREEN);
         embedBuilder.addField(new MessageEmbed.Field("Info", "Bot started on host `" + config.hostname.getValue() + "`", false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
-                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/discord-logo-blue.png");
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
 
@@ -283,7 +283,7 @@ public class Main {
         embedBuilder.addField(new MessageEmbed.Field("Sender", "<@" + auth.getId() + ">", false));
         embedBuilder.addField(new MessageEmbed.Field("Message", content, false));
         embedBuilder.setFooter(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ").format(new Date()),
-                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/discord-logo-blue.png");
+                "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/discord-logo-blue.png");
 
         jda.getGuildById(config.serverId.getValue()).getTextChannelById(config.logChannelId.getValue()).sendMessage(embedBuilder.build()).queue();
     }
@@ -327,9 +327,9 @@ public class Main {
 
         if (time.equals("x")) {
             embedBuilder.setFooter(new SimpleDateFormat("MMM d, yyyy, h:m a").format(new Date()),
-                    "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/gmail-icon.png");
+                    "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/gmail-icon.png");
         } else {
-            embedBuilder.setFooter(time, "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "res/img/gmail-icon.png");
+            embedBuilder.setFooter(time, "https://" + config.domain.getValue() + config.extCacheLocation.getValue() + "static/gmail-icon.png");
         }
 
         return embedBuilder.build();

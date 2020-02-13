@@ -48,14 +48,14 @@ public class StringFormatting {
     }
 
     public static String formatUrl(String s) {
-        return s.replaceAll(" ", "%20").replaceAll(";", "%3B")
-                .replaceAll("/", "%2F").replaceAll("\\?", "%3F")
-                .replaceAll(":", "%3A").replaceAll("@", "%40")
-                .replaceAll("=", "%3D").replaceAll("&", "%26")
-                .replaceAll("\"", "%22").replaceAll("#", "%23")
-                .replaceAll("~", "%7E").replaceAll("\\\\", "%5C")
-                .replaceAll("<", "%3C").replaceAll(">", "%3E")
-                .replaceAll("%", "%25").replaceAll("\\^", "%5E")
+        return s.replaceAll("%", "%25").replaceAll(" ", "%20")
+                .replaceAll(";", "%3B").replaceAll("/", "%2F")
+                .replaceAll("\\?", "%3F").replaceAll(":", "%3A")
+                .replaceAll("@", "%40").replaceAll("=", "%3D")
+                .replaceAll("&", "%26").replaceAll("\"", "%22")
+                .replaceAll("#", "%23").replaceAll("~", "%7E")
+                .replaceAll("\\\\", "%5C").replaceAll("<", "%3C")
+                .replaceAll(">", "%3E").replaceAll("\\^", "%5E")
                 .replaceAll("\\{", "%7B").replaceAll("}", "%7D")
                 .replaceAll("\\|", "%7C").replaceAll("`", "%80")
                 .replaceAll("\\[", "%5B").replaceAll("]", "%5D")
@@ -80,7 +80,7 @@ public class StringFormatting {
         return s.replaceAll(" {2,}", " ").trim();
     }
 
-    public static String unformatEmailTextPlain(String s){
+    public static String unformatEmailTextPlain(String s) {
         return s.replaceAll("&#39;", "'").replaceAll("&#34;", "\"");
     }
 
