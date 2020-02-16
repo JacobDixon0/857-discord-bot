@@ -43,6 +43,7 @@ public class EmailHandler extends Thread {
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
     private static String lastId = "0";
+    private static String lastSnippet = "";
     private static boolean running = false;
 
     private static int retryCount = 0;
@@ -162,6 +163,7 @@ public class EmailHandler extends Thread {
                 }
 
                 lastId = messages.get(0).getId();
+                lastSnippet = StringFormatting.unformatEmailTextPlain(service.users().messages().get(user, messages.get(0).getId()).execute().getSnippet());
                 Thread.sleep(8000);
                 retryCount = 0;
             }
@@ -276,12 +278,16 @@ public class EmailHandler extends Thread {
             }
 
             Main.emailAnnounce(emailSenderProfile, sub, formattedDate, StringFormatting.unformatEmailTextPlain(content), attachments);
-            Main.logger.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\".");
+            Main.logger.log("Announced email from: \"" + emailSenderProfile.getSenderAddress() + "\" with subject: \"" + sub + "\" id: \"" + msg.getId() + "\".");
         } catch (Exception e) {
             success = false;
         }
 
         return success;
+    }
+
+    public String getInboxLatest(){
+        return lastId + " \"" + lastSnippet  + "\"";
     }
 
     public static String formatMessage(String s) {

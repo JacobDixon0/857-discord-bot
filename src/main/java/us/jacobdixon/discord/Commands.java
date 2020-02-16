@@ -463,6 +463,9 @@ public class Commands {
                             }
                         }
                         break;
+                    case "inbox":
+                        event.reply(author.getAsMention() + " " + Main.emailHandler.getInboxLatest());
+                        break;
                     case "uptime":
                         long uptime = (Instant.now().getEpochSecond() - Main.config.START_TIME.getValue());
                         long days = uptime / 86400;
