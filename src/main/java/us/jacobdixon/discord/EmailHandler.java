@@ -18,7 +18,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.gmail.model.*;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
 import org.apache.commons.codec.binary.Base64;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
@@ -28,7 +27,6 @@ import us.jacobdixon.utils.StringFormatting;
 import java.io.*;
 import java.lang.Thread;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -119,8 +117,9 @@ public class EmailHandler extends Thread {
                     Main.logger.log("Received email from: \"" + from + "\".");
 
                     try {
-                        formattedDate = gmailDateFormat.format(messageDateFormat.parse(date + (Main.config.utc.getValue() * 60 * 60)));
+                        formattedDate = gmailDateFormat.format((messageDateFormat.parse(date).getTime() + (Main.config.utc.getValue() * 3600000)));
                     } catch (Exception e) {
+                        Main.logger.log(e);
                         Main.logger.log(1, "Exception caught while attempting to parse email date.");
                     }
 

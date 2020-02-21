@@ -18,10 +18,10 @@ class Configuration {
 
     Config<String> hostname = new Config<>("hostname", "hostname", true);
     Config<Boolean> isUnixLike = new Config<>(true, "is-unix-like", true);
-    Config<Integer> utc = new Config<>(0, "utc", true);
 
     Config<String> botToken = new Config<>("token");
 
+    Config<Long> utc = new Config<>(0L, "utc");
     Config<String> serverId = new Config<>("server-id");
     Config<String> adminId = new Config<>("admin-id");
     Config<String> botAdminRoleId = new Config<>("bot-admin-role-id");
@@ -44,7 +44,7 @@ class Configuration {
 
     Config<String> activityStatus = new Config<>("Bot Things", "activity");
     Config<String> onlineStatus = new Config<>("online", "online-status");
-    Config<Long> modeStatus = new Config<>((long) 0, "mode");
+    Config<Long> modeStatus = new Config<>(0L, "mode");
 
     Config<ArrayList<EmailSenderProfile>> knownSenders = new Config<>(new ArrayList<>(), "approved-senders", false, true);
     Config<ArrayList<String>> knownDestinations = new Config<>(new ArrayList<>(), "approved-destinations", false, true);

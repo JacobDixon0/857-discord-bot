@@ -13,8 +13,10 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import us.jacobdixon.utils.Logger;
 import us.jacobdixon.utils.StringFormatting;
 
+import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +55,56 @@ public class Commands {
                     }
                 }
                 if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
+            }
+        }
+    }
+
+    public static class EchoFileCommand extends Command {
+
+        EchoFileCommand() {
+            this.name = "echof";
+            this.help = "Posts attachment.";
+            this.hidden = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
+                boolean successfulQuery = false;
+                String failedQueryResponse = "Invalid arguments.";
+                String args = event.getArgs();
+                if (!args.equals("")) {
+                    String[] argsList = args.split(" ");
+                    if (argsList[0].matches("<#\\d+>")) {
+                        try {
+                            File f = new File(args.replaceFirst("<#\\d+>", "").trim());
+
+                            if (f.exists()) {
+                                Main.logger.log(Logger.LogPriority.DEBUG, Main.config.RUN_DIR.getValue().replaceAll("\\\\", "/") + " : " + f.getAbsolutePath());
+                                if(f.getAbsolutePath().replaceAll("\\\\", "/").startsWith(Main.config.RUN_DIR.getValue().replaceAll("\\\\", "/"))) {
+                                    event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).sendFile(f).queue();
+                                    successfulQuery = true;
+                                } else {
+                                    successfulQuery = false;
+                                    failedQueryResponse = "Permission denied, file is not child of runtime directory.";
+                                }
+                            } else {
+                                successfulQuery = false;
+                                failedQueryResponse = "File not found.";
+                            }
+                        } catch (Exception e) {
+                            Main.logger.log(e);
+                            successfulQuery = false;
+                            failedQueryResponse = "Exception caught.";
+                        }
+                    }
+                }
+                if (successfulQuery) {
+                    event.getMessage().addReaction("\u2705").queue();
+                } else {
+                    event.getMessage().addReaction("\u274C").queue();
+                    event.reply(event.getAuthor().getAsMention() + " Error: " + failedQueryResponse);
+                }
             }
         }
     }
@@ -126,7 +178,7 @@ public class Commands {
 
                 successfulQuery = Main.emailHandler.announceEmailByID(args);
 
-                if (successfulQuery){
+                if (successfulQuery) {
                     event.getMessage().addReaction("\u2705").complete();
                 } else {
                     event.getMessage().addReaction("\u274C").queue();
@@ -152,9 +204,9 @@ public class Commands {
                 String args = event.getArgs();
                 String[] argsList = StringFormatting.split(args, Main.config.commandArgDelimiter.getValue());
 
-                if (argsList.length == 5  || argsList.length == 6) {
+                if (argsList.length == 5 || argsList.length == 6) {
                     List<String> attachmentsList = new ArrayList<>();
-                    if(argsList.length == 6){
+                    if (argsList.length == 6) {
                         attachmentsList.add(argsList[5]);
                     } else {
                         attachmentsList.add("x");
@@ -201,7 +253,7 @@ public class Commands {
                         embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/static/calendar-icon.png");
                     } else {
                         try {
-                            if(!argsList[4].equals("x")) {
+                            if (!argsList[4].equals("x")) {
                                 embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", argsList[4]);
                             }
                         } catch (Exception e) {

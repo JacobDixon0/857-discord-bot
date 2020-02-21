@@ -58,7 +58,8 @@ public class Main {
                 new Commands.DebugCommand(),
                 new Commands.FilterCommand(),
                 new Commands.EchoEditCommand(),
-                new Commands.EmailAnnouncementCommand());
+                new Commands.EmailAnnouncementCommand(),
+                new Commands.EchoFileCommand());
         commandClientBuilder.setPrefix("!");
         commandClientBuilder.setActivity(Activity.playing(config.activityStatus.getValue()));
         commandClientBuilder.useHelpBuilder(false);
