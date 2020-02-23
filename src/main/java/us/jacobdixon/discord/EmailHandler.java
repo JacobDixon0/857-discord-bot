@@ -123,7 +123,7 @@ public class EmailHandler extends Thread {
                         Main.logger.log(1, "Exception caught while attempting to parse email date.");
                     }
 
-                    EmailSenderProfile emailSenderProfile = new EmailSenderProfile("name", "address", null);
+                    EmailSenderProfile emailSenderProfile = new EmailSenderProfile("", from, null);
 
                     boolean allowed = false;
 
@@ -132,6 +132,9 @@ public class EmailHandler extends Thread {
                     if (nameMatcher.find() && nameMatcher.group(1) != null && nameMatcher.group(2) != null) {
                         emailSenderProfile.setSenderName(nameMatcher.group(1).trim());
                         emailSenderProfile.setSenderAddress(nameMatcher.group(2).trim());
+                    } else {
+                        emailSenderProfile.setSenderName("");
+                        emailSenderProfile.setSenderAddress(from);
                     }
 
                     for (String dest : Main.config.knownDestinations.getValue()) {
@@ -261,7 +264,7 @@ public class EmailHandler extends Thread {
                 Main.logger.log(1, "Exception caught while attempting to parse email date.");
             }
 
-            EmailSenderProfile emailSenderProfile = new EmailSenderProfile("name", "address", null);
+            EmailSenderProfile emailSenderProfile = new EmailSenderProfile("", from, null);
             Matcher nameMatcher = Pattern.compile("^(.+)<(.+)>$").matcher(from);
 
             if (nameMatcher.find() && nameMatcher.group(1) != null && nameMatcher.group(2) != null) {
