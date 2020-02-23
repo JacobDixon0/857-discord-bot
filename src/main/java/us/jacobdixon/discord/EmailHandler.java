@@ -256,7 +256,7 @@ public class EmailHandler extends Thread {
 
             String formattedDate = date;
             SimpleDateFormat messageDateFormat = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss Z");
-            SimpleDateFormat gmailDateFormat = new SimpleDateFormat("MMM d, yyyy, h:m a");
+            SimpleDateFormat gmailDateFormat = new SimpleDateFormat("MMM d, yyyy, h:mm a");
 
             try {
                 formattedDate = gmailDateFormat.format(messageDateFormat.parse(date + (Main.config.utc.getValue() * 60 * 60)));
