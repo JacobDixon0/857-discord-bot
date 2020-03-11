@@ -22,6 +22,7 @@ import org.apache.commons.codec.binary.Base64;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
+import us.jacobdixon.utils.Logger;
 import us.jacobdixon.utils.StringFormatting;
 
 import java.io.*;
@@ -290,6 +291,31 @@ public class EmailHandler extends Thread {
 
     public String getInboxLatest(){
         return lastId + " \"" + lastSnippet  + "\"";
+    }
+
+    public String getInboxSummary(){
+        StringBuilder s = new StringBuilder();
+
+        try{
+            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+            Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+            String user = "me";
+
+            ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
+            List<Message> messages = listMessagesResponse.getMessages();
+
+            for(int i = 0; i < 20; i++){
+                Message msg = service.users().messages().get(user, messages.get(i).getId()).execute();
+                s.append("id: ").append(msg.getId()).append(" snippet: \"").append(StringFormatting.unformatEmailTextPlain(msg.getSnippet()), 0, 32).append("\" from: ").append(headerValueGetterThing("from", msg.getPayload().getHeaders())).append("\n");
+            }
+        } catch (Exception e){
+            Main.logger.log(e);
+            Main.logger.log(Logger.LogPriority.ERROR, "Error encountered retrieving inbox summary.");
+        }
+
+        return s.toString();
     }
 
     public static String formatMessage(String s) {

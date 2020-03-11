@@ -516,7 +516,15 @@ public class Commands {
                         }
                         break;
                     case "inbox":
-                        event.reply(author.getAsMention() + " " + Main.emailHandler.getInboxLatest());
+                        if(splitArgs[1] != null) {
+                            if (splitArgs[1].equals("last")) {
+                                event.reply(author.getAsMention() + " " + Main.emailHandler.getInboxLatest());
+                            } else {
+                                successfulQuery = false;
+                            }
+                        } else {
+                            event.reply(author.getAsMention() + " " + Main.emailHandler.getInboxSummary());
+                        }
                         break;
                     case "uptime":
                         long uptime = (Instant.now().getEpochSecond() - Main.config.START_TIME.getValue());
