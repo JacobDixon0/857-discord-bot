@@ -85,8 +85,8 @@ public class StringFormatting {
     }
 
     public static String formatTime(long time) {
-        long years = time /  31556952;
-        time = time %  31556952;
+        long years = time / 31556952;
+        time = time % 31556952;
         long months = time / 2592000;
         time = time % 2592000;
         long weeks = time / 604800;

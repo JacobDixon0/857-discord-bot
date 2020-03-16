@@ -14,7 +14,7 @@ public class Logger {
 
     private SimpleDateFormat df = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ");
 
-    public Logger(){
+    public Logger() {
     }
 
     public enum LogPriority {
@@ -27,7 +27,7 @@ public class Logger {
 
     }
 
-    public void log(Object o){
+    public void log(Object o) {
         System.out.println(o.toString());
     }
 
@@ -38,16 +38,16 @@ public class Logger {
     /**
      * @param priority 0 = FATAL_ERROR, 1 = ERROR, 2 = WARNING, 3 = INFO, 4 = DEBUG
      */
-    public void log(int priority, String message){
-        if(priority == 0){
+    public void log(int priority, String message) {
+        if (priority == 0) {
             log(LogPriority.FATAL_ERROR, message);
-        } else if (priority == 1){
+        } else if (priority == 1) {
             log(LogPriority.ERROR, message);
-        } else if (priority == 2){
+        } else if (priority == 2) {
             log(LogPriority.WARNING, message);
-        } else if (priority == 3){
+        } else if (priority == 3) {
             log(LogPriority.INFO, message);
-        } else if (priority == 4){
+        } else if (priority == 4) {
             log(LogPriority.DEBUG, message);
         }
     }

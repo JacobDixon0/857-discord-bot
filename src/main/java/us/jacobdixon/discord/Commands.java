@@ -81,7 +81,7 @@ public class Commands {
 
                             if (f.exists()) {
                                 Main.logger.log(Logger.LogPriority.DEBUG, Main.config.RUN_DIR.getValue().replaceAll("\\\\", "/") + " : " + f.getAbsolutePath());
-                                if(f.getAbsolutePath().replaceAll("\\\\", "/").startsWith(Main.config.RUN_DIR.getValue().replaceAll("\\\\", "/"))) {
+                                if (f.getAbsolutePath().replaceAll("\\\\", "/").startsWith(Main.config.RUN_DIR.getValue().replaceAll("\\\\", "/"))) {
                                     event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).sendFile(f).queue();
                                     successfulQuery = true;
                                 } else {
@@ -516,7 +516,7 @@ public class Commands {
                         }
                         break;
                     case "inbox":
-                        if(splitArgs[1] != null) {
+                        if (splitArgs[1] != null) {
                             if (splitArgs[1].equals("last")) {
                                 event.reply(author.getAsMention() + " " + Main.emailHandler.getInboxLatest());
                             } else {

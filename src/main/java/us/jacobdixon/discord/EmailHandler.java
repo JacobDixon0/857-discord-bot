@@ -106,9 +106,9 @@ public class EmailHandler extends Thread {
                     String msgContent = getContent(msg);
 
                     String from = headerValueGetterThing("from", msg.getPayload().getHeaders());
-                    String to   = headerValueGetterThing("to", msg.getPayload().getHeaders());
+                    String to = headerValueGetterThing("to", msg.getPayload().getHeaders());
                     String date = headerValueGetterThing("date", msg.getPayload().getHeaders());
-                    String sub  = headerValueGetterThing("subject", msg.getPayload().getHeaders());
+                    String sub = headerValueGetterThing("subject", msg.getPayload().getHeaders());
 
                     SimpleDateFormat messageDateFormat = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss Z");
                     SimpleDateFormat gmailDateFormat = new SimpleDateFormat("MMM d, yyyy, h:mm a");
@@ -289,14 +289,14 @@ public class EmailHandler extends Thread {
         return success;
     }
 
-    public String getInboxLatest(){
-        return lastId + " \"" + lastSnippet  + "\"";
+    public String getInboxLatest() {
+        return lastId + " \"" + lastSnippet + "\"";
     }
 
-    public String getInboxSummary(){
+    public String getInboxSummary() {
         StringBuilder s = new StringBuilder();
 
-        try{
+        try {
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             Gmail service = new Gmail.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                     .setApplicationName(APPLICATION_NAME)
@@ -306,11 +306,11 @@ public class EmailHandler extends Thread {
             ListMessagesResponse listMessagesResponse = service.users().messages().list(user).execute();
             List<Message> messages = listMessagesResponse.getMessages();
 
-            for(int i = 0; i < 20; i++){
+            for (int i = 0; i < 20; i++) {
                 Message msg = service.users().messages().get(user, messages.get(i).getId()).execute();
                 s.append("id: ").append(msg.getId()).append(" snippet: \"").append(StringFormatting.unformatEmailTextPlain(msg.getSnippet()), 0, 32).append("\" from: ").append(headerValueGetterThing("from", msg.getPayload().getHeaders())).append("\n");
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             Main.logger.log(e);
             Main.logger.log(Logger.LogPriority.ERROR, "Error encountered retrieving inbox summary.");
         }

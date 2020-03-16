@@ -52,14 +52,14 @@ public class EventHandler extends ListenerAdapter {
     public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
         StringBuilder logBuilder = new StringBuilder();
         logBuilder.append("Received private message from: \"").append(event.getAuthor().getAsTag()).append("\"");
-        if(event.getMessage().getEmbeds().size() > 0){
+        if (event.getMessage().getEmbeds().size() > 0) {
             logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
-            if(event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
+            if (event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
         }
-        if(event.getMessage().getAttachments().size() > 0){
+        if (event.getMessage().getAttachments().size() > 0) {
             logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
         }
-        if(!event.getMessage().getContentRaw().equals("")){
+        if (!event.getMessage().getContentRaw().equals("")) {
             logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
         }
         Main.logger.log(logBuilder.toString());
@@ -77,14 +77,14 @@ public class EventHandler extends ListenerAdapter {
         logBuilder.append("Received message from: \"").append(event.getAuthor().getAsTag()).append("\" in: \"").
                 append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).
                 append("\" message id: \"").append(event.getMessageId()).append("\"");
-        if(event.getMessage().getEmbeds().size() > 0){
+        if (event.getMessage().getEmbeds().size() > 0) {
             logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
-            if(event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
+            if (event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
         }
-        if(event.getMessage().getAttachments().size() > 0){
+        if (event.getMessage().getAttachments().size() > 0) {
             logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
         }
-        if(!event.getMessage().getContentRaw().equals("")){
+        if (!event.getMessage().getContentRaw().equals("")) {
             logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
         }
         Main.logger.log(logBuilder.toString());
@@ -160,14 +160,14 @@ public class EventHandler extends ListenerAdapter {
         logBuilder.append("Received message edit from: \"").append(event.getAuthor().getAsTag()).append("\" in: \"").
                 append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).
                 append("\" message id: \"").append(event.getMessageId()).append("\"");
-        if(event.getMessage().getEmbeds().size() > 0){
+        if (event.getMessage().getEmbeds().size() > 0) {
             logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
-            if(event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
+            if (event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
         }
-        if(event.getMessage().getAttachments().size() > 0){
+        if (event.getMessage().getAttachments().size() > 0) {
             logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
         }
-        if(!event.getMessage().getContentRaw().equals("")){
+        if (!event.getMessage().getContentRaw().equals("")) {
             logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
         }
         Main.logger.log(logBuilder.toString());
