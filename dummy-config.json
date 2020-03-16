@@ -1,0 +1,23 @@
+{
+  "announcements-role-id": "000000000000000000",
+  "admin-id": "000000000000000000",
+  "admin-role-id": "000000000000000000",
+  "ext-cache-location": "/ext-cache/",
+  "activity": "game playing",
+  "utc": 0,
+  "online-status": "online",
+  "bot-admin-role-id": "000000000000000000",
+  "announcements-channel-id": "000000000000000000",
+  "mentor-role-id": "000000000000000000",
+  "role-assignment-message-id": "000000000000000000",
+  "token": "",
+  "mode": 0,
+  "member-role-id": "000000000000000000",
+  "cache-location": "/cache/",
+  "domain": "www.domain.org",
+  "use-filter": false,
+  "log-channel-id": "000000000000000000",
+  "command-arg-delimiter": ";",
+  "command-initializer":  "!",
+  "server-id": "000000000000000000"
+}

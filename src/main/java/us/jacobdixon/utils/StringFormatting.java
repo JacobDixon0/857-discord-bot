@@ -84,4 +84,36 @@ public class StringFormatting {
         return s.replaceAll("&#39;", "'").replaceAll("&#34;", "\"");
     }
 
+    public static String formatTime(long time) {
+        long years = time /  31556952;
+        time = time %  31556952;
+        long months = time / 2592000;
+        time = time % 2592000;
+        long weeks = time / 604800;
+        time = time % 604800;
+        long days = time / 86400;
+        time = time % 86400;
+        long hours = time / 3600;
+        time = time % 3600;
+        long minutes = time / 60;
+        time = time % 60;
+        long seconds = time;
+        StringBuilder stringBuilder = new StringBuilder();
+        if (years > 1) stringBuilder.append(years).append(" years ");
+        else if (years == 1) stringBuilder.append(years).append(" year ");
+        if (months > 1) stringBuilder.append(months).append(" months ");
+        else if (months == 1) stringBuilder.append(months).append(" month ");
+        if (weeks > 1) stringBuilder.append(weeks).append(" weeks ");
+        else if (weeks == 1) stringBuilder.append(weeks).append(" week ");
+        if (days > 1) stringBuilder.append(days).append(" days ");
+        else if (days == 1) stringBuilder.append(days).append(" day ");
+        if (hours > 1) stringBuilder.append(hours).append(" hours ");
+        else if (hours == 1) stringBuilder.append(hours).append(" hour ");
+        if (minutes > 1) stringBuilder.append(minutes).append(" minutes ");
+        else if (minutes == 1) stringBuilder.append(minutes).append(" minute ");
+        if (seconds > 1) stringBuilder.append(seconds).append(" seconds ");
+        else if (seconds == 1) stringBuilder.append(seconds).append(" second");
+        return normalizeSpacing(stringBuilder.toString());
+    }
+
 }

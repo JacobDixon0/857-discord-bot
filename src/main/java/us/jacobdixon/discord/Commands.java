@@ -528,19 +528,7 @@ public class Commands {
                         break;
                     case "uptime":
                         long uptime = (Instant.now().getEpochSecond() - Main.config.START_TIME.getValue());
-                        long days = uptime / 86400;
-                        uptime = uptime % 86400;
-                        long hours = uptime / 3600;
-                        uptime = uptime % 3600;
-                        long minutes = uptime / 60;
-                        uptime = uptime % 60;
-                        long seconds = uptime;
-                        StringBuilder replyBuilder = new StringBuilder();
-                        if (days > 0) replyBuilder.append(days).append(" days ");
-                        if (hours > 0) replyBuilder.append(hours).append(" hours ");
-                        if (minutes > 0) replyBuilder.append(minutes).append(" minutes ");
-                        if (seconds > 0) replyBuilder.append(seconds).append(" seconds");
-                        event.reply(author.getAsMention() + " **Uptime:** " + StringFormatting.normalizeSpacing(replyBuilder.toString()));
+                        event.reply(author.getAsMention() + " **Uptime:** " + StringFormatting.formatTime(uptime));
                         break;
                     default:
                         successfulQuery = false;
@@ -552,7 +540,7 @@ public class Commands {
                 } else if (!successfulQuery) {
                     event.getMessage().addReaction("\u274C").queue();
                     event.reply(author.getAsMention() + " Error: Invalid command.");
-                } else if (!successfulResponse) {
+                } else {
                     event.getMessage().addReaction("\u274C").queue();
                     event.reply(author.getAsMention() + " Error: An internal error was encountered while trying to process your request.");
                 }
