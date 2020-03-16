@@ -60,7 +60,7 @@ public class Main {
                 new Commands.EchoEditCommand(),
                 new Commands.EmailAnnouncementCommand(),
                 new Commands.EchoFileCommand());
-        commandClientBuilder.setPrefix("!");
+        commandClientBuilder.setPrefix(config.commandInitializer.getValue());
         commandClientBuilder.setActivity(Activity.playing(config.activityStatus.getValue()));
         commandClientBuilder.useHelpBuilder(false);
 

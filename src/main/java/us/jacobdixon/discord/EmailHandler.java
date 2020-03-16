@@ -106,9 +106,9 @@ public class EmailHandler extends Thread {
                     String msgContent = getContent(msg);
 
                     String from = headerValueGetterThing("from", msg.getPayload().getHeaders());
-                    String to = headerValueGetterThing("to", msg.getPayload().getHeaders());
+                    String to   = headerValueGetterThing("to", msg.getPayload().getHeaders());
                     String date = headerValueGetterThing("date", msg.getPayload().getHeaders());
-                    String sub = headerValueGetterThing("subject", msg.getPayload().getHeaders());
+                    String sub  = headerValueGetterThing("subject", msg.getPayload().getHeaders());
 
                     SimpleDateFormat messageDateFormat = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss Z");
                     SimpleDateFormat gmailDateFormat = new SimpleDateFormat("MMM d, yyyy, h:mm a");

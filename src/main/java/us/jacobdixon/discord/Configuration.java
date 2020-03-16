@@ -33,6 +33,7 @@ class Configuration {
     Config<String> roleAssignmentMessageId = new Config<>("role-assignment-message-id");
     Config<String> domain = new Config<>("domain");
     Config<String> mentorRoleId = new Config<>("mentor-role-id");
+
     Config<Boolean> useFilter = new Config<>("use-filter");
 
     Config<String> cacheLocation = new Config<>(RUN_DIR.getValue() + "cache/", "cache-location");
@@ -44,6 +45,7 @@ class Configuration {
 
     Config<String> activityStatus = new Config<>("Bot Things", "activity");
     Config<String> onlineStatus = new Config<>("online", "online-status");
+
     Config<Long> modeStatus = new Config<>(0L, "mode");
 
     Config<ArrayList<EmailSenderProfile>> knownSenders = new Config<>(new ArrayList<>(), "approved-senders", false, true);
@@ -53,6 +55,7 @@ class Configuration {
     Config<ArrayList<String>> bannedPhrases = new Config<>(new ArrayList<>(), "banned-phrases", true);
     Config<ArrayList<String>> restrictedMentions = new Config<>(new ArrayList<>(), "restricted-mentions", false, true);
 
+    Config<String> commandInitializer = new Config<>("!", "command-initializer");
     Config<String> commandArgDelimiter = new Config<>(";", "command-arg-delimiter");
 
     ArrayList<Config<?>> configs = new ArrayList<>();

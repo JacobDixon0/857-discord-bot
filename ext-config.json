@@ -29,6 +29,22 @@
     "address": "csdoig@mtu.edu",
     "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
   }, {
+    "name": "John Brubaker",
+    "address": "johnbrubaker13@gmail.com",
+    "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+  }, {
+    "name": "Christopher Plummer",
+    "address": "cplummer@mtu.edu",
+    "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+  }, {
+    "name": "",
+    "address": "first857-l@mtu.edu",
+    "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+  }, {
+    "name": "",
+    "address": "superiorroboworksteam857@gmail.com",
+    "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+  }, {
     "name": "Melody Doig",
     "address": "fim.robots.westernup@gmail.com",
     "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
@@ -93,7 +109,7 @@
   "message-filters": [{
     "filter": "[\\n]+--.+"
   },
-    {"filter": "On [a-zA-Z]{3}, [a-zA-Z]{3} \\d{1,2}, \\d{4} at \\d{1,2}:\\d{1,2} (?:AM|PM) (.+)?<[a-zA-Z0-9\\.\\+\\-_]+@[a-zA-Z0-9\\.\\-@]+> wrote:(.+)?"
+    {"filter": "On [a-zA-Z]{3}, [a-zA-Z]{3} \d{1,2}, \d{4} at \d{1,2}:\d{1,2} (?:AM|PM) (.+)?<[a-zA-Z0-9\.\+\-_]+@[a-zA-Z0-9\.\-@]+> wrote:(.+)?"
     }],
   "restricted-mentions": [{
     "id": "663138202038566924"
