@@ -221,12 +221,14 @@ public class EmailHandler extends Thread {
                 Base64 base64Url = new Base64(true);
                 byte[] fileByteArray = base64Url.decodeBase64(attachPart.getData());
                 if (new File(Main.config.cacheLocation.getValue()).exists()) {
-                    String timestamp = new SimpleDateFormat("yyyy.MM.dd.").format(new Date());
-                    FileOutputStream fileOutFile = new FileOutputStream(Main.config.cacheLocation.getValue() + "attachments/" + timestamp + filename);
-                    result.add("https://" + Main.config.domain.getValue() + Main.config.extCacheLocation.getValue() + "attachments/" + timestamp + StringFormatting.formatUrl(filename));
-                    fileOutFile.write(fileByteArray);
-                    fileOutFile.close();
-                    Main.logger.log("Created email attachment cache file: \"" + Main.config.cacheLocation.getValue() + "attachments/" + timestamp + filename + "\".");
+                    String timestamp = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
+                    File fileOutFile = new File(Main.config.cacheLocation.getValue() + "attachments/" + timestamp +  "/" + filename);
+                    fileOutFile.getParentFile().mkdirs();
+                    FileOutputStream fileOut = new FileOutputStream(fileOutFile);
+                    result.add("https://" + Main.config.domain.getValue() + Main.config.extCacheLocation.getValue() + "attachments/" + timestamp + "/" + StringFormatting.formatUrl(filename));
+                    fileOut.write(fileByteArray);
+                    fileOut.close();
+                    Main.logger.log("Created email attachment cache file: \"" + Main.config.cacheLocation.getValue() + "attachments/" + timestamp + "/" + filename + "\".");
                 } else {
                     result.add("ERROR: Failed to load " + filename);
                 }

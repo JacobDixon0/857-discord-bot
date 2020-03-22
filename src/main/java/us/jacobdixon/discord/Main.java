@@ -43,7 +43,6 @@ public class Main {
     public static boolean running = false;
 
     public static void main(String[] args) {
-
         loadConfigs(false);
 
         commandClientBuilder.setOwnerId(config.adminId.getValue());
@@ -92,22 +91,22 @@ public class Main {
     public static void cacheFile(String url, String name) {
         try {
             ReadableByteChannel bc = Channels.newChannel(new URL(url).openStream());
-            FileOutputStream fos = new FileOutputStream(config.cacheLocation.getValue() + "attachments/" + name);
+            FileOutputStream fos = new FileOutputStream(config.cacheLocation.getValue() + "cached/" + name);
             FileChannel fc = fos.getChannel();
 
             fos.getChannel().transferFrom(bc, 0, Long.MAX_VALUE);
 
-            File f = new File(config.cacheLocation.getValue() + "attachments/" + name);
+            File f = new File(config.cacheLocation.getValue() + "cached/" + name);
 
             if (!name.matches("^.+\\.[a-zA-Z0-9]+$")) {
                 String type = URLConnection.guessContentTypeFromStream(new BufferedInputStream(new FileInputStream(f)));
 
                 if (type.equals("image/png")) {
-                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "attachments/" + name + ".png"));
+                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "cached/" + name + ".png"));
                     if (!success)
                         logger.log(1, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
                 } else if (type.equals("image/jpeg")) {
-                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "attachments/" + name + ".jpg"));
+                    boolean success = f.renameTo(new File(config.cacheLocation.getValue() + "cached/" + name + ".jpg"));
                     if (!success)
                         logger.log(Logger.LogPriority.ERROR, "Could not rename file extension for file \"" + f.getAbsolutePath() + "\".");
                 }
