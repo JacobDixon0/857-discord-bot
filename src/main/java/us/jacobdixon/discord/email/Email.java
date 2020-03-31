@@ -27,7 +27,7 @@ public class Email {
 
     private ArrayList<SimpleFile> attachments = new ArrayList<>();
 
-    private static final SimpleDateFormat ORIGINAL_DATE_FORMAT = new SimpleDateFormat("EEE, d MMM hh:mm:ss Z");
+    private static final SimpleDateFormat ORIGINAL_DATE_FORMAT = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss Z");
 
     public Email(Gmail gmailService, String user, Message message) throws IOException {
         message = gmailService.users().messages().get(user, message.getId()).execute();

@@ -53,7 +53,7 @@ public class GlobalConfig extends Config {
 
         if (OS_NAME.toLowerCase().contains("win")) {
             isUnixLike = false;
-        } else if (OS_NAME.toLowerCase().matches("(?:.+?)nix|nux|mac os x(?:.+?)")) {
+        } else if (OS_NAME.toLowerCase().matches("(?:.+)?(?:nix|nux|mac os x)(?:.+)?")) {
             isUnixLike = true;
         } else {
             logger.log(Logger.LogPriority.WARNING, "Could not determine operating system type");

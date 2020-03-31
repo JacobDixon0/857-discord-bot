@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.*;
 import us.jacobdixon.discord.configs.GlobalConfig;
 import us.jacobdixon.discord.email.Email;
+import us.jacobdixon.utils.Logger;
 import us.jacobdixon.utils.StringToolbox;
 
 import java.text.ParseException;
@@ -82,7 +83,7 @@ public interface Messages {
         try {
             eb.setTimestamp(Instant.ofEpochSecond(email.getDateEpoch()));
         } catch (ParseException e) {
-            Main.logger.log("Could not parse email date for embed timestamp");
+            Main.logger.log(Logger.LogPriority.WARNING, "Could not parse email date for embed timestamp");
             eb.setTimestamp(Instant.now());
         }
 
