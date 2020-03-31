@@ -7,6 +7,9 @@
 
 package us.jacobdixon.utils;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -17,14 +20,32 @@ public class Logger {
     public Logger() {
     }
 
+    public Logger(String timestampFormat) {
+        this.df = new SimpleDateFormat(timestampFormat);
+    }
+
     public enum LogPriority {
         INFO, WARNING, ERROR, FATAL_ERROR, DEBUG;
     }
 
     public void log(Exception e) {
-        System.err.println(df.format(new Date()) + "EXCEPTION CAUGHT:");
-        e.printStackTrace();
+        logOut(">>> BEGIN EXCEPTION STACK TRACE >>>", true);
+        logOut(ExceptionUtils.getStackTrace(e), true);
+        logOut("<<< END EXCEPTION STACK TRACE <<<", true);
+    }
 
+    public void log(Exception e, String errDesc) {
+        log(LogPriority.ERROR, errDesc);
+        logOut(">>> BEGIN EXCEPTION STACK TRACE >>>", true);
+        logOut(ExceptionUtils.getStackTrace(e), true);
+        logOut("<<< END EXCEPTION STACK TRACE <<<", true);
+    }
+
+    public void log(Exception e, String errDesc, LogPriority priority) {
+        log(priority, errDesc);
+        logOut(">>> BEGIN EXCEPTION STACK TRACE >>>", true);
+        logOut(ExceptionUtils.getStackTrace(e), true);
+        logOut("<<< END EXCEPTION STACK TRACE <<<", true);
     }
 
     public void log(Object o) {
@@ -54,16 +75,31 @@ public class Logger {
 
     public void log(LogPriority priority, String message) {
         if (priority == LogPriority.INFO) {
-            System.out.println(df.format(new Date()) + "INFO: " + message);
+            logOut("INFO: " + message);
         } else if (priority == LogPriority.WARNING) {
-            System.out.println(df.format(new Date()) + "WARNING: " + message);
+            logOut("WARNING: " + message, true);
         } else if (priority == LogPriority.ERROR) {
-            System.err.println(df.format(new Date()) + "ERROR: " + message);
+            logOut("ERROR: " + message, true);
         } else if (priority == LogPriority.FATAL_ERROR) {
-            System.err.println(df.format(new Date()) + "FATAL ERROR: " + message);
+            logOut("FATAL ERROR: " + message, true);
         } else if (priority == LogPriority.DEBUG) {
-            System.out.println(df.format(new Date()) + "DEBUG: " + message);
+            logOut("DEBUG: " + message);
         }
     }
 
+    private void logOut(String string) {
+        logOut(string, false);
+    }
+
+    private void logOut(String string, boolean errOut) {
+        if (errOut) {
+            System.err.println(df.format(new Date()) + string);
+        } else {
+            System.out.println(df.format(new Date()) + string);
+        }
+    }
+
+    public void setTimestampFormat(String pattern){
+        this.df = new SimpleDateFormat("[" + pattern + "] ");
+    }
 }

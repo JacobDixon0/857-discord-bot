@@ -1,61 +1,141 @@
-/*
- * Name: 857-discord-bot
- * Date: 2020/1/11
- * Author(s): jd@jacobdixon.us (Jacob Dixon)
- * Version: 1.0a
- */
-
 package us.jacobdixon.discord;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
-import us.jacobdixon.utils.Logger;
-import us.jacobdixon.utils.StringFormatting;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.exceptions.RateLimitedException;
+import org.json.simple.parser.ParseException;
+import us.jacobdixon.discord.configs.ConfigEntry;
+import us.jacobdixon.discord.email.EmailUser;
+import us.jacobdixon.discord.exceptions.ConfigException;
+import us.jacobdixon.discord.exceptions.InvalidConfigException;
+import us.jacobdixon.discord.exceptions.MissingConfigException;
+import us.jacobdixon.utils.StringToolbox;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-public class Commands {
+public interface Commands extends ReturnCodes {
 
-    public static class EchoCommand extends Command {
+    public static class PingCommand extends Command {
 
-        EchoCommand() {
-            this.name = "echo";
-            this.help = "Posts message.";
-            this.hidden = true;
+        PingCommand() {
+            this.name = "ping";
+            this.aliases = new String[]{"p"};
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
-                boolean successfulQuery = false;
-                String args = event.getArgs();
-                if (args.equals("")) {
-                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
-                } else {
-                    String[] argsList = args.split(" ");
-                    if (argsList[0].matches("<#\\d+>")) {
-                        try {
-                            event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).sendMessage(event.getArgs().replace(argsList[0], "")).queue();
-                            successfulQuery = true;
-                        } catch (Exception e) {
-                            Main.logger.log(e);
-                            Main.logger.log(1, "Exception caught while echoing message.");
-                            event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
-                        }
+            event.getMessage().addReaction("\uD83C\uDFD3").queue();
+        }
+    }
+
+    class EchoCommand extends Command {
+
+        EchoCommand() {
+            this.name = "echo";
+            this.aliases = new String[]{"say"};
+            this.guildOnly = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            int status;
+
+            if (event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+                if (!event.getArgs().equals("")) {
+                    if (!event.getMessage().getMentionedChannels().isEmpty()) {
+                        event.getMessage().getMentionedChannels().get(0).sendMessage(event.getArgs().replaceFirst(event.getMessage().getMentionedChannels().get(0).getAsMention(), "")).queue();
                     } else {
                         event.reply(event.getArgs());
-                        successfulQuery = true;
                     }
+                    status = OKAY;
+                } else {
+                    status = MISSING_ARGS;
                 }
-                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
+            } else {
+                status = INSUFFICIENT_PERMISSIONS;
             }
+
+            ReturnCodes.handleCommand(status, event);
+        }
+    }
+
+    public static class TestCommand extends Command {
+
+        TestCommand() {
+            this.name = "test";
+            this.aliases = new String[]{"t"};
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            int status = -1;
+
+            switch (event.getArgs().split(" ")[0]) {
+                case "0":
+                    Main.getEmailHandler().queueLast();
+
+                    status = OKAY;
+                    break;
+                case "1":
+                    event.reply(Messages.getMemberJoinedLog(event.getMember()));
+
+                    status = OKAY;
+                    break;
+                case "2":
+                    try {
+                        Main.db.cacheFile(event.getArgs().replaceFirst("2", "").trim());
+                    } catch (IOException e) {
+                        Main.logger.log(e);
+                    }
+                    status = OKAY;
+                    break;
+                default:
+                    status = INVALID_COMMAND;
+            }
+
+            ReturnCodes.handleCommand(status, event);
+        }
+    }
+
+    public static class EchoEditCommand extends Command {
+
+        EchoEditCommand() {
+            this.name = "echoe";
+            this.aliases = new String[]{"edit", "eecho"};
+            this.guildOnly = true;
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            int status;
+
+            if (event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+                String[] argsList = event.getArgs().split(" ");
+                if (argsList.length >= 2) {
+                    try {
+                        if (!event.getMessage().getMentionedChannels().isEmpty()) {
+                            event.getMessage().getMentionedChannels().get(0).editMessageById(argsList[1], event.getArgs().replaceFirst(argsList[0] + " " + argsList[1], "")).queue();
+                        } else {
+                            event.getTextChannel().editMessageById(argsList[0], event.getArgs().replaceFirst(argsList[0] + " ", "")).queue();
+                        }
+                        status = OKAY;
+                    } catch (IllegalArgumentException e) {
+                        status = INVALID_ARGS;
+                    }
+                } else {
+                    status = MISSING_ARGS;
+                }
+            } else {
+                status = INSUFFICIENT_PERMISSIONS;
+            }
+
+            ReturnCodes.handleCommand(status, event);
         }
     }
 
@@ -63,487 +143,440 @@ public class Commands {
 
         EchoFileCommand() {
             this.name = "echof";
-            this.help = "Posts attachment.";
-            this.hidden = true;
+            this.aliases = new String[]{"fecho"};
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
-                boolean successfulQuery = false;
-                String failedQueryResponse = "Invalid arguments.";
-                String args = event.getArgs();
-                if (!args.equals("")) {
-                    String[] argsList = args.split(" ");
-                    if (argsList[0].matches("<#\\d+>")) {
-                        try {
-                            File f = new File(args.replaceFirst("<#\\d+>", "").trim());
+            int status;
 
-                            if (f.exists()) {
-                                Main.logger.log(Logger.LogPriority.DEBUG, Main.config.RUN_DIR.getValue().replaceAll("\\\\", "/") + " : " + f.getAbsolutePath());
-                                if (f.getAbsolutePath().replaceAll("\\\\", "/").startsWith(Main.config.RUN_DIR.getValue().replaceAll("\\\\", "/"))) {
-                                    event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).sendFile(f).queue();
-                                    successfulQuery = true;
-                                } else {
-                                    successfulQuery = false;
-                                    failedQueryResponse = "Permission denied, file is not child of runtime directory.";
-                                }
+            if (event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+                AdvancedGuild guild = Main.db.getAdvancedGuild(event.getGuild());
+                if (guild == null) {
+                    status = INTERNAL_SERVER_ERROR;
+                } else {
+                    if (!event.getMessage().getAttachments().isEmpty()) {
+                        try {
+                            File uploadFile = Main.db.tempCacheGuildMessageAttachments(event.getMessage()).get(0);
+
+                            if (!event.getMessage().getMentionedChannels().isEmpty()) {
+                                event.getMessage().getMentionedChannels().get(0).sendFile(uploadFile).queue();
                             } else {
-                                successfulQuery = false;
-                                failedQueryResponse = "File not found.";
+                                event.reply(uploadFile, uploadFile.getName());
                             }
-                        } catch (Exception e) {
-                            Main.logger.log(e);
-                            successfulQuery = false;
-                            failedQueryResponse = "Exception caught.";
+                            status = 0;
+                        } catch (InterruptedException | ExecutionException e) {
+                            Main.logger.log(e, "Exception caught uploading file to guild temp cache directory");
+                            status = INTERNAL_SERVER_ERROR;
                         }
+                    } else {
+                        status = MISSING_FILE_UPLOAD;
                     }
                 }
-                if (successfulQuery) {
-                    event.getMessage().addReaction("\u2705").queue();
-                } else {
-                    event.getMessage().addReaction("\u274C").queue();
-                    event.reply(event.getAuthor().getAsMention() + " Error: " + failedQueryResponse);
-                }
+            } else {
+                status = INSUFFICIENT_PERMISSIONS;
             }
+            ReturnCodes.handleCommand(status, event);
         }
     }
 
-    public static class EchoEditCommand extends Command {
-
-        EchoEditCommand() {
-            this.name = "eecho";
-            this.help = "edits a posted message.";
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
-                boolean successfulQuery = false;
-                String args = event.getArgs();
-                String[] argsList = args.split(" ");
-                try {
-                    event.getGuild().getTextChannelById(argsList[0].replaceAll("[<#>]", "")).editMessageById(argsList[1], args.replace(argsList[0] + " " + argsList[1] + " ", "")).queue();
-                    successfulQuery = true;
-                } catch (Exception e) {
-                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
-                }
-                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
-            }
-        }
-    }
-
-    public static class PurgeCommand extends Command {
+    class PurgeCommand extends Command {
 
         PurgeCommand() {
             this.name = "purge";
-            this.help = "Clears channel history";
-            this.hidden = true;
+            this.aliases = new String[]{"pg", "clear"};
+            this.guildOnly = true;
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MESSAGE_MANAGE)) {
-                try {
-                    event.getChannel().getHistory().retrievePast(Integer.parseInt(event.getArgs()) + 1).complete(true).forEach(e -> {
-                        try {
-                            e.delete().queue();
-                        } catch (Exception e0) {
-                            Main.logger.log("Exception caught attempting to clear message: \"" + e.getContentDisplay() + "\".");
-                        }
-                    });
-                    Main.embedPurgeLog("Cleared " + event.getArgs() + " Message(s)", event.getChannel());
-                } catch (Exception e) {
-                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
-                }
-            }
-        }
-    }
 
-    public static class EmailAnnouncementCommand extends Command {
-
-        EmailAnnouncementCommand() {
-            this.name = "announceid";
-            this.help = "Announces an email message to #announcements channel.";
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
-                boolean successfulQuery = false;
-
-                String args = event.getArgs();
-
-                successfulQuery = Main.emailHandler.announceEmailByID(args);
-
-                if (successfulQuery) {
-                    event.getMessage().addReaction("\u2705").complete();
-                } else {
-                    event.getMessage().addReaction("\u274C").queue();
-                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid command.");
-                }
-            }
-        }
-    }
-
-    public static class AnnouncementCommand extends Command {
-
-        AnnouncementCommand() {
-            this.name = "announce";
-            this.help = "Announces a message to #announcements channel.";
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
-                boolean successfulQuery = false;
-
-                String args = event.getArgs();
-                String[] argsList = StringFormatting.split(args, Main.config.commandArgDelimiter.getValue());
-
-                if (argsList.length == 5 || argsList.length == 6) {
-                    List<String> attachmentsList = new ArrayList<>();
-                    if (argsList.length == 6) {
-                        attachmentsList.add(argsList[5]);
-                    } else {
-                        attachmentsList.add("x");
+            if (event.getSelfMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+                if (event.getMember().hasPermission(Permission.MESSAGE_MANAGE)) {
+                    try {
+                        int messageHistoryAmount = Integer.parseInt(event.getArgs()) + 1;
+                        event.getChannel().getHistory().retrievePast(messageHistoryAmount).complete(true).forEach(e -> e.delete().queue());
+                        Main.db.getAdvancedGuild(event.getGuild()).getLogChannel().sendMessage(Messages.getClearedMessagesLog(event.getTextChannel(), event.getMember(), messageHistoryAmount)).queue();
+                    } catch (RateLimitedException e) {
+                        Main.logger.log(e, "Exception caught clearing channel history");
+                    } catch (NumberFormatException e) {
+                        ReturnCodes.handleCommand(INVALID_ARGS, event);
                     }
-                    EmailSenderProfile sender = new EmailSenderProfile(argsList[0], argsList[1]);
-                    for (EmailSenderProfile emailSenderProfile : Main.config.knownSenders.getValue()) {
-                        if (sender.getSenderAddress().equals(emailSenderProfile.getSenderAddress()) && sender.getSenderName().equals(emailSenderProfile.getSenderName())) {
-                            sender = emailSenderProfile;
-                        }
-                    }
-                    Main.emailAnnounce(sender, argsList[2], argsList[3], argsList[4], attachmentsList);
-                    successfulQuery = true;
                 } else {
-                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments ");
+                    ReturnCodes.handleCommand(INSUFFICIENT_PERMISSIONS, event);
                 }
-                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
+            } else {
+                ReturnCodes.handleCommand(INSUFFICIENT_BOT_PERMISSIONS, event);
             }
         }
     }
 
-    public static class EventAnnounceCommand extends Command {
+    class ManualEventAnnounceCommand extends Command {
 
-        EventAnnounceCommand() {
+        ManualEventAnnounceCommand() {
             this.name = "eannounce";
-            this.help = "Posts generic embedded message.";
-            this.hidden = true;
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_SERVER)) {
-                boolean successfulQuery = false;
+            int status = -1;
 
-                String args = event.getArgs();
-                String[] argsList = StringFormatting.split(args, Main.config.commandArgDelimiter.getValue());
-                Message message = event.getMessage();
+            if (event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+                String[] argsList = StringToolbox.split(event.getArgs(), Main.globalConf.getDelimiter());
 
-                if (!message.getMentionedChannels().isEmpty() && (argsList.length == 4 || argsList.length == 5)) {
-                    TextChannel channel = message.getMentionedChannels().get(0);
+                if (!event.getMessage().getMentionedChannels().isEmpty() && argsList.length == 4 || argsList.length == 5) {
+                    TextChannel targetChannel = event.getMessage().getMentionedChannels().get(0);
 
-                    EmbedBuilder embedBuilder = new EmbedBuilder();
-
-                    if (argsList.length == 4) {
-                        embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/static/calendar-icon.png");
-                    } else {
-                        try {
-                            if (!argsList[4].equals("x")) {
-                                embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", argsList[4]);
-                            }
-                        } catch (Exception e) {
-                            embedBuilder.setAuthor(argsList[1], "https://calendar.google.com/", "https://www.jacobdixon.us/cache/static/calendar-icon.png");
-                            event.getMessage().addReaction("\u26A0").complete();
-                            event.reply(event.getAuthor().getAsMention() + " Warning: Could not apply custom icon");
-                        }
+                    String iconURL = "https://www.jacobdixon.us/cache/static/calendar-icon.png";
+                    if (argsList.length == 5 && !argsList[4].equals("x") && !argsList[4].equals("")) {
+                        iconURL = argsList[4];
                     }
-                    embedBuilder.setTitle(argsList[2]);
-                    embedBuilder.addField(new MessageEmbed.Field("Event", argsList[3], false));
 
-                    channel.sendMessage(embedBuilder.build()).queue();
-                    successfulQuery = true;
+                    targetChannel.sendMessage(Messages.getGenericAnnouncement(argsList[1], "https://calander.google.com",
+                            iconURL, argsList[2], "Event", argsList[3], Messages.LIGHT_BLUE)).queue();
+
                 } else {
-                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
+                    status = MISSING_ARGS;
                 }
-                if (successfulQuery) event.getMessage().addReaction("\u2705").complete();
+            } else {
+                status = INSUFFICIENT_PERMISSIONS;
             }
+            ReturnCodes.handleCommand(status, event);
         }
     }
 
-    public static class ModeCommand extends Command {
+    class ConfigCommand extends Command {
 
-        ModeCommand() {
-            this.name = "mode";
-            this.help = "Sets bot mode.";
-            this.hidden = true;
+        ConfigCommand() {
+            this.name = "config";
+            this.aliases = new String[]{"conf", "con"};
+            this.guildOnly = true;
         }
 
         @Override
         protected void execute(CommandEvent event) {
-            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
-                if (event.getArgs().equals(""))
-                    event.reply(event.getAuthor().getAsMention() + " Error: Invalid arguments");
-                if (event.getArgs() != null && event.getArgs().split(" ")[0] != null) {
-                    if (event.getArgs().split(" ")[0].equals("m")) {
-                        Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Undergoing Maintenance"));
-                        Main.jda.getPresence().setStatus(OnlineStatus.IDLE);
-                        Main.config.modeStatus.setValue((long) 1);
-                        event.getMessage().addReaction("\u2705").complete();
-                    } else if (event.getArgs().split(" ")[0].equals("online")) {
-                        Main.jda.getPresence().setStatus(OnlineStatus.ONLINE);
-                        Main.jda.getPresence().setActivity(Activity.playing(Main.config.activityStatus.getValue()));
-                        Main.config.modeStatus.setValue((long) 0);
-                        event.getMessage().addReaction("\u2705").complete();
-                    } else if (event.getArgs().split(" ")[0].equals("disabled")) {
-                        Main.jda.getPresence().setActivity(Activity.playing("\u26A0 Limited Functionality"));
-                        Main.jda.getPresence().setStatus(OnlineStatus.DO_NOT_DISTURB);
-                        Main.config.modeStatus.setValue((long) 2);
-                        event.getMessage().addReaction("\u2705").complete();
-                    } else {
-                        event.getMessage().addReaction("\u274C").queue();
-                        event.reply(event.getAuthor().getAsMention() + " Error: Invalid command.");
-                    }
-                }
-            }
-        }
-    }
+            int status;
 
-    public static class PingCommand extends Command {
+            String[] argsList = event.getArgs().split(" ");
+            AdvancedGuild guild = Main.db.getAdvancedGuild(event.getGuild());
 
-        PingCommand() {
-            this.name = "ping";
-            this.help = "Tests bot status";
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-            event.getMessage().addReaction("\uD83C\uDFD3").complete();
-        }
-    }
-
-    public static class StopCommand extends Command {
-
-        StopCommand() {
-            this.name = "stop";
-            this.help = "Shuts down bot.";
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-            if (event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.botAdminRoleId.getValue())).contains(event.getMember())) {
-                event.getMessage().addReaction("\u2705").complete();
-                Main.exit();
-            }
-        }
-    }
-
-    public static class FilterCommand extends Command {
-
-        private static String[] authorizedRoleIds = new String[]{Main.config.adminRoleId.getValue(), Main.config.mentorRoleId.getValue()};
-
-        FilterCommand() {
-            this.name = "filter";
-            this.help = "Modifies message filters.";
-            this.aliases = new String[]{};
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-
-            Member author = event.getMember();
-            Guild guild = event.getGuild();
-
-            String args = event.getArgs();
-            String[] splitArgs = args.split(" ");
-
-            boolean approved = false;
-
-            for (String roleId : authorizedRoleIds) {
-                if (guild.getMembersWithRoles(guild.getRoleById(roleId)).contains(author)) {
-                    approved = true;
-                    break;
-                }
-            }
-
-            if (approved) {
-                boolean successfulQuery = true;
-
-                if (splitArgs[0] == null || splitArgs[0].equals("")) {
-                    successfulQuery = false;
-                } else if (splitArgs[0].equals("add")) {
-                    if (splitArgs[1] != null && !splitArgs[1].matches("\\s") && !splitArgs[1].equals("")) {
-                        String filter = args.replaceFirst(splitArgs[0], "").trim();
-                        if (!Main.config.bannedPhrases.getValue().contains(filter)) {
-                            Main.config.bannedPhrases.getValue().add(filter);
-                            Main.reloadConfigs();
-                        }
-                    }
-                } else if (splitArgs[0].equals("list")) {
-                    if (!Main.config.useFilter.getValue()) {
-                        StringBuilder replyBuilder = new StringBuilder();
-                        for (String s : Main.config.bannedPhrases.getValue()) {
-                            replyBuilder.append("\"").append(s).append("\"\n");
-                        }
-                        event.reply(event.getAuthor().getAsMention() + "\n" + replyBuilder.toString());
-                    } else {
-                        event.reply("Filters are not currently enabled.");
-                    }
-                } else if (splitArgs[0].equals("remove")) {
-                    if (splitArgs[1] != null && !splitArgs[1].matches("\\s") && !splitArgs[1].equals("")) {
-                        if (splitArgs[1].equals("*")) {
-                            Main.config.bannedPhrases.getValue().clear();
-                        } else {
-                            Main.config.bannedPhrases.getValue().remove(args.replaceFirst(splitArgs[0], "").trim());
-                        }
-                        Main.reloadConfigs();
-                    }
-                } else if (splitArgs[0].equals("start")) {
-                    Main.config.useFilter.setValue(true);
-                } else if (splitArgs[0].equals("stop")) {
-                    Main.config.useFilter.setValue(true);
+            if (event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+                if (guild == null) {
+                    status = INTERNAL_SERVER_ERROR;
                 } else {
-                    successfulQuery = false;
-                }
-
-                if (successfulQuery) {
-                    event.getMessage().addReaction("\u2705").queue();
-                } else {
-                    event.getMessage().addReaction("\u274C").queue();
-                    event.reply(author.getAsMention() + " Error: Invalid command.");
-                }
-            }
-        }
-    }
-
-    public static class DebugCommand extends Command {
-
-        private static String[] authorizedRoleIds = new String[]{Main.config.botAdminRoleId.getValue()};
-
-        DebugCommand() {
-            this.name = "debug";
-            this.help = "Gets bot information.";
-            this.aliases = new String[]{};
-            this.hidden = true;
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-
-            Member author = event.getMember();
-            Guild guild = event.getGuild();
-
-            String args = event.getArgs();
-            String[] splitArgs = args.split(" ");
-
-            boolean approved = false;
-
-            for (String roleId : authorizedRoleIds) {
-                if (guild.getMembersWithRoles(guild.getRoleById(roleId)).contains(author)) {
-                    approved = true;
-                    break;
-                }
-            }
-
-            if (approved) {
-                boolean successfulQuery = true;
-                boolean successfulResponse = true;
-
-                switch (splitArgs[0]) {
-                    case "dest": {
-                        if (splitArgs[1] != null) {
-                            if (splitArgs[1].equals("list")) {
-                                StringBuilder s = new StringBuilder();
-                                for (String dest : Main.config.knownDestinations.getValue()) {
-                                    s.append("<").append(dest).append(">").append("\n");
+                    if (argsList[0] != null) {
+                        switch (argsList[0]) {
+                            case "save":
+                                try {
+                                    guild.getConfig().save();
+                                    status = OKAY;
+                                } catch (FileNotFoundException e) {
+                                    Main.logger.log(e, "Exception caught saving configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\", file not found");
+                                    status = INTERNAL_SERVER_ERROR;
+                                } catch (MissingConfigException e) {
+                                    Main.logger.log(e, "Exception caught saving configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\", config not loaded");
+                                    status = INTERNAL_SERVER_ERROR;
                                 }
-                                event.reply(author.getAsMention() + "\n" + s.toString());
-                            } else {
-                                successfulQuery = false;
-                            }
-                        }
-                        break;
-                    }
-                    case "send": {
-                        if (splitArgs[1] != null) {
-                            if (splitArgs[1].equals("list")) {
-                                StringBuilder s = new StringBuilder();
-                                for (EmailSenderProfile sender : Main.config.knownSenders.getValue()) {
-                                    s.append(sender.getSenderName()).append(" <").append(sender.getSenderAddress()).append(">\n");
+                                break;
+                            case "load":
+                                try {
+                                    guild.getConfig().load();
+                                    status = OKAY;
+                                } catch (ParseException | IOException e) {
+                                    Main.logger.log(e, "Exception caught loading configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\"");
+                                    status = INTERNAL_SERVER_ERROR;
+                                } catch (MissingConfigException e) {
+                                    Main.logger.log(e, "Exception caught saving configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\", config not loaded");
+                                    status = INTERNAL_SERVER_ERROR;
+                                } catch (InvalidConfigException e) {
+                                    Main.logger.log(e, "Exception caught saving configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\", config not loaded");
+                                    status = INVALID_CONFIG;
                                 }
-                                event.reply(author.getAsMention() + "\n" + s.toString());
-                            } else {
-                                successfulQuery = false;
-                            }
-                        }
-                        break;
-                    }
-                    case "config":
-                        if (splitArgs[1] != null) {
-                            if (splitArgs[1].equals("reload")) {
-                                successfulResponse = Main.reloadConfigs();
-                            } else if (splitArgs[1].equals("save")) {
-                                successfulResponse = Main.saveConfigs();
-                            } else if (splitArgs[1].equals("load")) {
-                                successfulResponse = Main.loadConfigs(true);
-                            } else if (splitArgs[1].equals("get")) {
-                                if (splitArgs[2] != null) {
-                                    if (splitArgs[2].equals("*")) {
-                                        StringBuilder replyBuilder = new StringBuilder();
-                                        for (Config<?> config : Main.config.getConfigs()) {
-                                            replyBuilder.append("**Key: ** `").append(config.getKey()).append("` **Value:** `").append(config.getValue()).append("`\n");
-                                        }
-                                        event.reply(author.getAsMention() + replyBuilder.toString());
+                                break;
+                            case "get":
+                                if (argsList.length > 1) {
+                                    if (guild.getConfig().getConfig(argsList[1]) != null) {
+                                        event.reply(event.getAuthor().getAsMention() + " **Key: ** `" + argsList[1] + "` : **Value:** `" + guild.getConfig().getConfig(argsList[2]) + "`");
+                                        status = OKAY;
                                     } else {
-                                        Object result = Main.config.getConfigValueByKey(splitArgs[2]);
-                                        if (result != null) {
-                                            event.reply(author.getAsMention() + " **Key: ** `" + splitArgs[2] + "` **Value:** `" + result.toString() + "`");
-                                        } else {
-                                            successfulQuery = false;
-                                        }
+                                        status = INVALID_ARGS;
                                     }
+                                } else {
+                                    StringBuilder sb = new StringBuilder(event.getAuthor().getAsMention() + "\n**All Guild Configs**\n");
+                                    for (ConfigEntry<?> configEntry : guild.getConfig().getConfigs()) {
+                                        sb.append("**Key: ** `").append(configEntry.getKey()).append("` : **Value:** `").append(configEntry.getValue()).append("`");
+                                    }
+                                    event.reply(sb.toString());
+                                    status = OKAY;
                                 }
-                            } else {
-                                successfulQuery = false;
-                            }
+                                break;
+                            case "email":
+                                switch (argsList[1]) {
+                                    case ("origins"):
+                                        if (argsList[2].equals("list")) {
+                                            StringBuilder sb = new StringBuilder("**Whitelisted Email Origins**\n");
+                                            for (EmailUser emailUser : guild.getWhitelistedEmailOrigins()) {
+                                                sb.append(emailUser.getIdentity()).append("\n");
+                                            }
+                                            event.reply(sb.toString());
+                                            status = OKAY;
+                                        } else {
+                                            status = INVALID_COMMAND;
+                                        }
+                                        break;
+                                    case ("destinations"):
+                                        if (argsList[2].equals("list")) {
+                                            StringBuilder sb = new StringBuilder("**Whitelisted Email Destinations**\n");
+                                            for (EmailUser emailUser : guild.getWhitelistedEmailOrigins()) {
+                                                sb.append(emailUser.getIdentity()).append("\n");
+                                            }
+                                            event.reply(sb.toString());
+                                            status = OKAY;
+                                        } else {
+                                            status = INVALID_COMMAND;
+                                        }
+                                        break;
+                                    default:
+                                        status = INVALID_COMMAND;
+                                }
+                                break;
+                            case "upload":
+                                if (!event.getMessage().getAttachments().isEmpty()) {
+                                    try {
+                                        File configUploadFile = Main.db.tempCacheGuildMessageAttachments(event.getMessage()).get(0);
+                                        status = Main.db.userUploadGuildConfig(guild, configUploadFile);
+                                    } catch (ExecutionException | InterruptedException | IOException e) {
+                                        Main.logger.log(e, "Exception caught uploading guild config");
+                                        status = INTERNAL_SERVER_ERROR;
+                                    }
+                                } else {
+                                    status = MISSING_FILE_UPLOAD;
+                                }
+                                break;
+                            case "download":
+                                event.reply(guild.getLoadedConfigFile(), guild.getLoadedConfigFile().getName());
+                                status = OKAY;
+                                break;
+                            default:
+                                status = INVALID_COMMAND;
+                                break;
                         }
+                    } else {
+                        status = MISSING_ARGS;
+                    }
+                }
+            } else {
+                status = INSUFFICIENT_PERMISSIONS;
+            }
+            ReturnCodes.handleCommand(status, event);
+        }
+    }
+
+
+    class AdminCommand extends Command {
+
+        AdminCommand() {
+            this.name = "admin";
+            this.aliases = new String[]{"a", "q"};
+        }
+
+        @Override
+        protected void execute(CommandEvent event) {
+            int status;
+            String[] argsList = event.getArgs().split(" ");
+
+            if (Main.globalConf.adminIDs.getValue().contains(event.getAuthor().getId())) {
+                switch (argsList[0]) {
+                    case "cc":
+                        Main.db.clearGuildTempCache();
+                        status = OKAY;
                         break;
                     case "inbox":
-                        if (splitArgs[1] != null) {
-                            if (splitArgs[1].equals("last")) {
-                                event.reply(author.getAsMention() + " " + Main.emailHandler.getInboxLatest());
-                            } else {
-                                successfulQuery = false;
-                            }
-                        } else {
-                            event.reply(author.getAsMention() + " " + Main.emailHandler.getInboxSummary());
+                        try {
+                            event.reply(event.getAuthor().getAsMention() + "\n" + Main.getEmailHandler().getRecentInboxSummary());
+                            status = OKAY;
+                        } catch (IOException e) {
+                            status = INTERNAL_SERVER_ERROR;
+                        }
+                        break;
+                    case "config":
+                        switch (argsList[1]) {
+                            case "global":
+                                switch (argsList[2]) {
+                                    case "load":
+                                        try {
+                                            Main.globalConf.load();
+                                            Main.configureJDA();
+                                            status = OKAY;
+                                        } catch (IOException | ParseException | ConfigException e) {
+                                            Main.logger.log(e, "Error loading global config");
+                                            status = INTERNAL_SERVER_ERROR;
+                                        }
+                                        break;
+                                    case "save":
+                                        try {
+                                            Main.globalConf.save();
+                                            status = OKAY;
+                                        } catch (IOException | MissingConfigException e) {
+                                            Main.logger.log(e, "Error saving global config");
+                                            status = INTERNAL_SERVER_ERROR;
+                                        }
+                                        break;
+                                    case "upload":
+                                        if (!event.getMessage().getAttachments().isEmpty()) {
+                                            try {
+                                                File configUpload = Main.db.tempCacheGlobalMessageAttachments(event.getMessage()).get(0);
+                                                status = Main.db.userUploadGlobalConfig(configUpload);
+                                            } catch (ExecutionException | InterruptedException | IOException e) {
+                                                Main.logger.log(e, "Exception caught uploading guild config");
+                                                status = INTERNAL_SERVER_ERROR;
+                                            }
+                                        } else {
+                                            status = MISSING_FILE_UPLOAD;
+                                        }
+                                        break;
+                                    case "download":
+                                        event.reply(Main.globalConf.getLoadedConfigFile(), Main.globalConf.getLoadedConfigFile().getName());
+                                        status = OKAY;
+                                        break;
+                                    case "get":
+                                        if (Main.globalConf.getConfig(argsList[3]) != null) {
+                                            event.reply(event.getAuthor().getAsMention() + " **Key: ** `" + argsList[1] + "` : **Value:** `" + Main.globalConf.getConfig(argsList[1]).getValue() + "`");
+                                            status = OKAY;
+                                        } else {
+                                            status = INVALID_ARGS;
+                                        }
+                                        break;
+                                    default:
+                                        status = INVALID_COMMAND;
+                                        break;
+                                }
+                                break;
+                            case "guild":
+                                if (Main.db.getAdvancedGuildById(argsList[2]) != null) {
+                                    AdvancedGuild targetGuild = Main.db.getAdvancedGuildById(argsList[2]);
+
+                                    switch (argsList[3]) {
+                                        case "save":
+                                            try {
+                                                targetGuild.getConfig().save();
+                                                status = OKAY;
+                                            } catch (FileNotFoundException e) {
+                                                Main.logger.log(e, "Exception caught saving configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\", file not found");
+                                                status = INTERNAL_SERVER_ERROR;
+                                            } catch (MissingConfigException e) {
+                                                Main.logger.log(e, "Exception caught saving configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\", config not loaded");
+                                                status = INTERNAL_SERVER_ERROR;
+                                            }
+                                            break;
+                                        case "load":
+                                            try {
+                                                targetGuild.getConfig().load();
+                                                status = OKAY;
+                                            } catch (ParseException | IOException e) {
+                                                Main.logger.log(e, "Exception caught loading configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\"");
+                                                status = INTERNAL_SERVER_ERROR;
+                                            } catch (MissingConfigException e) {
+                                                Main.logger.log(e, "Exception caught saving configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\", config not loaded");
+                                                status = INTERNAL_SERVER_ERROR;
+                                            } catch (InvalidConfigException e) {
+                                                Main.logger.log(e, "Exception caught saving configs via command for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\", config not loaded");
+                                                status = INVALID_CONFIG;
+                                            }
+                                            break;
+                                        case "get":
+                                            if (argsList.length > 1) {
+                                                if (targetGuild.getConfig().getConfig(argsList[1]) != null) {
+                                                    event.reply(event.getAuthor().getAsMention() + " **Key: ** `" + argsList[1] + "` : **Value:** `" + targetGuild.getConfig().getConfig(argsList[2]) + "`");
+                                                    status = OKAY;
+                                                } else {
+                                                    status = INVALID_ARGS;
+                                                }
+                                            } else {
+                                                StringBuilder sb = new StringBuilder(event.getAuthor().getAsMention() + "\n**All Guild Configs**\n");
+                                                for (ConfigEntry<?> configEntry : targetGuild.getConfig().getConfigs()) {
+                                                    sb.append("**Key: ** `").append(configEntry.getKey()).append("` : **Value:** `").append(configEntry.getValue()).append("`");
+                                                }
+                                                event.reply(sb.toString());
+                                                status = OKAY;
+                                            }
+                                            break;
+                                        case "email":
+                                            switch (argsList[1]) {
+                                                case ("origins"):
+                                                    if (argsList[2].equals("list")) {
+                                                        StringBuilder sb = new StringBuilder("**Whitelisted Email Origins**\n");
+                                                        for (EmailUser emailUser : targetGuild.getWhitelistedEmailOrigins()) {
+                                                            sb.append(emailUser.getIdentity()).append("\n");
+                                                        }
+                                                        event.reply(sb.toString());
+                                                        status = OKAY;
+                                                    } else {
+                                                        status = INVALID_COMMAND;
+                                                    }
+                                                    break;
+                                                case ("destinations"):
+                                                    if (argsList[2].equals("list")) {
+                                                        StringBuilder sb = new StringBuilder("**Whitelisted Email Destinations**\n");
+                                                        for (EmailUser emailUser : targetGuild.getWhitelistedEmailOrigins()) {
+                                                            sb.append(emailUser.getIdentity()).append("\n");
+                                                        }
+                                                        event.reply(sb.toString());
+                                                        status = OKAY;
+                                                    } else {
+                                                        status = INVALID_COMMAND;
+                                                    }
+                                                    break;
+                                                default:
+                                                    status = INVALID_COMMAND;
+                                            }
+                                            break;
+                                        case "upload":
+                                            if (!event.getMessage().getAttachments().isEmpty()) {
+                                                try {
+                                                    File configUploadFile = Main.db.tempCacheGuildMessageAttachments(event.getMessage()).get(0);
+                                                    status = Main.db.userUploadGuildConfig(targetGuild, configUploadFile);
+                                                } catch (ExecutionException | InterruptedException | IOException e) {
+                                                    Main.logger.log(e, "Exception caught uploading guild config");
+                                                    status = INTERNAL_SERVER_ERROR;
+                                                }
+                                            } else {
+                                                status = MISSING_FILE_UPLOAD;
+                                            }
+                                            break;
+                                        case "download":
+                                            event.reply(targetGuild.getLoadedConfigFile(), targetGuild.getLoadedConfigFile().getName());
+                                            status = OKAY;
+                                            break;
+                                        default:
+                                            status = INVALID_COMMAND;
+                                            break;
+                                    }
+                                } else {
+                                    status = INVALID_ARGS;
+                                }
+                                break;
+                            default:
+                                status = INVALID_COMMAND;
                         }
                         break;
                     case "uptime":
-                        long uptime = (Instant.now().getEpochSecond() - Main.config.START_TIME.getValue());
-                        event.reply(author.getAsMention() + " **Uptime:** " + StringFormatting.formatTime(uptime));
+                        long uptime = (Instant.now().getEpochSecond() - Main.globalConf.INIT_TIME);
+                        event.reply(event.getAuthor().getAsMention() + " **Uptime:** " + StringToolbox.formatTime(uptime));
+                        status = OKAY;
+                        break;
+                    case "stop":
+                        if (argsList.length > 1 && argsList[1].equals("now")) {
+                            Main.exit(0);
+                        } else {
+                            Main.stop();
+                        }
+                        status = OKAY;
                         break;
                     default:
-                        successfulQuery = false;
-                        break;
+                        status = INVALID_COMMAND;
                 }
-
-                if (successfulQuery && successfulResponse) {
-                    event.getMessage().addReaction("\u2705").queue();
-                } else if (!successfulQuery) {
-                    event.getMessage().addReaction("\u274C").queue();
-                    event.reply(author.getAsMention() + " Error: Invalid command.");
-                } else {
-                    event.getMessage().addReaction("\u274C").queue();
-                    event.reply(author.getAsMention() + " Error: An internal error was encountered while trying to process your request.");
-                }
+                ReturnCodes.handleCommand(status, event);
             }
         }
     }

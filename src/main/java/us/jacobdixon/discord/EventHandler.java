@@ -1,232 +1,145 @@
-/*
- * Name: 857-discord-bot
- * Date: 2020/1/11
- * Author(s): jd@jacobdixon.us (Jacob Dixon)
- * Version: 1.0a
- */
-
 package us.jacobdixon.discord;
 
-import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.events.channel.priv.PrivateChannelDeleteEvent;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
-import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
+import net.dv8tion.jda.api.events.guild.member.update.GuildMemberUpdateNicknameEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GenericGuildMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionRemoveEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.priv.PrivateMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import us.jacobdixon.utils.StringFormatting;
+import us.jacobdixon.utils.Logger;
+import us.jacobdixon.utils.StringToolbox;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class EventHandler extends ListenerAdapter {
 
-    private static class SimpleReplace {
-        String base;
-        String[] replacements;
+    private Logger logger;
+    private Database database;
 
-        public SimpleReplace(String base, String[] replacements) {
-            this.base = base;
-            this.replacements = replacements;
-        }
+    public EventHandler(Database database, Logger logger) {
+        this.database = database;
+        this.logger = logger;
     }
-
-    private enum RemovalReason {
-        MENTIONED_ROLE, CONTENT_POLICY, OTHER;
-    }
-
-    private SimpleReplace[] simpleReplacements = {
-            new SimpleReplace("a", new String[]{"@", "4", "\u00E2", "\u00E3", "\u00E4", "\u00E5"}),
-            new SimpleReplace("i", new String[]{"1", "!", "\u00EC", "\u00ED", "\u00EE", "\u00EF"}),
-            new SimpleReplace("n", new String[]{"\u0144", "\u00F1"}),
-            new SimpleReplace("s", new String[]{"5", "$"}),
-            new SimpleReplace("t", new String[]{"7"}),
-            new SimpleReplace("e", new String[]{"3"}),
-            new SimpleReplace("o", new String[]{"0"}),
-    };
 
     @Override
-    public void onPrivateMessageReceived(PrivateMessageReceivedEvent event) {
-        StringBuilder logBuilder = new StringBuilder();
-        logBuilder.append("Received private message from: \"").append(event.getAuthor().getAsTag()).append("\"");
-        if (event.getMessage().getEmbeds().size() > 0) {
-            logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
-            if (event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
+    public void onGuildJoin(@Nonnull GuildJoinEvent event) {
+        database.build(event.getJDA().getGuilds());
+    }
+
+    @Override
+    public void onGuildLeave(@Nonnull GuildLeaveEvent event) {
+        database.build(event.getJDA().getGuilds());
+    }
+
+    @Override
+    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
+    }
+
+    @Override
+    public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
+    }
+
+    @Override
+    public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
+    }
+
+    @Override
+    public void onGuildMessageReactionAdd(@Nonnull GuildMessageReactionAddEvent event) {
+    }
+
+    @Override
+    public void onGuildMessageReactionRemove(@Nonnull GuildMessageReactionRemoveEvent event) {
+    }
+
+    @Override
+    public void onGuildMemberJoin(@Nonnull GuildMemberJoinEvent event) {
+        AdvancedGuild guild = database.getAdvancedGuild(event.getGuild());
+
+        if (guild != null) {
+            guild.getLogChannel().sendMessage(Messages.getMemberJoinedLog(event.getMember())).queue();
+        } else {
+            logger.log(Logger.LogPriority.ERROR, "Could not find guild config for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\"");
         }
-        if (event.getMessage().getAttachments().size() > 0) {
-            logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
+    }
+
+    @Override
+    public void onGuildMemberRemove(@Nonnull GuildMemberRemoveEvent event) {
+        AdvancedGuild guild = database.getAdvancedGuild(event.getGuild());
+
+        if (guild != null) {
+            guild.getLogChannel().sendMessage(Messages.getMemberLeftLog(event.getUser())).queue();
+        } else {
+            logger.log(Logger.LogPriority.ERROR, "Could not find guild config for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\"");
         }
-        if (!event.getMessage().getContentRaw().equals("")) {
-            logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
-        }
-        Main.logger.log(logBuilder.toString());
-        if (!event.getAuthor().getId().equals(Main.jda.getSelfUser().getId())) {
-            Main.embedMessageLog(event.getAuthor(), event.getMessage().getContentDisplay());
+    }
+
+    @Override
+    public void onGuildMemberUpdateNickname(@Nonnull GuildMemberUpdateNicknameEvent event) {
+    }
+
+    @Override
+    public void onPrivateMessageReceived(@Nonnull PrivateMessageReceivedEvent event) {
+        if (!event.getAuthor().isBot()) {
             event.getAuthor().openPrivateChannel().queue(privateChannel -> {
-                privateChannel.sendMessage("This bot is not setup to handle private messages. If you have an issue please contact the admin beluga#6796, or send an email to discord@jacobdixon.us.").queue();
+                if (event.getMessage().getTimeCreated().toEpochSecond() - privateChannel.getHistory().retrievePast(2).complete().get(1).getTimeCreated().toEpochSecond() > 30) {
+                    privateChannel.sendMessage("Hello. If you're looking for help, you can reply to this message and an admin will review your message when available. Otherwise you can contact *beluga#6796* or send an email to *jd@jacobdixon.us*.").queue();
+                }
             });
         }
     }
 
     @Override
-    public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-        StringBuilder logBuilder = new StringBuilder();
-        logBuilder.append("Received message from: \"").append(event.getAuthor().getAsTag()).append("\" in: \"").
-                append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).
-                append("\" message id: \"").append(event.getMessageId()).append("\"");
-        if (event.getMessage().getEmbeds().size() > 0) {
-            logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
-            if (event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
-        }
-        if (event.getMessage().getAttachments().size() > 0) {
-            logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
-        }
-        if (!event.getMessage().getContentRaw().equals("")) {
-            logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
-        }
-        Main.logger.log(logBuilder.toString());
-        if (!event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.adminRoleId.getValue())).contains(event.getMember())
-                && !event.getGuild().getMembersWithRoles(event.getGuild().getRoleById(Main.config.mentorRoleId.getValue())).contains(event.getMember())
-                && !event.getAuthor().isBot()) {
+    public void onPrivateMessageUpdate(@Nonnull PrivateMessageUpdateEvent event) {
+    }
 
-            boolean allowed = true;
-            Message message = event.getMessage();
-            String messageContent = event.getMessage().getContentDisplay();
-            RemovalReason reason = RemovalReason.OTHER;
-            String violation = "";
+    @Override
+    public void onPrivateChannelDelete(@Nonnull PrivateChannelDeleteEvent event) {
+    }
 
-            if (Main.config.useFilter.getValue()) {
-                for (String s : Main.config.bannedPhrases.getValue()) {
-                    String phrase = s;
-                    s = "(?:.*)(?:^|\\s+)" + StringFormatting.formatRegex(s.toLowerCase()) + "(?:$|\\s+)(?:.*)";
-                    if (messageContent.toLowerCase().matches(s) ||
-                            messageContent.toLowerCase().matches(s + "s") ||
-                            messageContent.toLowerCase().matches(s + "es")) {
-                        allowed = false;
-                        reason = RemovalReason.CONTENT_POLICY;
-                        violation = phrase;
-                        break;
-                    }
+    @Override
+    public void onGuildMemberRoleAdd(@Nonnull GuildMemberRoleAddEvent event) {
+    }
 
-                    for (SimpleReplace simpleReplacement : simpleReplacements) {
-                        for (String replacement : simpleReplacement.replacements) {
-                            if (messageContent.toLowerCase().replaceAll(StringFormatting.formatRegex(simpleReplacement.base), replacement).matches(s.replaceAll(simpleReplacement.base, replacement))) {
-                                allowed = false;
-                                reason = RemovalReason.CONTENT_POLICY;
-                                violation = phrase.replaceAll(simpleReplacement.base, replacement);
-                                break;
+    @Override
+    public void onGenericGuildMessageReaction(@Nonnull GenericGuildMessageReactionEvent event) {
+        AdvancedGuild guild = database.getAdvancedGuild(event.getGuild());
+
+        if (guild != null) {
+            if (event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)) {
+                for (EmoteRoleAssignmentMessage roleAssignmentMessage : guild.getEmoteRoleAssignmentMessages()) {
+                    if (roleAssignmentMessage.getMessageId().equals(event.getMessageId()) && event.getReactionEmote().isEmoji()) {
+                        if (roleAssignmentMessage.getRoleEmotePairs().containsKey(StringToolbox.escape(event.getReactionEmote().getEmoji()))) {
+                            Role targetRole = event.getGuild().getRoleById(roleAssignmentMessage.getRoleEmotePairs().get(StringToolbox.escape(event.getReactionEmote().getEmoji())));
+                            if (event instanceof GuildMessageReactionAddEvent) {
+                                event.getGuild().addRoleToMember(Objects.requireNonNull(event.getMember()), Objects.requireNonNull(targetRole)).queue(success -> Objects.requireNonNull(event.getUser()).openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(Messages.getRoleAddedResponse(targetRole, event.getGuild())).queue()));
+                                guild.getLogChannel().sendMessage(Messages.getRoleAddedLog(event.getMember(), targetRole)).queue();
+                                logger.log("bot.event.guild.member.roles.add Added role \"" + targetRole.getName() + "\" to member \"" + event.getMember().getEffectiveName() + "\" in guild \"" + event.getGuild().getName() + "\" via emote role assigner");
+                            } else if (event instanceof GuildMessageReactionRemoveEvent) {
+                                event.getGuild().removeRoleFromMember(Objects.requireNonNull(event.getMember()), Objects.requireNonNull(targetRole)).queue(success -> Objects.requireNonNull(event.getUser()).openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(Messages.getRoleRemovedResponse(targetRole, event.getGuild())).queue()));
+                                guild.getLogChannel().sendMessage(Messages.getRoleRemovedLog(event.getMember(), targetRole)).queue();
+                                logger.log("bot.event.guild.member.roles.remove Added role \"" + targetRole.getName() + "\" to member \"" + event.getMember().getEffectiveName() + "\" in guild \"" + event.getGuild().getName() + "\" via emote role assigner");
                             }
                         }
                     }
                 }
+            } else {
+                logger.log(Logger.LogPriority.WARNING, "Could not remove role for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\" due to insufficient permissions");
             }
-
-            if (allowed) {
-                for (String is : Main.config.restrictedMentions.getValue()) {
-                    for (Role role : message.getMentionedRoles()) {
-                        if (role.getId().equals(is)) {
-                            allowed = false;
-                            reason = RemovalReason.MENTIONED_ROLE;
-                            violation = "@" + role.getName();
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!allowed) {
-                event.getMessage().delete().queue();
-                String finalViolatingPhrase = violation;
-                RemovalReason finalReason = reason;
-                event.getAuthor().openPrivateChannel().queue(privateChannel -> {
-                    if (finalReason == RemovalReason.CONTENT_POLICY) {
-                        privateChannel.sendMessage("Your message: \"" + messageContent.replaceAll(finalViolatingPhrase, "`" + finalViolatingPhrase + "`") + "\" was automatically removed for violating the guild's content policy. If this was a mistake, please contact an admin.").queue();
-
-                    } else if (finalReason == RemovalReason.MENTIONED_ROLE) {
-                        privateChannel.sendMessage("Your message: \"" + messageContent.replaceAll(finalViolatingPhrase, "`" + finalViolatingPhrase + "`") + "\" was automatically removed because you mentioned a role that has restricted mentioning. If this was a mistake, please contact an admin.").queue();
-                    }
-                });
-                Main.embedFilterLog(event.getMember(), event.getChannel(), messageContent, reason.name(), violation);
-            }
-        }
-    }
-
-    @Override
-    public void onGuildMessageUpdate(@Nonnull GuildMessageUpdateEvent event) {
-        StringBuilder logBuilder = new StringBuilder();
-        logBuilder.append("Received message edit from: \"").append(event.getAuthor().getAsTag()).append("\" in: \"").
-                append(event.getGuild().getName()).append("\"::\"").append(event.getChannel().getName()).
-                append("\" message id: \"").append(event.getMessageId()).append("\"");
-        if (event.getMessage().getEmbeds().size() > 0) {
-            logBuilder.append(" with ").append(event.getMessage().getEmbeds().size()).append(" embeds");
-            if (event.getMessage().getAttachments().size() > 0) logBuilder.append(" and");
-        }
-        if (event.getMessage().getAttachments().size() > 0) {
-            logBuilder.append(" with ").append(event.getMessage().getAttachments().size()).append(" attachments");
-        }
-        if (!event.getMessage().getContentRaw().equals("")) {
-            logBuilder.append(" : \"").append(event.getMessage().getContentRaw()).append("\"");
-        }
-        Main.logger.log(logBuilder.toString());
-    }
-
-    @Override
-    public void onGuildMessageDelete(@Nonnull GuildMessageDeleteEvent event) {
-        Main.logger.log("Received message removal in: \"" +
-                event.getGuild().getName() + "\"::\"" + event.getChannel().getName() + "\" message id: \"" + event.getMessageId() + "\"");
-    }
-
-    @Override
-    public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        Main.logger.log("Member joined: \"" + event.getMember().getUser().getAsTag() + "\"");
-        if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
-            if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
-                event.getGuild().addRoleToMember(event.getMember(), event.getGuild().getRoleById(Main.config.memberRoleId.getValue())).queue();
-            }
-        }
-        Main.embedMemberLog("Member Joined", event.getMember());
-    }
-
-    @Override
-    public void onGuildMemberLeave(GuildMemberLeaveEvent event) {
-        Main.logger.log("Member left: \"" + event.getMember().getUser().getAsTag() + "\"");
-        Main.embedMemberLog("Member Left", event.getMember());
-    }
-
-    @Override
-    public void onGuildMessageReactionAdd(GuildMessageReactionAddEvent event) {
-        for (RoleAssigner role : Main.config.roleAssigners.getValue()) {
-            if (event.getMessageId().equals(Main.config.roleAssignmentMessageId.getValue()) && event.getReactionEmote().getEmoji().equals(role.getEmote())) {
-                if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
-                    event.getGuild().addRoleToMember(event.getGuild().getMemberById(event.getUser().getId()), event.getGuild().getRoleById(role.getRoleId())).queue(success -> {
-                        event.getMember().getUser().openPrivateChannel().queue(privateChannel -> {
-                            privateChannel.sendMessage("Assigned Role: " + event.getGuild().getRoleById(role.getRoleId()).getName()).queue();
-                        });
-                    });
-                    Main.logger.log("Assigned role: \"" + event.getGuild().getRoleById(role.getRoleId()).getName() + "\" to: \"" + event.getMember().getEffectiveName() + "\"");
-                    Main.embedRoleLog("Assigned Role", event.getMember(), event.getGuild().getRoleById(role.getRoleId()));
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onGuildMessageReactionRemove(GuildMessageReactionRemoveEvent event) {
-        for (RoleAssigner role : Main.config.roleAssigners.getValue()) {
-            if (event.getMessageId().equals(Main.config.roleAssignmentMessageId.getValue()) && event.getReactionEmote().getEmoji().equals(role.getEmote())) {
-                if (event.getGuild().getId().equals(Main.config.serverId.getValue())) {
-                    event.getGuild().removeRoleFromMember(event.getGuild().getMemberById(event.getUser().getId()), event.getGuild().getRoleById(role.getRoleId())).queue(success -> {
-                        event.getMember().getUser().openPrivateChannel().queue(privateChannel -> {
-                            privateChannel.sendMessage("Removed Role: " + event.getGuild().getRoleById(role.getRoleId()).getName()).queue();
-                        });
-                    });
-                    Main.logger.log("Unassigned role: \"" + event.getGuild().getRoleById(role.getRoleId()).getName() + "\" from: \"" + event.getMember().getEffectiveName() + "\"");
-                    Main.embedRoleLog("Unassigned Role", event.getMember(), event.getGuild().getRoleById(role.getRoleId()));
-                }
-            }
+        } else {
+            logger.log(Logger.LogPriority.ERROR, "Could not find guild config for guild " + event.getGuild().getId() + " \"" + event.getGuild().getName() + "\"");
         }
     }
 }

@@ -8,11 +8,11 @@
 package us.jacobdixon.utils;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-public class StringFormatting {
+public class StringToolbox {
 
     public static String[] split(String string, String delim) {
         String[] sections = string.split("(?<!\\\\)" + delim);
@@ -37,8 +37,8 @@ public class StringFormatting {
         return sections;
     }
 
-    public static List<String> splitGroups(String string, int length) {
-        List<String> s = new ArrayList<>();
+    public static ArrayList<String> splitGroups(String string, int length) {
+        ArrayList<String> s = new ArrayList<>();
 
         for (int i = 0; i < (string.length() / length) + 1; i++) {
             s.add(string.substring(i * 1024, Math.min(string.length(), (i * 1024) + length)));
@@ -47,7 +47,7 @@ public class StringFormatting {
         return s;
     }
 
-    public static String formatUrl(String s) {
+    public static String sanitizeURL(String s) {
         return s.replaceAll("%", "%25").replaceAll(" ", "%20")
                 .replaceAll(";", "%3B").replaceAll("/", "%2F")
                 .replaceAll("\\?", "%3F").replaceAll(":", "%3A")
@@ -62,7 +62,7 @@ public class StringFormatting {
                 .replaceAll("'", "%39").replaceAll("\"", "%34");
     }
 
-    public static String formatRegex(String s) {
+    public static String sanitizeRegex(String s) {
         s = s.replaceAll("\\\\", "\\\\\\\\");
         Matcher m = Pattern.compile("([\\^\\-\\[\\]*(){}.?+$])").matcher(s);
         while (m.find()) {
@@ -71,17 +71,25 @@ public class StringFormatting {
         return s;
     }
 
-    public static String formatJSON(String s) {
+    public static String sanitizeJSON(String s) {
         s = s.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\"");
         return s;
     }
 
-    public static String normalizeSpacing(String s) {
-        return s.replaceAll(" {2,}", " ").trim();
+    public static String sanitizeEmailPlaintext(String s) {
+        return s.replaceAll("'", "&#39;").replaceAll("\"", "&#34;");
     }
 
-    public static String unformatEmailTextPlain(String s) {
+    public static String desanitizeEmailPlaintext(String s) {
         return s.replaceAll("&#39;", "'").replaceAll("&#34;", "\"");
+    }
+
+    public static String sanitize(String s){
+        return s.replace("\\", "\\\\");
+    }
+
+    public static String normalizeSpacing(String s) {
+        return s.replaceAll(" {2,}", " ").trim();
     }
 
     public static String formatTime(long time) {
@@ -97,8 +105,11 @@ public class StringFormatting {
         time = time % 3600;
         long minutes = time / 60;
         time = time % 60;
+
         long seconds = time;
+
         StringBuilder stringBuilder = new StringBuilder();
+
         if (years > 1) stringBuilder.append(years).append(" years ");
         else if (years == 1) stringBuilder.append(years).append(" year ");
         if (months > 1) stringBuilder.append(months).append(" months ");
@@ -113,7 +124,20 @@ public class StringFormatting {
         else if (minutes == 1) stringBuilder.append(minutes).append(" minute ");
         if (seconds > 1) stringBuilder.append(seconds).append(" seconds ");
         else if (seconds == 1) stringBuilder.append(seconds).append(" second");
+
         return normalizeSpacing(stringBuilder.toString());
+    }
+
+    public static String escape(String string) {
+        return string.chars().mapToObj(StringToolbox::escapeChar).collect(Collectors.joining());
+    }
+
+    private static String escapeChar(int c) {
+        if (c <= 0x7f) {
+            return Character.toString((char) c);
+        } else {
+            return "\\u" + String.format("%04x", c).toUpperCase();
+        }
     }
 
 }

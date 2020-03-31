@@ -1,0 +1,135 @@
+{
+  "whitelisted-origins": [
+    {
+      "name": "Jacob Dixon",
+      "address": "jd@jacobdixon.us",
+      "img-url": "https://www.jacobdixon.us/cache/img/unnamed.png"
+    },
+    {
+      "name": "Christopher Doig",
+      "address": "csdoig@mtu.edu",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "John Brubaker",
+      "address": "johnbrubaker13@gmail.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Christopher Plummer",
+      "address": "cplummer@mtu.edu",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "",
+      "address": "first857-l@mtu.edu",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "",
+      "address": "dontreply@firstinspires.org",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "",
+      "address": "superiorroboworksteam857@gmail.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Melody Doig",
+      "address": "fim.robots.westernup@gmail.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Kathy Lund",
+      "address": "klund@houghton.k12.mi.us",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Joshua Damsteegt",
+      "address": "22damsteej@student.hpts.us",
+      "img-url": "https://www.jacobdixon.us/cache/img/AIbEiAIAAABDCMmD5L7CmKOWHyILdmNhcmRfcGhvdG8qKDIwMWFiOTZjZjZjOWJmOTQxOTJlNzRkYzgyMTA4NmM4MTJmMmJmYzUwAZ6B5TDhtxPoBS4TsOJcG2qelc3G.jpg"
+    },
+    {
+      "name": "Orin Hubert",
+      "address": "22huberto@student.hpts.us",
+      "img-url": "https://www.jacobdixon.us/cache/img/AIbEiAIAAABDCPOLpKz_j_aneiILdmNhcmRfcGhvdG8qKDc4OGQ0ZDI3MjY3ZWQwYmQwNjE1ZjYzYzI0MGNiYjhkNzA0NmY5YWMwAS5GK31gDToD6sGyq4G4UkkAB_vV.jpg"
+    },
+    {
+      "name": "Yash Tiwari",
+      "address": "22tiwariy@student.hpts.us",
+      "img-url": "https://www.jacobdixon.us/cache/img/AIbEiAIAAABECJj_uvbBh-nCxAEiC3ZjYXJkX3Bob3RvKihhNDkyN2Q5MGEyZWI1ZjQwYTY0YmNhYTc0NjY0YWJlZTMzYmZhMWVhMAHVrTsiSYCbRpHQDoad8LOiFSi1Qw.jpg"
+    },
+    {
+      "name": "Angus Butler",
+      "address": "22butlera@student.hpts.us",
+      "img-url": "https://www.jacobdixon.us/cache/img/AIbEiAIAAABECPuHgqruqIW3pQEiC3ZjYXJkX3Bob3RvKig1MTJhOGYwZDFmMGNmYzgxMjJkMDgyY2JhZWM3NmRlZDcwYWFmNGY2MAHzMi9ChYztdc-UrjLIEU_3_jP-Pg.jpg"
+    },
+    {
+      "name": "Gabrielle Roberts",
+      "address": "gar4282002@gmail.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/AIbEiAIAAABECN7U-qrorJX27AEiC3ZjYXJkX3Bob3RvKihlODM3YWM5MDAyNGM1MTMyNjRlM2IwM2NhZGFmNTI1YjRjZTAxNmNhMAEx59Nwt-Fa6mYmoFafhgeLW37BQw.jpg"
+    },
+    {
+      "name": "Kevin Nelson",
+      "address": "kevinn@glsv.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Loret Roberts",
+      "address": "loret@copperisd.org",
+      "img-url": "https://www.jacobdixon.us/cache/img/unnamed.jpg"
+    },
+    {
+      "name": "Dale Damsteegt",
+      "address": "dk.damsteegt@att.net",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Nick Roberts",
+      "address": "nick.roberts@cityofhoughton.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Thomas Freeman",
+      "address": "tfreeman@mtu.edu",
+      "img-url": "https://www.jacobdixon.us/cache/img/AIbEiAIAAABECMO8wviIk8em6wEiC3ZjYXJkX3Bob3RvKihkNjYxZTAyYmI3M2I2ZDlkNGNiOWMwODJhMTZkYWM3MTA4NGI0Y2Y2MAGV6BdukvS84S2r_C1PP1sWLJRjsg.jpg"
+    },
+    {
+      "name": "Abby Wilson",
+      "address": "arwilson@mtu.edu",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "",
+      "address": "iolaranee@yahoo.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Monica Aho",
+      "address": "monicaaho@gmail.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    },
+    {
+      "name": "Kevin and Jenny-Meade Butler",
+      "address": "yooperbutlers@gmail.com",
+      "img-url": "https://www.jacobdixon.us/cache/img/AIbEiAIAAABECLuFsKzlutye8gEiC3ZjYXJkX3Bob3RvKihlMDhmMzAxM2M1MTI2ZWE1ODY0MTcyYzMwMjM2MTM3NDQ0NzNhMTA0MAGR_mc9BV4tQEkKW3HQz63fxZ3Myg.jpg"
+    }
+  ],
+  "approved-destinations": [
+    {
+      "name": "857 Email List",
+      "address": "first857-l@mtu.edu",
+      "img-url": "https://www.jacobdixon.us/cache/img/profile_mask2.png"
+    }
+  ],
+  "restricted-mentions": ["663138202038566924"],
+  "use-filter": false,
+  "log-channel-id": "663166429876584458",
+  "announcements-channel-id": "663166533723488266",
+  "announcements-role-id": "664312127393234945",
+  "direct-allow-addresses": [
+    "857api.direct@mail.goobisoft.com"
+  ],
+  "banned-phrases": []
+}

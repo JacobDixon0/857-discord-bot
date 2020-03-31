@@ -1,0 +1,14 @@
+{
+  "announcements-role-id": "-",
+  "whitelisted-origins": [],
+  "whitelisted-destinations": [],
+  "utc": 0,
+  "bot-manager-ids": [],
+  "emote-role-assigners": [],
+  "restricted-mentions": [],
+  "use-filter": false,
+  "log-channel-id": "-",
+  "announcements-channel-id": "-",
+  "banned-phrases": [],
+  "direct-allow-addresses": []
+}
