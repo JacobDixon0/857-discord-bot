@@ -7,8 +7,8 @@ import com.google.gson.JsonParser;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import us.jacobdixon.discord.exceptions.InvalidConfigException;
 import us.jacobdixon.discord.exceptions.MissingConfigException;
-import us.jacobdixon.utils.JSONToolbox;
 import us.jacobdixon.utils.Logger;
 
 import java.io.*;
@@ -44,27 +44,24 @@ public class Config {
         }
     }
 
-    public boolean checkValidity(File file) throws IOException {
-        boolean isValid = true;
-
-        if (JSONToolbox.checkValidity(file)) {
-            try {
-                FileReader jsonReader = new FileReader(file);
-                JSONObject jsonObject = (JSONObject) new JSONParser().parse(jsonReader);
-                for (ConfigEntry<?> configEntry : configs) {
-                    if (!jsonObject.containsKey(configEntry.getKey())) {
-                        isValid = false;
-                        break;
-                    }
-                }
-                jsonReader.close();
-            } catch (ParseException e) {
-                isValid = false;
-            }
-        } else {
-            isValid = false;
+    public boolean checkValiditySimple(File file){
+        try{
+            checkValidity(file);
+            return true;
+        } catch (IOException | InvalidConfigException | ParseException e){
+            return false;
         }
-        return isValid;
+    }
+
+    public void checkValidity(File file) throws IOException, InvalidConfigException, ParseException {
+        FileReader jsonReader = new FileReader(file);
+        JSONObject jsonObject = (JSONObject) new JSONParser().parse(jsonReader);
+        for (ConfigEntry<?> configEntry : configs) {
+            if (!jsonObject.containsKey(configEntry.getKey())) {
+                throw new InvalidConfigException("Missing \"" + configEntry.getKey() + "\"");
+            }
+        }
+        jsonReader.close();
     }
 
     @SuppressWarnings({"unchecked"}) // I know, I know...

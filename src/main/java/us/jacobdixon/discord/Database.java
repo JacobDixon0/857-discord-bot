@@ -131,36 +131,40 @@ public class Database implements ReturnCodes {
             bufferedInputStream.close();
             fileInputStream.close();
 
+            boolean success = false;
+
             switch (type) {
                 case "image/png":
-                    file.renameTo(new File(file.getAbsolutePath() + ".png"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".png"));
                     break;
                 case "image/jpeg":
-                    file.renameTo(new File(file.getAbsolutePath() + ".jpg"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".jpg"));
                     break;
                 case "image/gif":
-                    file.renameTo(new File(file.getAbsolutePath() + ".gif"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".gif"));
                     break;
                 case "image/svg+xml":
-                    file.renameTo(new File(file.getAbsolutePath() + ".svg"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".svg"));
                     break;
                 case "image/heif":
-                    file.renameTo(new File(file.getAbsolutePath() + ".heif"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".heif"));
                     break;
                 case "image/heic":
-                    file.renameTo(new File(file.getAbsolutePath() + ".heic"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".heic"));
                     break;
                 case "image/webp":
-                    file.renameTo(new File(file.getAbsolutePath() + ".webp"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".webp"));
                     break;
                 case "image/x-icon":
-                    file.renameTo(new File(file.getAbsolutePath() + ".ico"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".ico"));
                     break;
                 case "image/bmp":
-                    file.renameTo(new File(file.getAbsolutePath() + ".bmp"));
+                    success = file.renameTo(new File(file.getAbsolutePath() + ".bmp"));
                     break;
 
             }
+
+            if(!success) logger.log(Logger.LogPriority.WARNING, "Could not rename cached file to match type \"" + file.getAbsolutePath() + "\"");
         }
     }
 
@@ -204,10 +208,10 @@ public class Database implements ReturnCodes {
         }
     }
 
-    public int userUploadGuildConfig(AdvancedGuild guild, File configFile) throws IOException {
+    public int userUploadGuildConfig(AdvancedGuild guild, File configFile) {
         int status;
 
-        if (guild.getConfig() != null && guild.getConfig().checkValidity(configFile)) {
+        if (guild.getConfig() != null && guild.getConfig().checkValiditySimple(configFile)) {
 
             if (guild.getConfig().getLoadedConfigFile().delete() && configFile.renameTo(guild.getConfig().getLoadedConfigFile())) {
                 status = OKAY;
@@ -224,10 +228,10 @@ public class Database implements ReturnCodes {
         return status;
     }
 
-    public int userUploadGlobalConfig(File configFile) throws IOException {
+    public int userUploadGlobalConfig(File configFile) {
         int status;
 
-        if (globalConfig.checkValidity(configFile)) {
+        if (globalConfig.checkValiditySimple(configFile)) {
             if (globalConfig.getLoadedConfigFile().delete() && configFile.renameTo(globalConfig.getLoadedConfigFile())) {
                 status = OKAY;
             } else {

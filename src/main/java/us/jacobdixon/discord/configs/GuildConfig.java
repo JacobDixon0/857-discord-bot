@@ -25,7 +25,7 @@ public class GuildConfig extends Config {
     public ConfigEntry<String> announcementsChannelID = new ConfigEntry<>("announcements-channel-id", "-");
     public ConfigEntry<String> announcementsRoleID = new ConfigEntry<>("announcements-role-id", "-");
     public ConfigEntry<String> logChannelID = new ConfigEntry<>("log-channel-id", "-");
-    public ConfigEntry<Integer> utc = new ConfigEntry<>("utc", 0);
+    public ConfigEntry<Long> utc = new ConfigEntry<>("utc", 0L);
     public ConfigEntry<Boolean> useFilter = new ConfigEntry<>("use-filter", false, false);
 
     public ConfigEntry<ArrayList<EmoteRoleAssignmentMessage>> emoteRoleAssignmentMessages
@@ -42,9 +42,7 @@ public class GuildConfig extends Config {
     @SuppressWarnings({"rawtypes", "unchecked"}) // I know, I know...
     public void load(File configFile) throws IOException, ParseException, InvalidConfigException {
 
-        if (!checkValidity(configFile)) {
-            throw new InvalidConfigException("Invalid guild config file \"" + configFile.getAbsolutePath() + "\"");
-        }
+        checkValidity(configFile);
 
         FileReader jsonReader = new FileReader(configFile);
 

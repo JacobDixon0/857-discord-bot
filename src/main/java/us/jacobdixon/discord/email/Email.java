@@ -5,10 +5,8 @@ import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartBody;
-import us.jacobdixon.discord.Main;
 import us.jacobdixon.discord.files.SimpleFile;
 import us.jacobdixon.utils.EmailToolbox;
-import us.jacobdixon.utils.Logger;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -48,10 +46,8 @@ public class Email {
         originUser = new us.jacobdixon.discord.email.EmailUser(origin);
         destinationUsers = new ArrayList<>();
 
-        Main.logger.log(Logger.LogPriority.DEBUG, "destination: >>>>" + destination + "<<<<");
         String[] splitArray = destination.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
         for(String dest : splitArray){
-            Main.logger.log(Logger.LogPriority.DEBUG, "split: >>>>" + dest + "<<<<");
             dest = dest.trim();
             destinationUsers.add(new EmailUser(dest));
         }

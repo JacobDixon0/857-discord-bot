@@ -71,8 +71,11 @@ public class GlobalConfig extends Config {
     public void load(File configFile) throws IOException, ParseException, InvalidConfigException {
         logger.log("Loading global config...");
 
-        if (!checkValidity(configFile)) {
-            throw new InvalidConfigException("Invalid global config");
+        try{
+            checkValidity(configFile);
+        } catch (Exception e){
+            logger.log(e);
+            throw new InvalidConfigException("Invalid guild config \"" + configFile.getAbsolutePath() + "\"");
         }
 
         FileReader jsonReader = new FileReader(configFile.toString());

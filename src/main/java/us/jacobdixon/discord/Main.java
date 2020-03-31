@@ -70,7 +70,6 @@ public class Main {
                 new Commands.AdminCommand(),
                 new Commands.EchoEditCommand(),
                 new Commands.PurgeCommand(),
-                new Commands.TestCommand(),
                 new Commands.ManualEventAnnounceCommand()
         );
 

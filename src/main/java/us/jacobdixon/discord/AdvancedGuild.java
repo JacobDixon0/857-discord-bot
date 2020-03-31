@@ -77,11 +77,11 @@ public class AdvancedGuild {
         config.setConfigValue(key, value);
     }
 
-    public Integer getUtc() {
+    public Long getUtc() {
         return config.utc.getValue();
     }
 
-    public void setUtc(Integer utc) {
+    public void setUtc(Long utc) {
         this.config.utc.setValue(utc);
     }
 

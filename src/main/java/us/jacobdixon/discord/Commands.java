@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 public interface Commands extends ReturnCodes {
 
-    public static class PingCommand extends Command {
+    class PingCommand extends Command {
 
         PingCommand() {
             this.name = "ping";
@@ -65,45 +65,7 @@ public interface Commands extends ReturnCodes {
         }
     }
 
-    public static class TestCommand extends Command {
-
-        TestCommand() {
-            this.name = "test";
-            this.aliases = new String[]{"t"};
-        }
-
-        @Override
-        protected void execute(CommandEvent event) {
-            int status = -1;
-
-            switch (event.getArgs().split(" ")[0]) {
-                case "0":
-                    Main.getEmailHandler().queueLast();
-
-                    status = OKAY;
-                    break;
-                case "1":
-                    event.reply(Messages.getMemberJoinedLog(event.getMember()));
-
-                    status = OKAY;
-                    break;
-                case "2":
-                    try {
-                        Main.db.cacheFile(event.getArgs().replaceFirst("2", "").trim());
-                    } catch (IOException e) {
-                        Main.logger.log(e);
-                    }
-                    status = OKAY;
-                    break;
-                default:
-                    status = INVALID_COMMAND;
-            }
-
-            ReturnCodes.handleCommand(status, event);
-        }
-    }
-
-    public static class EchoEditCommand extends Command {
+    class EchoEditCommand extends Command {
 
         EchoEditCommand() {
             this.name = "echoe";
@@ -139,7 +101,7 @@ public interface Commands extends ReturnCodes {
         }
     }
 
-    public static class EchoFileCommand extends Command {
+    class EchoFileCommand extends Command {
 
         EchoFileCommand() {
             this.name = "echof";
@@ -345,7 +307,7 @@ public interface Commands extends ReturnCodes {
                                     try {
                                         File configUploadFile = Main.db.tempCacheGuildMessageAttachments(event.getMessage()).get(0);
                                         status = Main.db.userUploadGuildConfig(guild, configUploadFile);
-                                    } catch (ExecutionException | InterruptedException | IOException e) {
+                                    } catch (ExecutionException | InterruptedException e) {
                                         Main.logger.log(e, "Exception caught uploading guild config");
                                         status = INTERNAL_SERVER_ERROR;
                                     }
@@ -427,7 +389,7 @@ public interface Commands extends ReturnCodes {
                                             try {
                                                 File configUpload = Main.db.tempCacheGlobalMessageAttachments(event.getMessage()).get(0);
                                                 status = Main.db.userUploadGlobalConfig(configUpload);
-                                            } catch (ExecutionException | InterruptedException | IOException e) {
+                                            } catch (ExecutionException | InterruptedException e) {
                                                 Main.logger.log(e, "Exception caught uploading guild config");
                                                 status = INTERNAL_SERVER_ERROR;
                                             }
@@ -485,9 +447,9 @@ public interface Commands extends ReturnCodes {
                                             }
                                             break;
                                         case "get":
-                                            if (argsList.length > 1) {
-                                                if (targetGuild.getConfig().getConfig(argsList[1]) != null) {
-                                                    event.reply(event.getAuthor().getAsMention() + " **Key: ** `" + argsList[1] + "` : **Value:** `" + targetGuild.getConfig().getConfig(argsList[2]) + "`");
+                                            if (argsList.length > 4) {
+                                                if (targetGuild.getConfig().getConfig(argsList[4]) != null) {
+                                                    event.reply(event.getAuthor().getAsMention() + " **Key: ** `" + argsList[4] + "` : **Value:** `" + targetGuild.getConfig().getConfig(argsList[2]) + "`");
                                                     status = OKAY;
                                                 } else {
                                                     status = INVALID_ARGS;
@@ -502,9 +464,9 @@ public interface Commands extends ReturnCodes {
                                             }
                                             break;
                                         case "email":
-                                            switch (argsList[1]) {
+                                            switch (argsList[4]) {
                                                 case ("origins"):
-                                                    if (argsList[2].equals("list")) {
+                                                    if (argsList[5].equals("list")) {
                                                         StringBuilder sb = new StringBuilder("**Whitelisted Email Origins**\n");
                                                         for (EmailUser emailUser : targetGuild.getWhitelistedEmailOrigins()) {
                                                             sb.append(emailUser.getIdentity()).append("\n");
@@ -516,7 +478,7 @@ public interface Commands extends ReturnCodes {
                                                     }
                                                     break;
                                                 case ("destinations"):
-                                                    if (argsList[2].equals("list")) {
+                                                    if (argsList[5].equals("list")) {
                                                         StringBuilder sb = new StringBuilder("**Whitelisted Email Destinations**\n");
                                                         for (EmailUser emailUser : targetGuild.getWhitelistedEmailOrigins()) {
                                                             sb.append(emailUser.getIdentity()).append("\n");
@@ -536,7 +498,7 @@ public interface Commands extends ReturnCodes {
                                                 try {
                                                     File configUploadFile = Main.db.tempCacheGuildMessageAttachments(event.getMessage()).get(0);
                                                     status = Main.db.userUploadGuildConfig(targetGuild, configUploadFile);
-                                                } catch (ExecutionException | InterruptedException | IOException e) {
+                                                } catch (ExecutionException | InterruptedException e) {
                                                     Main.logger.log(e, "Exception caught uploading guild config");
                                                     status = INTERNAL_SERVER_ERROR;
                                                 }

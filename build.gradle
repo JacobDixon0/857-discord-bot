@@ -5,9 +5,11 @@ plugins {
 }
 
 group '857-discord-bot'
-version '1.0a'
+version '1.1a'
 
 sourceCompatibility = 1.8
+
+mainClassName = "us.jacobdixon.discord.Main"
 
 repositories {
     mavenCentral()

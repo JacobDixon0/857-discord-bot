@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.*;
 import us.jacobdixon.discord.configs.GlobalConfig;
 import us.jacobdixon.discord.email.Email;
-import us.jacobdixon.utils.Logger;
 import us.jacobdixon.utils.StringToolbox;
 
 import java.text.ParseException;
@@ -48,10 +47,6 @@ public interface Messages {
         String content = email.getPlaintextContent();
 
         for (String filter : Main.globalConf.getEmailFilters()) {
-            Main.logger.log(Logger.LogPriority.DEBUG, "Testing against filter \"" + filter + "\"");
-            if (Pattern.compile(filter, Pattern.DOTALL).matcher(content).find()) {
-                Main.logger.log(Logger.LogPriority.DEBUG, "Matched against filter \"" + filter + "\"");
-            }
             content = Pattern.compile(filter, Pattern.DOTALL).matcher(content).replaceAll("");
         }
 
