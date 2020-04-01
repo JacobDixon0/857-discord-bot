@@ -1,3 +1,11 @@
+/*
+ * Author: jd@jacobdixon.us (Jacob R. Dixon)
+ * Date: 2020-03-31
+ * Project: 857-discord-bot
+ * Version: 1.1a
+ * Repo: https://github.com/JacobDixon0/857-discord-bot
+ */
+
 package us.jacobdixon.discord;
 
 import com.jagrosh.jdautilities.command.Command;
@@ -352,6 +360,14 @@ public interface Commands extends ReturnCodes {
                     case "cc":
                         Main.db.clearGuildTempCache();
                         status = OKAY;
+                        break;
+                    case "mode":
+                        try {
+                            Main.setBotMode(Long.parseLong(argsList[1]));
+                            status = OKAY;
+                        } catch (NumberFormatException e) {
+                            status = INVALID_ARGS;
+                        }
                         break;
                     case "inbox":
                         try {

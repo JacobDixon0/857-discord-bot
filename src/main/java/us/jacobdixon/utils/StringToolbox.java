@@ -1,4 +1,12 @@
 /*
+ * Author: jd@jacobdixon.us (Jacob R. Dixon)
+ * Date: 2020-03-31
+ * Project: 857-discord-bot
+ * Version: 1.1a
+ * Repo: https://github.com/JacobDixon0/857-discord-bot
+ */
+
+/*
  * Name: 857-discord-bot
  * Date: 2020/1/13
  * Author(s): jd@jacobdixon.us (Jacob Dixon)

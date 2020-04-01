@@ -1,3 +1,11 @@
+/*
+ * Author: jd@jacobdixon.us (Jacob R. Dixon)
+ * Date: 2020-03-31
+ * Project: 857-discord-bot
+ * Version: 1.1a
+ * Repo: https://github.com/JacobDixon0/857-discord-bot
+ */
+
 package us.jacobdixon.discord.email;
 
 import com.google.api.client.auth.oauth2.Credential;
@@ -21,7 +29,10 @@ import us.jacobdixon.utils.Logger;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.PriorityQueue;
 
 public class EmailHandler extends Thread {
     private static final String APPLICATION_NAME = "857 Discord Bot";
@@ -90,18 +101,24 @@ public class EmailHandler extends Thread {
                 pollInbox(gmailService, user);
                 processQueue();
                 sleep(10000);
-                errorBackoffCount = 0;
+                if (errorBackoffCount > 0) {
+                    errorBackoffCount = 0;
+                    logger.log("Gmail API error resolved");
+                }
             } catch (IOException e) {
                 logger.log(e, "Gmail API encountered an error");
                 if (++errorBackoffCount <= 8) {
-                    long backoff = (long) (errorBackoffCount * errorBackoffCount * 1000 + Math.random() * 1000);
-                    logger.log(Logger.LogPriority.WARNING, "Reattempting to run Gmail API in " + backoff + " seconds...");
+                    long backoff = (long) ((errorBackoffCount * errorBackoffCount * 1000) + (Math.random() * 1000));
+                    logger.log(Logger.LogPriority.WARNING, "Reattempting to run Gmail API in " + (backoff / 1000) + " seconds...");
                     try {
                         sleep(backoff);
                     } catch (InterruptedException ex) {
                         logger.log(ex, "Could not sleep thread for backoff, aborting...");
                         running = false;
                     }
+                } else {
+                    logger.log(Logger.LogPriority.ERROR, "Could not reattempt Gmail API process due to too many failed attempts");
+                    running = false;
                 }
             } catch (InterruptedException e) {
                 logger.log(e, "Could not sleep thread");
@@ -251,5 +268,9 @@ public class EmailHandler extends Thread {
         }
 
         return inboxSummary.toString();
+    }
+
+    public boolean isRunning(){
+        return running;
     }
 }
