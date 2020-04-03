@@ -140,25 +140,20 @@ public class EmailHandler extends Thread {
                     emailQueue.add(new Email(gmailService, user, message));
                 } else break;
             }
-
             lastInboxPollId = inbox.get(0).getId();
         }
     }
 
-    public void queueLast() {
-        try {
-            emailQueue.add(new Email(gmailService, user, inbox.get(0)));
-        } catch (IOException e) {
-            logger.log(e, "Could not queue latest email in inbox due to IO exception");
-        }
+    public void queue() throws IOException {
+        emailQueue.add(new Email(gmailService, user, inbox.get(0)));
     }
 
-    public void queue(int index) {
-        try {
-            emailQueue.add(new Email(gmailService, user, inbox.get(index)));
-        } catch (IOException e) {
-            logger.log(e, "Could not queue latest email in inbox due to IO exception");
-        }
+    public void queue(int index) throws IOException {
+        emailQueue.add(new Email(gmailService, user, inbox.get(index)));
+    }
+
+    public void queue(String id) throws IOException {
+        emailQueue.add(new Email(gmailService, user, gmailService.users().messages().get(user, id).execute()));
     }
 
     private void init(Gmail gmailService, String user) throws IOException {
@@ -188,11 +183,8 @@ public class EmailHandler extends Thread {
     }
 
     private boolean checkIfAllowed(Email email, AdvancedGuild guild) {
-        boolean allowed = false;
-        if (guild.getDirectAllowAddresses().contains(email.getDestinationUsers().get(0).getAddress())) {
-            allowed = true;
-            identifyOrigin(email.getOriginUser(), guild);
-        } else if (identifyOrigin(email.getOriginUser(), guild)) {
+        boolean allowed = identifyOrigin(email.getOriginUser(), guild);
+        if (!allowed && guild.getDirectAllowAddresses().contains(email.getDestinationUsers().get(0).getAddress())) {
             allowed = true;
         }
 
@@ -205,12 +197,9 @@ public class EmailHandler extends Thread {
             if (user.getAddress().equals(origin.getAddress())) {
                 allowed = true;
                 origin.setEqualTo(user);
-
-                logger.log("set email origin profile image url to " + origin.getProfileImageURL());
                 break;
             }
         }
-
         return allowed;
     }
 
@@ -264,13 +253,13 @@ public class EmailHandler extends Thread {
 
         for (int i = 0; i < 10; i++) {
             Email email = new Email(gmailService, user, inbox.get(i));
-            inboxSummary.append(email.getOrigin()).append(" ").append(email.getSubject()).append(" ").append(email.getDate()).append(" ").append(email.getMessage().getId());
+            inboxSummary.append(email.getOrigin()).append(" ").append(email.getSubject(), 0, 80).append(" ").append(email.getDate()).append(" ").append(email.getMessage().getId()).append("\n");
         }
 
         return inboxSummary.toString();
     }
 
-    public boolean isRunning(){
+    public boolean isRunning() {
         return running;
     }
 }

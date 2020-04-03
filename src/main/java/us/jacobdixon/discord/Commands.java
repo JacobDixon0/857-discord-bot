@@ -342,7 +342,6 @@ public interface Commands extends ReturnCodes {
         }
     }
 
-
     class AdminCommand extends Command {
 
         AdminCommand() {
@@ -375,6 +374,14 @@ public interface Commands extends ReturnCodes {
                             status = OKAY;
                         } catch (IOException e) {
                             status = INTERNAL_SERVER_ERROR;
+                        }
+                        break;
+                    case "queue":
+                        try {
+                            Main.getEmailHandler().queue(argsList[1]);
+                            status = OKAY;
+                        } catch (IOException e) {
+                            status = INVALID_ARGS;
                         }
                         break;
                     case "config":
