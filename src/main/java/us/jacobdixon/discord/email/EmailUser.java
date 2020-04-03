@@ -66,13 +66,13 @@ public class EmailUser {
     public void setIdentity(String identity) {
         Matcher identityParser = Pattern.compile("^(.+) <(.+)>$").matcher(identity);
         if (identityParser.find()) {
-            if (EmailToolbox.checkEmailAddress(identityParser.group(2))) {
+            if (EmailToolbox.validateEmailAddress(identityParser.group(2))) {
                 name = identityParser.group(1);
                 address = identityParser.group(2).toLowerCase();
             } else {
                 throw new IllegalArgumentException("Invalid email address \"" + identityParser.group(2) + "\"");
             }
-        } else if (EmailToolbox.checkEmailAddress(identity)) {
+        } else if (EmailToolbox.validateEmailAddress(identity)) {
             this.address = identity;
         } else {
             throw new IllegalArgumentException("Invalid email address \"" + identity + "\"");

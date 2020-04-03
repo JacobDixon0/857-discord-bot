@@ -117,7 +117,7 @@ public interface Commands extends ReturnCodes {
         }
 
         @Override
-        protected void execute(CommandEvent event) {
+        public void execute(CommandEvent event) {
             int status;
 
             if (event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
@@ -127,7 +127,7 @@ public interface Commands extends ReturnCodes {
                 } else {
                     if (!event.getMessage().getAttachments().isEmpty()) {
                         try {
-                            File uploadFile = Main.db.tempCacheGuildMessageAttachments(event.getMessage()).get(0);
+                            File uploadFile = Main.db.tempCacheMessageAttachmentsGuild(event.getMessage()).get(0);
 
                             if (!event.getMessage().getMentionedChannels().isEmpty()) {
                                 event.getMessage().getMentionedChannels().get(0).sendFile(uploadFile).queue();
@@ -313,7 +313,7 @@ public interface Commands extends ReturnCodes {
                             case "upload":
                                 if (!event.getMessage().getAttachments().isEmpty()) {
                                     try {
-                                        File configUploadFile = Main.db.tempCacheGuildMessageAttachments(event.getMessage()).get(0);
+                                        File configUploadFile = Main.db.tempCacheMessageAttachmentsGuild(event.getMessage()).get(0);
                                         status = Main.db.userUploadGuildConfig(guild, configUploadFile);
                                     } catch (ExecutionException | InterruptedException e) {
                                         Main.logger.log(e, "Exception caught uploading guild config");
@@ -355,7 +355,7 @@ public interface Commands extends ReturnCodes {
             int status;
             String[] argsList = event.getArgs().split(" ");
 
-            if (Main.globalConf.adminIDs.getValue().contains(event.getAuthor().getId())) {
+            if (Main.globalConf.getAdminIDs().contains(event.getAuthor().getId())) {
                 switch (argsList[0]) {
                     case "cc":
                         Main.db.clearGuildTempCache();
@@ -403,7 +403,7 @@ public interface Commands extends ReturnCodes {
                                     case "upload":
                                         if (!event.getMessage().getAttachments().isEmpty()) {
                                             try {
-                                                File configUpload = Main.db.tempCacheGlobalMessageAttachments(event.getMessage()).get(0);
+                                                File configUpload = Main.db.tempCacheMessageAttachments(event.getMessage()).get(0);
                                                 status = Main.db.userUploadGlobalConfig(configUpload);
                                             } catch (ExecutionException | InterruptedException e) {
                                                 Main.logger.log(e, "Exception caught uploading guild config");
@@ -512,7 +512,7 @@ public interface Commands extends ReturnCodes {
                                         case "upload":
                                             if (!event.getMessage().getAttachments().isEmpty()) {
                                                 try {
-                                                    File configUploadFile = Main.db.tempCacheGuildMessageAttachments(event.getMessage()).get(0);
+                                                    File configUploadFile = Main.db.tempCacheMessageAttachmentsGuild(event.getMessage()).get(0);
                                                     status = Main.db.userUploadGuildConfig(targetGuild, configUploadFile);
                                                 } catch (ExecutionException | InterruptedException e) {
                                                     Main.logger.log(e, "Exception caught uploading guild config");

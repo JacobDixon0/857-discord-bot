@@ -62,32 +62,40 @@ public class Database implements ReturnCodes {
         this.dbGuildEntriesPath = dbRootPath + DB_GUILDS_PATH;
     }
 
-    File getGuildDatabaseEntry(AdvancedGuild guild) {
+    private File getGuildDatabaseEntryDirectory(AdvancedGuild guild) {
         return new File(dbGuildEntriesPath + guild.getGuild().getId());
     }
 
-    File getGuildCacheDirectory(AdvancedGuild guild) {
-        return new File(getGuildDatabaseEntry(guild).getAbsolutePath() + DB_GUILD_CACHE_PATH);
+    private File getGuildCacheDirectory(AdvancedGuild guild) {
+        return new File(getGuildDatabaseEntryDirectory(guild).getAbsolutePath() + DB_GUILD_CACHE_PATH);
     }
 
-    File getGuildTempCacheDirectory(AdvancedGuild guild) {
-        return new File(getGuildDatabaseEntry(guild).getAbsolutePath() + DB_GUILD_TEMP_CACHE_PATH);
+    private File getGuildTempCacheDirectory(AdvancedGuild guild) {
+        return new File(getGuildDatabaseEntryDirectory(guild).getAbsolutePath() + DB_GUILD_TEMP_CACHE_PATH);
     }
 
-    File getGuildEmailCacheDirectory(AdvancedGuild guild) {
-        return new File(getGuildDatabaseEntry(guild).getAbsolutePath() + DB_GUILD_EMAIL_CACHE_PATH);
+    private File getGuildEmailCacheDirectory(AdvancedGuild guild) {
+        return new File(getGuildDatabaseEntryDirectory(guild).getAbsolutePath() + DB_GUILD_EMAIL_CACHE_PATH);
     }
 
-    File getGuildConfigFile(AdvancedGuild guild) {
-        return new File(getGuildDatabaseEntry(guild).getAbsolutePath() + DB_GUILD_CONFIG_PATH);
+    private File getGuildConfigFile(AdvancedGuild guild) {
+        return new File(getGuildDatabaseEntryDirectory(guild).getAbsolutePath() + DB_GUILD_CONFIG_PATH);
     }
 
-    public ArrayList<String> cacheGuildEmailAttachments(Email email) throws IOException {
+    public String getRandCacheLocation(String seed) {
+        if (!new File(dbRootPath + DB_CACHE_PATH + getDate() + "/" + DigestUtils.shaHex(seed).substring(0, 5) + "/").exists()) {
+            return DB_CACHE_PATH + getDate() + "/" + DigestUtils.shaHex(seed).substring(0, 5) + "/";
+        } else {
+            return getRandCacheLocation(seed + Math.random());
+        }
+    }
+
+    public ArrayList<String> cacheEmailAttachmentsGuild(Email email) throws IOException {
         ArrayList<String> urls = new ArrayList<>();
 
         AdvancedGuild targetGuild = null;
 
-        for (AdvancedGuild guild : guildsMap.inverse().keySet()) {
+        for (AdvancedGuild guild : getAdvancedGuilds()) {
             for (EmailUser destination : guild.getWhitelistedEmailDestinations()) {
                 if (email.getDestinationUsers().get(0).getAddress().equals(destination.getAddress())) {
                     targetGuild = guild;
@@ -97,9 +105,40 @@ public class Database implements ReturnCodes {
         }
 
         if (targetGuild != null) {
-            urls = cacheGuildEmailAttachments(email, targetGuild);
+            urls = cacheEmailAttachmentsGuild(email, targetGuild);
         } else {
             logger.log(Logger.LogPriority.WARNING, "No guild found with whitelisted destination \"" + email.getDestinationUsers().get(0).getAddress() + "\"");
+        }
+
+        return urls;
+    }
+
+    public ArrayList<String> cacheEmailAttachmentsGuild(Email email, AdvancedGuild guild) throws IOException {
+        return cacheEmailAttachments(email, DB_GUILDS_PATH + guild.getGuild().getId() + DB_GUILD_EMAIL_CACHE_PATH + getDate());
+    }
+
+    public ArrayList<String> cacheEmailAttachments(Email email) throws IOException {
+        String path = getRandCacheLocation(email.getMessage().getId());
+        return cacheEmailAttachments(email, path);
+    }
+
+    public ArrayList<String> cacheEmailAttachments(Email email, String path) throws IOException {
+        ArrayList<String> urls = new ArrayList<>();
+
+        if (path.toCharArray()[path.length() - 1] != '/') {
+            path += "/";
+        }
+
+        if (path.toCharArray()[0] != '/') {
+            path = "/" + path;
+        }
+
+        for (SimpleFile file : email.getAttachments()) {
+            File parentFile = new File(dbRootPath + path);
+            buildDirectory(parentFile);
+            file.writeTo(parentFile);
+
+            urls.add("https://" + globalConfig.getDomain() + path + StringToolbox.sanitizeURL(file.getFilename()));
         }
 
         return urls;
@@ -121,7 +160,7 @@ public class Database implements ReturnCodes {
         File file = new File(filePath);
 
         if (!file.exists()) {
-            buildEmptyDirectory(file.getParentFile());
+            buildDirectory(file.getParentFile());
         }
 
         ReadableByteChannel byteChannel = Channels.newChannel(new URL(url).openStream());
@@ -155,8 +194,6 @@ public class Database implements ReturnCodes {
                     success = file.renameTo(new File(file.getAbsolutePath() + ".svg"));
                     break;
                 case "image/heif":
-                    success = file.renameTo(new File(file.getAbsolutePath() + ".heif"));
-                    break;
                 case "image/heic":
                     success = file.renameTo(new File(file.getAbsolutePath() + ".heic"));
                     break;
@@ -172,47 +209,9 @@ public class Database implements ReturnCodes {
 
             }
 
-            if(!success) logger.log(Logger.LogPriority.WARNING, "Could not rename cached file to match type \"" + file.getAbsolutePath() + "\"");
-        }
-    }
-
-    public ArrayList<String> cacheGuildEmailAttachments(Email email, AdvancedGuild guild) throws IOException {
-        return cacheEmailAttachments(email, DB_GUILDS_PATH + guild.getGuild().getId() + DB_GUILD_EMAIL_CACHE_PATH + getDate());
-    }
-
-    public ArrayList<String> cacheEmailAttachments(Email email, String path) throws IOException {
-        ArrayList<String> urls = new ArrayList<>();
-
-        if (path.toCharArray()[path.length() - 1] != '/') {
-            path += "/";
-        }
-
-        if (path.toCharArray()[0] != '/') {
-            path = "/" + path;
-        }
-
-        for (SimpleFile file : email.getAttachments()) {
-            File parentFile = new File(dbRootPath + path);
-            buildEmptyDirectory(parentFile);
-            file.writeTo(parentFile);
-
-            urls.add("https://" + globalConfig.getDomain() + path + StringToolbox.sanitizeURL(file.getFilename()));
-        }
-
-        return urls;
-    }
-
-    public ArrayList<String> cacheEmailAttachments(Email email) throws IOException {
-        String path = getRandCacheLocation(email.getMessage().getId());
-        logger.log(Logger.LogPriority.DEBUG, path);
-        return cacheEmailAttachments(email, path);
-    }
-
-    public String getRandCacheLocation(String seed) {
-        if (!new File(dbRootPath + DB_CACHE_PATH + getDate() + "/" + DigestUtils.shaHex(seed).substring(0, 5) + "/").exists()) {
-            return DB_CACHE_PATH + getDate() + "/" + DigestUtils.shaHex(seed).substring(0, 5) + "/";
-        } else {
-            return getRandCacheLocation(seed + Math.random());
+            if (!success) {
+                logger.log(Logger.LogPriority.WARNING, "Could not rename cached file to match type \"" + file.getAbsolutePath() + "\"");
+            }
         }
     }
 
@@ -255,17 +254,17 @@ public class Database implements ReturnCodes {
         return status;
     }
 
-    public ArrayList<File> tempCacheGuildMessageAttachments(Message message) throws ExecutionException, InterruptedException {
+    public ArrayList<File> tempCacheMessageAttachmentsGuild(Message message) throws ExecutionException, InterruptedException {
         ArrayList<File> result = new ArrayList<>();
 
         for (Attachment attachment : message.getAttachments()) {
-            result.add(attachment.downloadToFile(new File(getGuildDatabaseEntry(getAdvancedGuild(message.getGuild())) + DB_GUILD_TEMP_CACHE_PATH + "/" + attachment.getFileName())).get());
+            result.add(attachment.downloadToFile(new File(getGuildDatabaseEntryDirectory(getAdvancedGuild(message.getGuild())) + DB_GUILD_TEMP_CACHE_PATH + "/" + attachment.getFileName())).get());
         }
 
         return result;
     }
 
-    public ArrayList<File> tempCacheGlobalMessageAttachments(Message message) throws ExecutionException, InterruptedException {
+    public ArrayList<File> tempCacheMessageAttachments(Message message) throws ExecutionException, InterruptedException {
         ArrayList<File> result = new ArrayList<>();
 
         for (Attachment attachment : message.getAttachments()) {
@@ -284,19 +283,33 @@ public class Database implements ReturnCodes {
     public void clearGuildTempCache(AdvancedGuild guild) {
         File guildTempCache = getGuildTempCacheDirectory(guild);
 
-        if (guildTempCache != null) {
-            if (guildTempCache.exists() && guildTempCache.isDirectory()) {
-                File[] files = guildTempCache.listFiles();
-                if (files != null) {
-                    for (File f : files) {
-                        if (!f.delete())
-                            logger.log(Logger.LogPriority.ERROR, "Could not delete cached guild temp file \"" + f.getAbsolutePath() + "\"");
+        if (guildTempCache.exists() && guildTempCache.isDirectory()) {
+            File[] files = guildTempCache.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    if (!f.delete()) {
+                        logger.log(Logger.LogPriority.ERROR, "Could not delete cached guild temp file \"" + f.getAbsolutePath() + "\"");
                     }
                 }
             }
-        } else {
-            logger.log(Logger.LogPriority.ERROR, "Could not find guild config for guild " + guild.getGuild().getId() + " \"" + guild.getGuild().getName() + "\"");
         }
+
+    }
+
+    public void clearGlobalTempCache() {
+        File globalTempCache = new File(dbRootPath + DB_TEMP_CACHE_PATH);
+
+        if (globalTempCache.exists() && globalTempCache.isDirectory()) {
+            File[] files = globalTempCache.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    if (!f.delete()) {
+                        logger.log(Logger.LogPriority.ERROR, "Could not delete cached temp file \"" + f.getAbsolutePath() + "\"");
+                    }
+                }
+            }
+        }
+
     }
 
     public void build(List<Guild> guilds) {
@@ -307,10 +320,10 @@ public class Database implements ReturnCodes {
         File databaseGlobalCache = new File(dbRootPath + DB_CACHE_PATH);
         File databaseGlobalTempCache = new File(dbRootPath + DB_TEMP_CACHE_PATH);
 
-        if (!databaseRoot.exists()) buildEmptyDirectory(databaseRoot);
-        if (!databaseGuildEntries.exists()) buildEmptyDirectory(databaseGuildEntries);
-        if (!databaseGlobalCache.exists()) buildEmptyDirectory(databaseGlobalCache);
-        if (!databaseGlobalTempCache.exists()) buildEmptyDirectory(databaseGlobalTempCache);
+        if (!databaseRoot.exists()) buildDirectory(databaseRoot);
+        if (!databaseGuildEntries.exists()) buildDirectory(databaseGuildEntries);
+        if (!databaseGlobalCache.exists()) buildDirectory(databaseGlobalCache);
+        if (!databaseGlobalTempCache.exists()) buildDirectory(databaseGlobalTempCache);
 
         guildsMap = HashBiMap.create();
 
@@ -318,14 +331,14 @@ public class Database implements ReturnCodes {
 
             AdvancedGuild advancedGuild = new AdvancedGuild(guild);
 
-            File guildDatabaseEntry = getGuildDatabaseEntry(advancedGuild);
+            File guildDatabaseEntry = getGuildDatabaseEntryDirectory(advancedGuild);
             File guildDatabaseCache = getGuildCacheDirectory(advancedGuild);
             File guildDatabaseTempCache = getGuildTempCacheDirectory(advancedGuild);
             File guildDatabaseConfig = getGuildConfigFile(advancedGuild);
 
-            if (!guildDatabaseEntry.exists()) buildEmptyDirectory(guildDatabaseEntry);
-            if (!guildDatabaseCache.exists()) buildEmptyDirectory(guildDatabaseCache);
-            if (!guildDatabaseTempCache.exists()) buildEmptyDirectory(guildDatabaseTempCache);
+            if (!guildDatabaseEntry.exists()) buildDirectory(guildDatabaseEntry);
+            if (!guildDatabaseCache.exists()) buildDirectory(guildDatabaseCache);
+            if (!guildDatabaseTempCache.exists()) buildDirectory(guildDatabaseTempCache);
             if (!guildDatabaseConfig.exists()) {
                 try {
                     buildDefaultGuildConfig(guildDatabaseConfig);
@@ -343,7 +356,7 @@ public class Database implements ReturnCodes {
             } catch (IOException e) {
                 logger.log(e, "Could not build new database entry for guild " + guild.getId() + " \"" + guild.getName() + "\"");
             } catch (ParseException | InvalidConfigException e) {
-                logger.log(e, "Could not load config for guild " + guild.getId() + " \"" + guild.getName() + "\" due to invalid config file");
+                logger.log(e, "Could not load config for guild " + guild.getId() + " \"" + guild.getName() + "\" due to an invalid config file");
             }
         }
     }
@@ -353,12 +366,12 @@ public class Database implements ReturnCodes {
         guildConfig.save(path);
     }
 
-    private boolean buildEmptyDirectory(String path) {
+    private boolean buildDirectory(String path) {
         File f = new File(path);
-        return buildEmptyDirectory(f);
+        return buildDirectory(f);
     }
 
-    private boolean buildEmptyDirectory(File path) {
+    private boolean buildDirectory(File path) {
         boolean scs = true;
         if (!path.exists()) {
             if (!path.getParentFile().exists()) {
@@ -406,5 +419,6 @@ public class Database implements ReturnCodes {
 
     public void shutdown() {
         clearGuildTempCache();
+        clearGlobalTempCache();
     }
 }

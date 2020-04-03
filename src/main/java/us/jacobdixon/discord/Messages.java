@@ -13,10 +13,8 @@ import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.*;
 import us.jacobdixon.discord.configs.GlobalConfig;
 import us.jacobdixon.discord.email.Email;
-import us.jacobdixon.utils.Logger;
 import us.jacobdixon.utils.StringToolbox;
 
-import java.text.ParseException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -87,13 +85,7 @@ public interface Messages {
         }
 
         eb.setFooter("Sent to " + email.getDestinationUsers().get(0).getAddress(), GMAIL_ICON);
-
-        try {
-            eb.setTimestamp(Instant.ofEpochSecond(email.getDateEpoch()));
-        } catch (ParseException e) {
-            Main.logger.log(Logger.LogPriority.WARNING, "Could not parse email date for embed timestamp");
-            eb.setTimestamp(Instant.now());
-        }
+        eb.setTimestamp(Instant.ofEpochSecond(email.getDateEpoch()));
 
         mb.setContent(guild.getAnnouncementsRole().getAsMention() + " Email announcement posted for **" + guild.getGuild().getName() + "**: *" + subjectSummary + "*");
         mb.setEmbed(eb.build());

@@ -18,8 +18,9 @@ import us.jacobdixon.utils.EmailToolbox;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Email {
     private Message message;
@@ -30,12 +31,12 @@ public class Email {
     private String plaintextContent;
     private String date;
 
+    private long dateEpoch;
+
     private EmailUser originUser;
-    private ArrayList<us.jacobdixon.discord.email.EmailUser> destinationUsers;
+    private ArrayList<EmailUser> destinationUsers;
 
     private ArrayList<SimpleFile> attachments = new ArrayList<>();
-
-    private static final SimpleDateFormat ORIGINAL_DATE_FORMAT = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss Z");
 
     public Email(Gmail gmailService, String user, Message message) throws IOException {
         message = gmailService.users().messages().get(user, message.getId()).execute();
@@ -44,14 +45,17 @@ public class Email {
         origin = EmailToolbox.getHeaderValue("from", message);
         destination = EmailToolbox.getHeaderValue("to", message);
         subject = EmailToolbox.getHeaderValue("subject", message);
+        date = EmailToolbox.getHeaderValue("date", message);
 
         try {
-            date = EmailToolbox.GMAIL_DATE_FORMAT.format(ORIGINAL_DATE_FORMAT.parse(EmailToolbox.getHeaderValue("date", message)).getTime());
+            dateEpoch = EmailToolbox.DATE_FORMAT.parse(date).getTime() / 1000;
+            date = EmailToolbox.GMAIL_DATE_FORMAT.format(new Date(EmailToolbox.DATE_FORMAT.parse(date).getTime()));
         } catch (ParseException e) {
-            date = EmailToolbox.getHeaderValue("date", message);
+            dateEpoch = Instant.now().getEpochSecond();
+            e.printStackTrace();
         }
 
-        originUser = new us.jacobdixon.discord.email.EmailUser(origin);
+        originUser = new EmailUser(origin);
         destinationUsers = new ArrayList<>();
 
         String[] splitArray = destination.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
@@ -96,11 +100,11 @@ public class Email {
     }
 
     public String getDate(int utcOffset) throws ParseException {
-        return EmailToolbox.GMAIL_DATE_FORMAT.format(ORIGINAL_DATE_FORMAT.parse(EmailToolbox.getHeaderValue("date", message)).getTime() + utcOffset * 3600000);
+        return EmailToolbox.GMAIL_DATE_FORMAT.format(new Date(EmailToolbox.DATE_FORMAT.parse(EmailToolbox.getHeaderValue("date", message)).getTime() + utcOffset * 3600000));
     }
 
-    public long getDateEpoch() throws ParseException {
-        return ORIGINAL_DATE_FORMAT.parse(EmailToolbox.getHeaderValue("date", message)).getTime();
+    public long getDateEpoch() {
+        return dateEpoch;
     }
 
     public us.jacobdixon.discord.email.EmailUser getOriginUser() {
