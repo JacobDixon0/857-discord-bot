@@ -253,7 +253,7 @@ public class EmailHandler extends Thread {
 
         for (int i = 0; i < 10; i++) {
             Email email = new Email(gmailService, user, inbox.get(i));
-            inboxSummary.append(email.getOrigin()).append(" ").append(email.getSubject(), 0, 80).append(" ").append(email.getDate()).append(" ").append(email.getMessage().getId()).append("\n");
+            inboxSummary.append(email.getOrigin()).append(" ").append(email.getSubject()).append(" ").append(email.getDate()).append(" ").append(email.getMessage().getId()).append("\n");
         }
 
         return inboxSummary.toString();

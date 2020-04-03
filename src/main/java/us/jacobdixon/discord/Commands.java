@@ -362,8 +362,12 @@ public interface Commands extends ReturnCodes {
                         break;
                     case "mode":
                         try {
-                            Main.setBotMode(Long.parseLong(argsList[1]));
-                            status = OKAY;
+                            if (argsList.length >= 2) {
+                                Main.setBotMode(Long.parseLong(argsList[1]));
+                                status = OKAY;
+                            } else {
+                                status = MISSING_ARGS;
+                            }
                         } catch (NumberFormatException e) {
                             status = INVALID_ARGS;
                         }
@@ -377,11 +381,15 @@ public interface Commands extends ReturnCodes {
                         }
                         break;
                     case "queue":
-                        try {
-                            Main.getEmailHandler().queue(argsList[1]);
-                            status = OKAY;
-                        } catch (IOException e) {
-                            status = INVALID_ARGS;
+                        if (argsList.length >= 2) {
+                            try {
+                                Main.getEmailHandler().queue(argsList[1]);
+                                status = OKAY;
+                            } catch (IOException e) {
+                                status = INVALID_ARGS;
+                            }
+                        } else {
+                            status = MISSING_ARGS;
                         }
                         break;
                     case "config":
@@ -429,7 +437,7 @@ public interface Commands extends ReturnCodes {
                                             event.reply(event.getAuthor().getAsMention() + " **Key: ** `" + argsList[1] + "` : **Value:** `" + Main.globalConf.getConfig(argsList[1]).getValue() + "`");
                                             status = OKAY;
                                         } else {
-                                            status = INVALID_ARGS;
+                                            status = MISSING_ARGS;
                                         }
                                         break;
                                     default:
