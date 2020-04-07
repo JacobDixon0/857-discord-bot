@@ -199,6 +199,8 @@ public class Main {
     }
 
     public static void stop() {
+        jda.shutdown();
+        db.shutdown();
         running = false;
     }
 
@@ -215,10 +217,6 @@ public class Main {
             logger.log(Logger.LogPriority.FATAL_ERROR, logMsg);
         } else {
             logger.log(Logger.LogPriority.INFO, logMsg);
-        }
-        if (status != -1) {
-            jda.shutdown();
-            db.shutdown();
         }
         System.exit(status);
     }

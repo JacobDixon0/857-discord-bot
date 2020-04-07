@@ -274,6 +274,11 @@ public class Database implements ReturnCodes {
         return result;
     }
 
+    public void clearTempCache(){
+        clearGuildTempCache();
+        clearGlobalTempCache();
+    }
+
     public void clearGuildTempCache() {
         for (AdvancedGuild guild : getAdvancedGuilds()) {
             clearGuildTempCache(guild);
@@ -293,7 +298,6 @@ public class Database implements ReturnCodes {
                 }
             }
         }
-
     }
 
     public void clearGlobalTempCache() {
@@ -309,7 +313,6 @@ public class Database implements ReturnCodes {
                 }
             }
         }
-
     }
 
     public void build(List<Guild> guilds) {
@@ -418,7 +421,6 @@ public class Database implements ReturnCodes {
     }
 
     public void shutdown() {
-        clearGuildTempCache();
-        clearGlobalTempCache();
+        clearTempCache();
     }
 }
