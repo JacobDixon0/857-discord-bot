@@ -36,6 +36,7 @@ public class GlobalConfig extends Config {
 
     public ConfigEntry<String> superAdmin = new ConfigEntry<>("super-admin");
     public ConfigEntry<String> databaseLocation = new ConfigEntry<>("db-location");
+    public ConfigEntry<String> databaseWebPath = new ConfigEntry<>("db-web-path");
     public ConfigEntry<String> domain = new ConfigEntry<>("domain");
     public ConfigEntry<String> token = new ConfigEntry<>("token");
     public ConfigEntry<String> globalLogChannelID = new ConfigEntry<>("global-log-channel-id");
@@ -55,7 +56,7 @@ public class GlobalConfig extends Config {
     public ConfigEntry<ArrayList<String>> adminIDs = new ConfigEntry<>("admin-ids");
 
     public GlobalConfig() {
-        getConfigs().addAll(Arrays.asList(superAdmin, databaseLocation, domain, token, globalLogChannelID,
+        getConfigs().addAll(Arrays.asList(superAdmin, databaseLocation, databaseWebPath, domain, token, globalLogChannelID,
                 prefix, onlineStatus, timestampFormat, emailFilters, activityEntries, adminIDs, delimiter,
                 mode, tokensPath, credentialsPath, gmailUser, activityType, streamingURL));
 
@@ -260,6 +261,14 @@ public class GlobalConfig extends Config {
 
     public void setStreamingURL(String streamingURL) {
         this.streamingURL.setValue(streamingURL);
+    }
+
+    public String getDatabaseWebPath() {
+        return databaseWebPath.getValue();
+    }
+
+    public void setDatabaseWebPath(String databaseWebPath) {
+        this.databaseWebPath.setValue(databaseWebPath);
     }
 
 }

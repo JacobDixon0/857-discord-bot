@@ -92,7 +92,7 @@ public class StringToolbox {
         return s.replaceAll("&#39;", "'").replaceAll("&#34;", "\"");
     }
 
-    public static String sanitize(String s){
+    public static String sanitize(String s) {
         return s.replace("\\", "\\\\");
     }
 
@@ -134,6 +134,13 @@ public class StringToolbox {
         else if (seconds == 1) stringBuilder.append(seconds).append(" second");
 
         return normalizeSpacing(stringBuilder.toString());
+    }
+
+    public static String normalizeRelativePath(String path, boolean isDirectory) {
+        path = path.replaceAll("\\\\", "/").replaceAll("/{2,}", "/");
+        if (!path.startsWith("/")) path = "/" + path;
+        if (isDirectory && !path.endsWith("/")) path += "/";
+        return path;
     }
 
     public static String escape(String string) {

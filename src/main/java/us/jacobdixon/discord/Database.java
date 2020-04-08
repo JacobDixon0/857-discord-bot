@@ -138,7 +138,7 @@ public class Database implements ReturnCodes {
             buildDirectory(parentFile);
             file.writeTo(parentFile);
 
-            urls.add("https://" + globalConfig.getDomain() + path + StringToolbox.sanitizeURL(file.getFilename()));
+            urls.add("https://" + globalConfig.getDomain() + StringToolbox.normalizeRelativePath(globalConfig.getDatabaseWebPath() + path, true) + StringToolbox.sanitizeURL(file.getFilename()));
         }
 
         return urls;
