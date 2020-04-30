@@ -57,13 +57,13 @@ public interface Messages {
             content = Pattern.compile(filter, Pattern.DOTALL).matcher(content).replaceAll("");
         }
 
-        if (email.getPlaintextContent().length() > 1024) {
+        if (content.length() > 1024) {
             ArrayList<String> contentSections = StringToolbox.splitGroups(content, 1024);
 
             eb.addField("Email Body:", contentSections.get(0), false);
 
-            for (String contentSection : contentSections) {
-                eb.addField("...", contentSection, false);
+            for (int i = 1; i < contentSections.size(); i++) {
+                eb.addField("...", contentSections.get(i), false);
             }
 
         } else {
