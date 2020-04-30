@@ -40,7 +40,7 @@ public class Database implements ReturnCodes {
 
     private static final String DB_GUILDS_PATH = "/guilds/";
     private static final String DB_CACHE_PATH = "/cache/";
-    private static final String DB_STATIC_CACHE_PATH = "/cache/static/";
+    private static final String DB_STATIC_CACHE_isPATH = "/cache/static/";
     private static final String DB_TEMP_CACHE_PATH = "/cache/tmp/";
 
     private static final String DB_GUILD_CACHE_PATH = "/cache/";
@@ -171,16 +171,18 @@ public class Database implements ReturnCodes {
         byteChannel.close();
 
         if (!name.matches("^.+\\.[\\w-_$~]+$")) {
-
             FileInputStream fileInputStream = new FileInputStream(file);
             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+
             String type = URLConnection.guessContentTypeFromStream(bufferedInputStream);
+
             bufferedInputStream.close();
             fileInputStream.close();
 
             boolean success = false;
 
             switch (type) {
+                case "image/apng":
                 case "image/png":
                     success = file.renameTo(new File(file.getAbsolutePath() + ".png"));
                     break;
@@ -201,6 +203,7 @@ public class Database implements ReturnCodes {
                     success = file.renameTo(new File(file.getAbsolutePath() + ".webp"));
                     break;
                 case "image/x-icon":
+                case "image/vnd.microsoft.icon":
                     success = file.renameTo(new File(file.getAbsolutePath() + ".ico"));
                     break;
                 case "image/bmp":
